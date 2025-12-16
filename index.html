@@ -45,26 +45,16 @@
         const { createRoot } = ReactDOM;
 
         // ==================================================================================
-        // HƯỚNG DẪN CẤU HÌNH FIREBASE CHO GITHUB/VERCEL
-        // 1. Tạo project tại https://console.firebase.google.com/
-        // 2. Vào Project Settings -> General -> Your apps -> Web (</>) -> Lấy config
-        // 3. Vào Firestore Database -> Rules -> Sửa "allow read, write: if false;" thành "if true;" (Chế độ test)
-        // 4. Thay thế nội dung bên dưới bằng config của bạn:
+        // CẤU HÌNH FIREBASE CỦA BẠN (Đã cập nhật chính xác)
         // ==================================================================================
         
         const USER_CONFIG = {
             apiKey: "AIzaSyCEgOrAaEHjZbhYTSkVHGRkGa8WfjjnWvg",
-
             authDomain: "trandaiedu-39df1.firebaseapp.com",
-
             projectId: "trandaiedu-39df1",
-
             storageBucket: "trandaiedu-39df1.firebasestorage.app",
-
             messagingSenderId: "286264195114",
-
             appId: "1:286264195114:web:c6ca2fe8e1b3e7e25ceb53",
-
             measurementId: "G-JB82DY2KHT"
         };
 
@@ -78,7 +68,10 @@
         // Hàm khởi tạo Firebase an toàn
         const initializeFirebase = () => {
             try {
-                if (!window.firebase) return false;
+                if (!window.firebase) {
+                    console.error("Thư viện Firebase chưa tải xong.");
+                    return false;
+                }
 
                 // 1. Nếu đã init rồi thì trả về true luôn
                 if (firebase.apps.length > 0) {
@@ -892,6 +885,7 @@
                                     currentUser = cred.user;
                                 } catch(e) {
                                     console.error("Lỗi đăng nhập ẩn danh:", e);
+                                    alert("LỖI KẾT NỐI: Vui lòng vào Firebase Console > Authentication > Sign-in method và bật 'Anonymous' (Enable).");
                                     return; // Thoát nếu không đăng nhập được
                                 }
                             }
@@ -921,6 +915,9 @@
                             }
                         } catch (error) { 
                             console.error("Lỗi khi lưu điểm:", error);
+                            if (error.code === 'permission-denied') {
+                                alert("LỖI QUYỀN TRUY CẬP: Vui lòng vào Firebase Console > Firestore Database > Rules và sửa thành 'allow read, write: if true;'");
+                            }
                         }
                     } else {
                         console.warn("Firebase chưa sẵn sàng, không thể lưu.");
