@@ -3,76 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Số Hóa Đề Thi (Auto-Fix Model)</title>
+    <title>Tool Số Hóa (Auto-Fix v3)</title>
     <script type="importmap">
       { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f6f8; max-width: 1200px; margin: 0 auto; }
-        .container { display: flex; gap: 20px; }
-        .box { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        input, textarea, button { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
+        body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
+        .container { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; }
+        .box { flex: 1; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #d32f2f; text-align: center; }
+        input, button, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; padding: 15px; font-size: 16px; }
         button:hover { background: #0056b3; }
-        button:disabled { background: #ccc; }
-        .error { color: red; background: #fff0f0; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 0.9em; }
-        .success { color: green; background: #f0fff4; padding: 10px; }
+        .log-entry { margin-bottom: 5px; padding: 5px; border-radius: 4px; font-size: 0.9em; }
+        .log-process { background: #e3f2fd; color: #0d47a1; }
+        .log-error { background: #ffebee; color: #c62828; }
+        .log-success { background: #e8f5e9; color: #2e7d32; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<h1>Tool Số Hóa Đề Thi (Phiên bản Tự Dò Lỗi)</h1>
+<h1>⚡ PHIÊN BẢN MỚI NHẤT (AUTO-FIX) ⚡</h1>
 
 <div class="container">
     <div class="box">
         <h3>1. Cấu hình</h3>
-        <label>Gemini API Key (Bắt buộc):</label>
-        <input type="password" id="geminiKey" placeholder="Dán Key AI Studio vào đây...">
-        
-        <label>ImgBB API Key (Tùy chọn):</label>
-        <input type="text" id="imgbbKey" placeholder="Dán Key ImgBB (nếu có)...">
-        
-        <label>Chọn Đề Thi (Ảnh hoặc PDF):</label>
+        <input type="password" id="geminiKey" placeholder="Dán Gemini API Key vào đây...">
         <input type="file" id="fileInput" accept="image/*, application/pdf">
-        
         <button id="btnRun" onclick="startProcess()">🚀 CHẠY NGAY</button>
         
-        <div id="statusLog" style="margin-top: 15px;"></div>
+        <div id="statusLog" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;"></div>
     </div>
 
     <div class="box">
-        <h3>2. Kết quả JSON</h3>
-        <textarea id="output" rows="20" placeholder="Kết quả sẽ hiện ở đây..."></textarea>
+        <h3>2. Kết quả</h3>
+        <textarea id="output" rows="15" placeholder="JSON sẽ hiện ở đây..."></textarea>
     </div>
 </div>
 
 <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    // Danh sách các tên Model để thử lần lượt (Nếu cái 1 lỗi -> thử cái 2 -> thử cái 3)
-    const MODEL_NAMES = [
-        "gemini-1.5-flash",       // Ưu tiên 1: Bản Flash chuẩn
-        "gemini-1.5-flash-001",   // Ưu tiên 2: Bản Flash định danh cụ thể
-        "gemini-1.5-pro",         // Ưu tiên 3: Bản Pro chuẩn
-        "gemini-pro"              // Ưu tiên 4: Bản Legacy (Cũ nhưng trâu bò)
+    // Danh sách model để thử lần lượt. Nếu cái này lỗi 404 -> tự động nhảy sang cái kia.
+    const MODEL_LIST = [
+        "gemini-1.5-flash", 
+        "gemini-1.5-pro", 
+        "gemini-pro" // Bản cũ nhưng siêu ổn định
     ];
 
     async function fileToBase64(file) {
-        return new Promise((resolve) => {
+        return new Promise((r) => {
             const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.onloadend = () => r(reader.result.split(',')[1]);
             reader.readAsDataURL(file);
         });
-    }
-
-    // Hàm thử gọi API với một tên model cụ thể
-    async function tryGenerate(apiKey, modelName, prompt, filePart) {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: modelName });
-        
-        // Thử gửi request
-        const result = await model.generateContent([prompt, filePart]);
-        return result.response.text();
     }
 
     window.startProcess = async () => {
@@ -80,62 +64,54 @@
         const fileInput = document.getElementById('fileInput');
         const log = document.getElementById('statusLog');
         const out = document.getElementById('output');
-        const btn = document.getElementById('btnRun');
+        
+        if (!key || !fileInput.files.length) { alert("Thiếu Key hoặc File!"); return; }
 
-        if (!key || !fileInput.files.length) {
-            alert("Thiếu Key hoặc File!"); return;
-        }
-
-        btn.disabled = true;
+        log.innerHTML = "";
         out.value = "";
-        log.innerHTML = "⏳ Đang khởi động...";
+        document.getElementById('btnRun').disabled = true;
 
         try {
             const file = fileInput.files[0];
-            const filePart = {
-                inlineData: {
-                    data: await fileToBase64(file),
-                    mimeType: file.type
-                }
-            };
-
-            const prompt = `Trích xuất câu hỏi từ đề thi này thành JSON. Với công thức toán dùng LaTeX. Nếu có hình vẽ, hãy mô tả hoặc vẽ SVG (type: svg_code). Trả về JSON thuần.`;
-
-            // VÒNG LẶP DÒ TÌM MODEL
-            let successContent = null;
+            const fileData = await fileToBase64(file);
+            const genAI = new GoogleGenerativeAI(key);
             
-            for (const name of MODEL_NAMES) {
-                log.innerHTML += `<div style="color:blue">🔄 Đang thử model: <b>${name}</b>...</div>`;
+            let success = false;
+
+            // VÒNG LẶP THỬ MODEL
+            for (const modelName of MODEL_LIST) {
+                log.innerHTML += `<div class="log-entry log-process">🔄 Đang thử kết nối: <b>${modelName}</b>...</div>`;
+                
                 try {
-                    successContent = await tryGenerate(key, name, prompt, filePart);
-                    log.innerHTML += `<div class="success">✅ Thành công với model: ${name}!</div>`;
-                    break; // Thoát vòng lặp ngay khi thành công
+                    const model = genAI.getGenerativeModel({ model: modelName });
+                    const result = await model.generateContent([
+                        "Trích xuất nội dung đề thi thành JSON. Dùng LaTeX cho toán. Nếu có hình vẽ hãy mô tả.", 
+                        { inlineData: { data: fileData, mimeType: file.type } }
+                    ]);
+                    
+                    const text = result.response.text();
+                    out.value = text.replace(/```json/g, "").replace(/```/g, "").trim();
+                    log.innerHTML += `<div class="log-entry log-success">✅ THÀNH CÔNG với ${modelName}!</div>`;
+                    success = true;
+                    break; // Thoát vòng lặp ngay
+
                 } catch (e) {
                     console.error(e);
-                    let msg = e.message;
-                    if (msg.includes("404")) msg = "Không tìm thấy (404)";
-                    if (msg.includes("400")) msg = "Key không hợp lệ (400)";
-                    log.innerHTML += `<div class="error">❌ ${name} thất bại: ${msg}</div>`;
-                    
-                    // Nếu lỗi là do KEY sai (400), thì không cần thử các model khác làm gì
-                    if (msg.includes("400")) {
-                        throw new Error("API Key của bạn bị sai. Hãy kiểm tra lại Key!");
+                    let err = e.message;
+                    if (err.includes("400")) {
+                        log.innerHTML += `<div class="log-entry log-error">⛔ SAI KEY! Kiểm tra lại API Key.</div>`;
+                        throw new Error("Key sai"); 
                     }
+                    log.innerHTML += `<div class="log-entry log-error">❌ ${modelName} lỗi: ${err.includes('404') ? 'Không tìm thấy (404)' : err}</div>`;
                 }
             }
 
-            if (successContent) {
-                // Làm sạch JSON
-                const cleanJson = successContent.replace(/```json/g, "").replace(/```/g, "").trim();
-                out.value = cleanJson;
-            } else {
-                throw new Error("Đã thử tất cả các model nhưng đều thất bại! Vui lòng kiểm tra lại tài khoản Google AI Studio.");
-            }
+            if (!success) log.innerHTML += `<div class="log-entry log-error">😭 Tất cả model đều thất bại. Vui lòng tạo Key mới.</div>`;
 
-        } catch (err) {
-            log.innerHTML += `<div class="error">⛔ LỖI NGHIÊM TRỌNG: ${err.message}</div>`;
+        } catch (e) {
+            // Lỗi chung
         } finally {
-            btn.disabled = false;
+            document.getElementById('btnRun').disabled = false;
         }
     };
 </script>
