@@ -3,86 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bài Kiểm Tra Toán</title>
+    <title>Hệ Thống Thi Trực Tuyến</title>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
-        .quiz-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .question-block { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .question-text { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; color: #333; }
-        .options-list { list-style-type: none; padding: 0; }
-        .options-list li { margin: 8px 0; }
-        .option-label { cursor: pointer; display: flex; align-items: center; }
-        .btn-submit { background-color: #28a745; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; }
+        
+        /* CSS cho màn hình Đăng nhập */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 90%; max-width: 400px; text-align: center;
+        }
+        .login-box h2 { margin-top: 0; color: #333; }
+        .login-input {
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd;
+            border-radius: 5px; box-sizing: border-box; font-size: 16px;
+        }
+        .btn-start {
+            width: 100%; padding: 12px; background-color: #764ba2; color: white;
+            border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;
+            transition: background 0.3s;
+        }
+        .btn-start:hover { background-color: #5a3780; }
+
+        /* CSS cho bài thi */
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; display: none; } /* Mặc định ẩn */
+        .header-info {
+            background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .question-block {
+            background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative;
+        }
+        .q-image {
+            max-width: 100%; height: auto; display: block; margin: 10px auto;
+            border: 1px solid #eee; border-radius: 4px;
+        }
+        .options-list { list-style: none; padding: 0; }
+        .options-list li { margin: 10px 0; padding: 10px; border: 1px solid #eee; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        .options-list li:hover { background-color: #f9f9f9; }
+        .options-list li label { cursor: pointer; display: flex; align-items: center; width: 100%; }
+        
+        .feedback { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; }
+        .correct-bg { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .wrong-bg { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .btn-submit {
+            background-color: #28a745; color: white; border: none; padding: 15px 30px;
+            font-size: 18px; border-radius: 5px; cursor: pointer; display: block; width: 100%;
+        }
         .btn-submit:hover { background-color: #218838; }
-        .feedback { margin-top: 10px; font-weight: bold; display: none; }
-        .correct { color: green; }
-        .wrong { color: red; }
-        .explanation { font-style: italic; color: #666; display: none; margin-top: 5px; }
+
     </style>
-    
     <script>
-    MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']] // Cấu hình để nhận diện dấu $ là công thức
-      }
-    };
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
 <body>
 
-<div class="quiz-container">
-    <h1>📝 Đề Ôn Tập Toán 10</h1>
+<div id="login-screen">
+    <div class="login-box">
+        <h2>🚀 Vào Thi Toán</h2>
+        <p style="color: #666; margin-bottom: 20px;">Vui lòng nhập thông tin để bắt đầu</p>
+        <input type="text" id="student-name" class="login-input" placeholder="Họ và tên của bạn" required>
+        <input type="text" id="student-class" class="login-input" placeholder="Lớp (Ví dụ: 10A1)" required>
+        <button class="btn-start" onclick="startExam()">BẮT ĐẦU LÀM BÀI</button>
+    </div>
+</div>
+
+<div class="container" id="exam-interface">
+    <div class="header-info">
+        <div>
+            <h3 style="margin: 0;">Đề Ôn Tập Toán 10</h3>
+            <span id="display-name" style="color: #666;">Học sinh: ...</span>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.9em; color: #888;">Thời gian</div>
+            <strong style="font-size: 1.2em;">45:00</strong>
+        </div>
+    </div>
+
     <div id="quiz-content">Loading...</div>
-    <button class="btn-submit" onclick="checkAnswers()">Nộp bài</button>
-    <div id="result-score" style="margin-top: 20px; font-size: 1.2em; font-weight: bold;"></div>
+    
+    <button class="btn-submit" onclick="checkAnswers()">NỘP BÀI & XEM ĐIỂM</button>
+    <div id="final-result" style="text-align: center; margin-top: 20px; font-size: 1.5em; font-weight: bold; color: #d9534f;"></div>
 </div>
 
 <script>
-    // 1. DÁN NỘI DUNG JSON CỦA BẠN VÀO ĐÂY
-    // (Lưu ý: Tôi lấy ví dụ từ ảnh của bạn)
+    let studentInfo = {};
+
+    // Dữ liệu JSON mẫu (Đã thêm trường 'image')
     const quizData = {
       "part_1": {
-        "title": "PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn.",
         "questions": [
           {
             "id": "Câu 1",
             "question": "Biểu thức nào sau đây là tam thức bậc hai?",
-            "options": {
-              "A": "$f(x)=3x^2+2x-5$",
-              "B": "$f(x)=2x-5$",
-              "C": "$f(x)=3x^2+2x-1$", 
-              "D": "$f(x)=x^3 -x^2 +1$"
-            },
+            "options": { "A": "$3x^2+2x-5$", "B": "$2x-5$", "C": "$3x^2+2x-1$", "D": "$x^3-x^2+1$" },
             "answer": "A",
-            "explanation": "Biểu thức $f(x) = 3x^2+2x-5$ là một tam thức bậc hai."
+            "explanation": "Dựa vào định nghĩa tam thức bậc hai."
           },
           {
             "id": "Câu 2",
-            "question": "Cho các vectơ $\\vec{u} = (-2;1)$, $\\vec{v} = (4;-2)$. Tích vô hướng...",
-            "options": {
-              "A": "-10", "B": "10", "C": "-5", "D": "5" 
-            }, // Ví dụ giả định options
-            "answer": "A",
-            "explanation": "Tính toán theo công thức tích vô hướng..."
+            "question": "Cho hình chóp tam giác đều (như hình bên). Góc giữa cạnh bên và mặt đáy là?",
+            "image": "https://i.ibb.co/wzXVxHK/hinh-chop-mau.png", // Ví dụ link ảnh
+            "options": { "A": "$30^\\circ$", "B": "$45^\\circ$", "C": "$60^\\circ$", "D": "$90^\\circ$" },
+            "answer": "C",
+            "explanation": "Xác định hình chiếu của đỉnh xuống tâm đáy..."
           }
         ]
       }
     };
 
-    // 2. Hàm hiển thị câu hỏi ra màn hình
+    // Hàm Bắt đầu thi
+    function startExam() {
+        const name = document.getElementById('student-name').value.trim();
+        const className = document.getElementById('student-class').value.trim();
+
+        if (!name || !className) {
+            alert("Vui lòng nhập đầy đủ Họ tên và Lớp!");
+            return;
+        }
+
+        studentInfo = { name, className };
+        document.getElementById('display-name').innerText = `Học sinh: ${name} - ${className}`;
+        
+        // Ẩn login, hiện bài thi
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('exam-interface').style.display = 'block';
+        
+        renderQuiz();
+    }
+
+    // Hàm render bài thi (Có xử lý ảnh)
     function renderQuiz() {
         const container = document.getElementById('quiz-content');
-        let htmlContent = `<h3>${quizData.part_1.title}</h3>`;
+        let htmlContent = '';
         
         quizData.part_1.questions.forEach((q, index) => {
+            // Kiểm tra xem có ảnh không, nếu có thì tạo thẻ img
+            const imageHTML = q.image ? `<img src="${q.image}" class="q-image" alt="Hình minh họa">` : '';
+
             htmlContent += `
-                <div class="question-block" id="q-${index}">
-                    <div class="question-text">${q.id}: ${q.question}</div>
-                    <ul class="options-list">
+                <div class="question-block" id="q-block-${index}">
+                    <div class="question-text">
+                        <strong>${q.id}:</strong> ${q.question}
+                    </div>
+                    ${imageHTML} <ul class="options-list">
                         ${Object.entries(q.options).map(([key, value]) => `
                             <li>
-                                <label class="option-label">
+                                <label>
                                     <input type="radio" name="question-${index}" value="${key}">
                                     <span style="margin-left: 10px;"><b>${key}.</b> ${value}</span>
                                 </label>
@@ -90,44 +166,46 @@
                         `).join('')}
                     </ul>
                     <div class="feedback" id="feedback-${index}"></div>
-                    <div class="explanation" id="explain-${index}">Giải thích: ${q.explanation}</div>
                 </div>
             `;
         });
         
         container.innerHTML = htmlContent;
-        // Bắt buộc gọi lệnh này để MathJax render lại công thức toán sau khi chèn HTML
-        MathJax.typeset(); 
+        MathJax.typeset();
     }
 
-    // 3. Hàm chấm điểm
+    // Hàm chấm điểm
     function checkAnswers() {
+        if(!confirm("Bạn có chắc chắn muốn nộp bài không?")) return;
+
         let score = 0;
         const total = quizData.part_1.questions.length;
 
         quizData.part_1.questions.forEach((q, index) => {
             const selected = document.querySelector(`input[name="question-${index}"]:checked`);
             const feedbackDiv = document.getElementById(`feedback-${index}`);
-            const explainDiv = document.getElementById(`explain-${index}`);
             
             feedbackDiv.style.display = 'block';
-            explainDiv.style.display = 'block';
 
             if (selected && selected.value === q.answer) {
                 score++;
-                feedbackDiv.innerHTML = "✅ Chính xác!";
-                feedbackDiv.className = "feedback correct";
+                feedbackDiv.innerHTML = `✅ <b>Chính xác!</b><br>${q.explanation}`;
+                feedbackDiv.className = "feedback correct-bg";
             } else {
-                feedbackDiv.innerHTML = `❌ Sai rồi. Đáp án đúng là: ${q.answer}`;
-                feedbackDiv.className = "feedback wrong";
+                feedbackDiv.innerHTML = `❌ <b>Sai rồi.</b> Đáp án đúng là: ${q.answer}<br><i>Giải thích: ${q.explanation}</i>`;
+                feedbackDiv.className = "feedback wrong-bg";
             }
         });
 
-        document.getElementById('result-score').innerText = `Kết quả: ${score}/${total} câu`;
+        // Cuộn xuống dưới cùng xem điểm
+        const resultDiv = document.getElementById('final-result');
+        resultDiv.innerHTML = `Học sinh: ${studentInfo.name} (${studentInfo.className})<br>Điểm số: ${score}/${total}`;
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+        
+        // Disable nút nộp bài
+        document.querySelector('.btn-submit').disabled = true;
+        document.querySelector('.btn-submit').innerText = "ĐÃ NỘP BÀI";
     }
-
-    // Chạy hàm render khi web tải xong
-    renderQuiz();
 </script>
 
 </body>
