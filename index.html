@@ -50,21 +50,31 @@
         let isFirebaseReady = false;
         let appId = 'default-app-id';
 
+        // Khởi tạo Firebase mạnh mẽ hơn
         try {
-            // Kiểm tra biến môi trường được cung cấp bởi nền tảng
-            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                const firebaseConfig = JSON.parse(__firebase_config);
-                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
+            // 1. Lấy appId từ môi trường
+            if (typeof __app_id !== 'undefined') {
+                appId = __app_id;
+            }
+
+            // 2. Kiểm tra xem Firebase đã được khởi tạo sẵn chưa (Trường hợp môi trường đã init)
+            if (firebase.apps.length > 0) {
                 auth = firebase.auth();
                 db = firebase.firestore();
                 isFirebaseReady = true;
-                console.log("Firebase connected via Environment Config.");
-            } else {
-                console.warn("Chưa tìm thấy cấu hình Firebase. Chạy chế độ Offline/Demo.");
+                console.log("Firebase đã kết nối (Pre-initialized).");
+            } 
+            // 3. Nếu chưa, thử init bằng config từ biến môi trường
+            else if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                db = firebase.firestore();
+                isFirebaseReady = true;
+                console.log("Firebase đã kết nối (Config Init).");
+            } 
+            else {
+                console.warn("Không tìm thấy cấu hình Firebase. Ứng dụng chạy ở chế độ Offline.");
             }
         } catch (e) {
             console.error("Lỗi khởi tạo Firebase:", e);
@@ -451,7 +461,7 @@
         ];
         
         // --- LOGIC HÀM ---
-        const PASSING_SCORE = 5.0; // Đã cập nhật điểm đạt lên 5.0 để logic Không Đạt hoạt động
+        const PASSING_SCORE = 5.0; 
         
         const generateRandomQuiz = () => {
              const mcqPool = QUESTION_BANK.filter(q => q.type === 'mcq');
@@ -789,7 +799,6 @@
                 setUserAnswers(answers);
                 
                 // Lưu kết quả kể cả khi KHÔNG đạt điểm (Miễn là có mạng)
-                // Cải tiến: Đảm bảo user đã được xác thực trước khi lưu
                 if (isFirebaseReady) {
                     let currentUser = user;
                     
