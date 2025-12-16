@@ -20,10 +20,8 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
-    <!-- Lucide Icons -->
+    <!-- Lucide Icons (Dùng phiên bản UMD để tương thích browser) -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Firebase SDK (Modular) - Sẽ import trong module script -->
     
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
@@ -49,13 +47,14 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
+        // Import Firebase từ CDN
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // --- CẤU HÌNH FIREBASE ---
-        // BẠN CẦN THAY THẾ BẰNG CONFIG CỦA RIÊNG BẠN TỪ GITHUB SECRETS HOẶC TRỰC TIẾP
-        // Để an toàn trên GitHub Pages công khai, bạn nên giới hạn domain trong Firebase Console
+        // QUAN TRỌNG: Bạn cần thay thế các giá trị bên dưới bằng thông tin dự án Firebase của bạn.
+        // Nếu để trống hoặc sai, ứng dụng sẽ chạy ở chế độ Offline (không lưu điểm).
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY_HERE",
             authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -65,28 +64,48 @@
             appId: "YOUR_APP_ID"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // Khởi tạo Firebase an toàn
+        let app = null;
+        let auth = null;
+        let db = null;
+        let isFirebaseReady = false;
+
+        try {
+            // Chỉ khởi tạo nếu config đã được điền (không còn là placeholder)
+            if (firebaseConfig.apiKey !== "YOUR_API_KEY_HERE") {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isFirebaseReady = true;
+                console.log("Firebase initialized successfully");
+            } else {
+                console.warn("Firebase config is missing. App running in offline mode.");
+            }
+        } catch (e) {
+            console.error("Firebase initialization error:", e);
+        }
         
-        // App ID dùng chung cho DB
         const appId = "trandaiedu-quiz-app"; 
 
         const { useState, useEffect, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- ICONS (Lucide React không chạy trực tiếp qua CDN dễ dàng, ta dùng thẻ i hoặc svg tay nếu cần, 
-        // hoặc dùng thư viện lucide-react qua UMD nếu có. Ở đây ta dùng text hoặc svg đơn giản thay thế để chạy ngay)
-        const Icon = ({ name, size=24, className }) => {
-             // Để đơn giản hóa cho bản single file, ta dùng text emoji hoặc icon unicode tạm thời
-             // Trong dự án thực tế, bạn nên build từ React project chuẩn
-             const icons = {
-                 user: '👤', lock: '🔒', book: '📚', check: '✅', x: '❌', 
-                 trophy: '🏆', save: '💾', logout: '🚪', list: '📋', 
-                 type: '⌨️', wifi: '📶', wifioff: '📴', alert: '⚠️',
-                 loader: '⏳', retry: '🔄', eyeoff: '🙈'
-             };
-             return <span className={`text-xl ${className}`} style={{fontSize: size}}>{icons[name] || '?'}</span>;
+        // --- ICONS ---
+        // Sử dụng Lucide Icons từ window.lucide
+        const Icon = ({ name, size=24, className="" }) => {
+            const iconRef = useRef(null);
+            
+            useEffect(() => {
+                if (window.lucide && iconRef.current) {
+                   const iconElement = window.lucide.icons[name];
+                   if(iconElement) {
+                       iconRef.current.innerHTML = iconElement.toSvg({ class: className, width: size, height: size });
+                   }
+                }
+            }, [name, size, className]);
+
+            // Fallback nếu Lucide chưa load hoặc lỗi
+            return <span ref={iconRef} className={className} style={{display: 'inline-flex', alignItems: 'center'}}></span>;
         };
 
 
@@ -95,8 +114,7 @@
             const containerRef = useRef(null);
 
             useEffect(() => {
-                if (containerRef.current && text) {
-                    // Render KaTeX
+                if (containerRef.current && text && window.renderMathInElement) {
                     renderMathInElement(containerRef.current, {
                         delimiters: [
                             {left: "$$", right: "$$", display: true},
@@ -138,71 +156,109 @@
         );
         
         const ThuanhImage = () => (
-          <svg width="600" height="400" viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg" className="max-w-full h-auto border rounded bg-white">
-            <defs>
-                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                <polygon points="0 0, 10 3.5, 0 7" fill="black" />
-                </marker>
-            </defs>
-            <rect width="100%" height="100%" fill="white" />
-            <path d="M 50 160 C 150 160, 250 220, 350 220 L 350 250 C 250 250, 150 190, 50 190 Z" fill="#87CEFA" stroke="none" />
-            <rect x="50" y="160" width="300" height="90" fill="none" stroke="#4682B4" strokeWidth="2" />
-            <line x1="50" y1="250" x2="400" y2="250" stroke="black" strokeWidth="2" markerEnd="url(#arrowhead)" />
-            <line x1="50" y1="250" x2="50" y2="100" stroke="black" strokeWidth="2" markerEnd="url(#arrowhead)" />
-            <path d="M 50 160 C 150 160, 250 220, 350 220" fill="none" stroke="black" strokeWidth="1.5" />
-            <path d="M 50 190 C 150 190, 250 250, 350 250" fill="none" stroke="black" strokeWidth="1.5" />
-            <text x="250" y="300" fontFamily="serif" fontSize="18" textAnchor="middle">Hình minh họa hoa văn</text>
-          </svg>
+          <div className="flex justify-center my-4">
+            <svg width="300" height="200" viewBox="0 0 500 350" className="max-w-full h-auto border rounded bg-white">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="black" />
+                    </marker>
+                </defs>
+                <rect width="100%" height="100%" fill="white" />
+                <path d="M 50 160 C 150 160, 250 220, 350 220 L 350 250 C 250 250, 150 190, 50 190 Z" fill="#87CEFA" stroke="none" />
+                <rect x="50" y="160" width="300" height="90" fill="none" stroke="#4682B4" strokeWidth="2" />
+                <line x1="50" y1="250" x2="400" y2="250" stroke="black" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                <line x1="50" y1="250" x2="50" y2="100" stroke="black" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                <text x="250" y="320" fontFamily="serif" fontSize="24" textAnchor="middle">Hình minh họa</text>
+            </svg>
+          </div>
         );
 
 
-        // --- DATA CÂU HỎI ---
+        // --- DATA CÂU HỎI (ĐÃ CẬP NHẬT TỪ 3 FILE) ---
         const QUESTION_BANK = [
-             // MÃ ĐỀ 145 - Phần 1
-            { id: 'd145_q1', type: 'mcq', question: "Họ nguyên hàm của hàm số $f(x)=3x^2+\\sin 2x$ là:", options: ["$x^3+\\cos 2x+C$", "$6x+2\\cos 2x+C$", "$x^3-\\frac{1}{2}\\cos 2x+C$", "$6x+\\frac{1}{2}\\cos 2x+C$"], correct: 2, explanation: "Ta có $\\int (3x^2+\\sin 2x)dx = x^3 - \\frac{1}{2}\\cos 2x + C$." },
-            { id: 'd145_q2', type: 'mcq', question: "Mệnh đề nào sau đây SAI?", options: ["$\\int [f_1(x)+f_2(x)]dx = \\int f_1(x)dx + \\int f_2(x)dx$", "$\\int kf(x)dx = k\\int f(x)dx$ ($k \\ne 0$)", "$\\int f'(x)dx = f(x) + C$", "$\\int [f_1(x).f_2(x)]dx = \\int f_1(x)dx . \\int f_2(x)dx$"], correct: 3, explanation: "Nguyên hàm của tích không bằng tích các nguyên hàm." },
-            // ... (Các câu hỏi khác từ code cũ, copy vào đây)
-            // ĐỂ TIẾT KIỆM KHÔNG GIAN, TÔI CHỈ LẤY VÍ DỤ ĐẠI DIỆN. 
-            // BẠN HÃY COPY TOÀN BỘ MẢNG QUESTION_BANK TỪ FILE quiz_app_tde.jsx VÀO ĐÂY
-            
-             // MÃ ĐỀ 215 - Trích xuất có hình
-            { id: 'd215_q18', type: 'text', question: "Trường muốn làm cửa Parabol cao 2,25m, rộng 3m. Giá 1.500.000đ/m2. Tính số tiền phải trả (đơn vị nghìn đồng).", acceptable: ["6750"], image: <ParabolImage />, explanation: "Diện tích $S = \\frac{2}{3} \\times 3 \\times 2.25 = 4.5 m^2$. Tiền = $4.5 \\times 1.500 = 6.750$ (nghìn đồng)." },
-            
-            // MÃ ĐỀ 317 - Trích xuất có hình
-            { id: 'd317_q17', type: 'text', question: "Thể tích của chi tiết máy (đề 317) bằng bao nhiêu $cm^3$ (làm tròn kết quả đến hàng phần mười)?", acceptable: ["34", "34.0"], image: <MachinePartImage />, explanation: "Dựa trên đáp án trích xuất từ tài liệu: 34." }
+             // --- MÃ ĐỀ 145 ---
+             { id: 'd145_q1', type: 'mcq', question: "Họ nguyên hàm của hàm số $f(x)=3x^2+\\sin 2x$ là:", options: ["$x^3+\\cos 2x+C$", "$6x+2\\cos 2x+C$", "$x^3-\\frac{1}{2}\\cos 2x+C$", "$6x+\\frac{1}{2}\\cos 2x+C$"], correct: 2, explanation: "Ta có $\\int (3x^2+\\sin 2x)dx = x^3 - \\frac{1}{2}\\cos 2x + C$." },
+             { id: 'd145_q2', type: 'mcq', question: "Mệnh đề nào sau đây SAI?", options: ["$\\int [f_1(x)+f_2(x)]dx = \\int f_1(x)dx + \\int f_2(x)dx$", "$\\int kf(x)dx = k\\int f(x)dx$ ($k \\ne 0$)", "$\\int f'(x)dx = f(x) + C$", "$\\int [f_1(x).f_2(x)]dx = \\int f_1(x)dx . \\int f_2(x)dx$"], correct: 3, explanation: "Nguyên hàm của tích không bằng tích các nguyên hàm." },
+             // ... (Các câu hỏi placeholder khác của đề 145)
+             { id: 'd145_q3', type: 'mcq', question: "Tìm nguyên hàm $F(x)$ của hàm số $f(x) = e^x + 2x$ biết $F(0) = \\frac{3}{2}$.", options: ["$F(x) = e^x + x^2 + \\frac{1}{2}$", "$F(x) = e^x + x^2 + \\frac{3}{2}$", "$F(x) = e^x + x^2 + \\frac{5}{2}$", "$F(x) = 2e^x + x^2 - \\frac{1}{2}$"], correct: 0, explanation: "$F(x) = e^x + x^2 + C$. $F(0) = 1 + 0 + C = 1,5 \\Rightarrow C = 0,5$." },
+             { id: 'd145_q17', type: 'text', question: "Diện tích phần được nghệ sĩ tô màu đen có diện tích bằng bao nhiêu centimet vuông? (làm tròn kết quả đến hàng đơn vị)", acceptable: ["2016"], image: <ThuanhImage />, explanation: "Theo đáp án trích xuất từ đề 145, kết quả là 2016." },
+
+             // --- MÃ ĐỀ 215 ---
+             { id: 'd215_q1', type: 'mcq', question: "Họ nguyên hàm của hàm số $f(x)=\\frac{x^2}{2}+2x-5$ là:", options: ["$\\frac{2x^3}{3}+x^2-5x+C$", "$\\frac{x^3}{3}+x^2-5x+C$", "$\\frac{x^3}{6}+x^2-5x+C$", "$\\frac{x^3}{6}+x^2-5x$"], correct: 2, explanation: "$\\int (\\frac{x^2}{2}+2x-5)dx = \\frac{1}{2}\\frac{x^3}{3} + x^2 - 5x + C = \\frac{x^3}{6} + x^2 - 5x + C$." },
+             { id: 'd215_q17', type: 'text', question: "Tính thể tích nước trong cốc biết $V=\\int_{-4}^{4}\\frac{3}{2}(16-x^2)dx$. (Kết quả là số nguyên)", acceptable: ["128"], explanation: "$V = 128$." },
+             { id: 'd215_q18', type: 'text', question: "Trường muốn làm cửa Parabol cao 2,25m, rộng 3m. Giá 1.500.000đ/m2. Tính số tiền phải trả (đơn vị nghìn đồng).", acceptable: ["6750"], image: <ParabolImage />, explanation: "Diện tích $S = \\frac{2}{3} \\times 3 \\times 2.25 = 4.5 m^2$. Tiền = $4.5 \\times 1.500 = 6.750$ (nghìn đồng)." },
+
+             // --- MÃ ĐỀ 317 ---
+             { id: 'd317_q1', type: 'mcq', question: "Trên khoảng $(-\\infty;+\\infty)$, hàm số $F(x)=\\frac{1}{2}\\sin 2x$ là một nguyên hàm của hàm số nào?", options: ["$f(x)=-\\cos 2x$", "$f(x)=\\sin 2x$", "$f(x)=\\cos 2x$", "$f(x)=-\\frac{1}{2}\\cos 2x$"], correct: 2, explanation: "$F'(x) = (\\frac{1}{2}\\sin 2x)' = \\frac{1}{2} . 2\\cos 2x = \\cos 2x$." },
+             { id: 'd317_q17', type: 'text', question: "Thể tích của chi tiết máy (đề 317) bằng bao nhiêu $cm^3$ (làm tròn kết quả đến hàng phần mười)?", acceptable: ["34", "34.0"], image: <MachinePartImage />, explanation: "Dựa trên đáp án trích xuất từ tài liệu: 34." }
         ];
         
         // --- LOGIC HÀM ---
         const PASSING_SCORE = 6.0;
         
-        // (Copy các hàm generateRandomQuiz, calculateScore từ code cũ vào đây)
         const generateRandomQuiz = () => {
-             // Demo lấy ngẫu nhiên 5 câu nếu ngân hàng ít, hoặc logic full
-             return QUESTION_BANK.slice(0, 5); // Tạm thời lấy 5 câu để test
+             // Lấy ngẫu nhiên 5 câu để test giao diện
+             // Khi có full 66 câu, bạn thay bằng logic lấy 22 câu
+             return QUESTION_BANK.slice(0, 5); 
         };
 
         const calculateScore = (currentQuestions, answers) => {
             let score = 0;
+            let totalMaxScore = 0; // Để tính tỷ lệ về thang 10
+
             currentQuestions.forEach(q => {
-                if (q.type === 'mcq' && answers[q.id] === q.correct) score += 0.25;
-                else if (q.type === 'text' && q.acceptable.includes((answers[q.id] || "").trim())) score += 0.5;
-                else if (q.type === 'group_tf') { /* Logic TF */ }
+                let questionMaxScore = 0;
+                let questionScore = 0;
+
+                if (q.type === 'mcq') {
+                    questionMaxScore = 0.25;
+                    if (answers[q.id] === q.correct) questionScore = 0.25;
+                } else if (q.type === 'text') {
+                    questionMaxScore = 0.5;
+                    const userAns = (answers[q.id] || "").trim();
+                    if (q.acceptable.includes(userAns)) questionScore = 0.5;
+                } else if (q.type === 'group_tf') {
+                    questionMaxScore = 1.0;
+                    let correctCount = 0;
+                    const userGroupAns = answers[q.id] || {};
+                    q.subQuestions.forEach(sub => {
+                        if (userGroupAns[sub.id] === sub.correct) correctCount++;
+                    });
+                    if (correctCount === 1) questionScore = 0.1;
+                    else if (correctCount === 2) questionScore = 0.25;
+                    else if (correctCount === 3) questionScore = 0.5;
+                    else if (correctCount === 4) questionScore = 1.0;
+                }
+                
+                score += questionScore;
+                totalMaxScore += questionMaxScore;
             });
-            return score > 10 ? 10 : score; // Demo logic
+            
+            // Quy đổi về thang điểm 10
+            // Nếu tổng điểm tối đa của đề thi < 10 (ví dụ đề test chỉ có 5 câu), ta nhân tỉ lệ
+            const scaledScore = (score / totalMaxScore) * 10;
+            return Math.round(scaledScore * 100) / 100;
         };
 
 
         // --- COMPONENTS ---
-        const WelcomeScreen = ({ onSelectMode }) => (
+        const WelcomeScreen = ({ onSelectMode, isOnline }) => (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-cyan-600 to-blue-800 p-4 text-white">
                 <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-white/20">
                     <h1 className="text-4xl font-bold mb-2">TRANDAIEDU</h1>
                     <h2 className="text-xl mb-8 text-cyan-100 font-medium">CHUYÊN ĐỀ NGUYÊN HÀM TÍCH PHÂN</h2>
+                    
+                    {!isOnline && (
+                        <div className="mb-6 bg-yellow-500/20 text-yellow-200 p-3 rounded-lg text-sm border border-yellow-500/50 flex items-center justify-center gap-2">
+                            <Icon name="alert" size={16}/> Chế độ Offline: Kết quả sẽ không được lưu.
+                        </div>
+                    )}
+
                     <div className="space-y-4">
-                        <button onClick={() => onSelectMode('student')} className="w-full py-4 bg-white text-blue-800 rounded-xl font-bold hover:bg-blue-50 transition-all shadow-lg">
+                        <button onClick={() => onSelectMode('student')} className="w-full py-4 bg-white text-blue-800 rounded-xl font-bold hover:bg-blue-50 transition-all shadow-lg flex items-center justify-center gap-2">
                             <Icon name="user"/> Học Sinh Vào Thi
                         </button>
-                        <button onClick={() => onSelectMode('teacher')} className="w-full py-4 bg-blue-900/50 text-white rounded-xl font-bold hover:bg-blue-900 transition-all border border-blue-400/30">
+                        <button onClick={() => onSelectMode('teacher')} className="w-full py-4 bg-blue-900/50 text-white rounded-xl font-bold hover:bg-blue-900 transition-all border border-blue-400/30 flex items-center justify-center gap-2">
                             <Icon name="lock"/> Giáo Viên Xem Điểm
                         </button>
                     </div>
@@ -210,28 +266,219 @@
             </div>
         );
 
+        const StudentNameInput = ({ onStart }) => {
+            const [name, setName] = useState('');
+            return (
+                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+                    <form onSubmit={(e) => { e.preventDefault(); if(name.trim()) onStart(name); }} className="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">Nhập Thông Tin</h2>
+                        <div className="mb-6">
+                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500" placeholder="Họ và tên..." required />
+                            <p className="text-xs text-green-600 mt-2 flex items-center gap-1"><Icon name="check" size={12}/> Chế độ: Học sinh (Không cần đăng nhập)</p>
+                        </div>
+                        <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors">Bắt Đầu</button>
+                    </form>
+                </div>
+            );
+        };
+
+        const QuizView = ({ studentName, questions, onSubmit, isConnected }) => {
+            const [answers, setAnswers] = useState({});
+            const [isSubmitting, setIsSubmitting] = useState(false);
+
+            useEffect(() => { window.scrollTo(0, 0); }, []);
+
+            const handleMcqChange = (qId, optIdx) => setAnswers(prev => ({ ...prev, [qId]: optIdx }));
+            const handleTextChange = (qId, val) => setAnswers(prev => ({ ...prev, [qId]: val }));
+            
+            // Dummy handlers for TF if needed later
+            const handleTfChange = (qId, subId, val) => {};
+
+            const handleConfirmSubmit = async () => {
+                if(confirm("Bạn có chắc chắn muốn nộp bài?")) {
+                    setIsSubmitting(true);
+                    try { await onSubmit(answers); } catch (error) { setIsSubmitting(false); }
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-100 pb-20 relative">
+                    <div className="bg-white shadow-md p-4 sticky top-0 z-10 border-b border-gray-200">
+                        <div className="max-w-3xl mx-auto flex justify-between items-center">
+                            <div className="font-bold text-blue-700 flex items-center gap-2"><Icon name="user" size={18}/> {studentName}</div>
+                            <div className="flex items-center gap-3">
+                                {isConnected ? <span className="flex items-center gap-1 text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200"><Icon name="wifi" size={14}/> Online</span> : <span className="flex items-center gap-1 text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full border border-red-200 animate-pulse"><Icon name="wifioff" size={14}/> Offline</span>}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="max-w-3xl mx-auto p-4 space-y-8 mt-4">
+                        {questions.map((q, idx) => (
+                            <div key={q.id} className="bg-white rounded-xl shadow-sm p-6">
+                                <div className="mb-3">
+                                    <span className={`inline-block text-xs font-bold px-2 py-1 rounded mb-2 ${q.type === 'mcq' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
+                                        {q.type === 'mcq' ? 'Phần 1: Trắc nghiệm' : 'Phần 3: Trả lời ngắn'}
+                                    </span>
+                                    <div className="font-medium text-gray-800 flex gap-2">
+                                        <span className="font-bold text-blue-600 whitespace-nowrap">Câu {idx + 1}:</span>
+                                        <MathText text={q.question} />
+                                    </div>
+                                    {q.image && <div className="mt-3 flex justify-center">{q.image}</div>}
+                                </div>
+                                
+                                {q.type === 'mcq' && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {q.options.map((opt, optIdx) => (
+                                            <button key={optIdx} onClick={() => handleMcqChange(q.id, optIdx)} className={`p-3 text-left rounded-lg border text-sm transition-all ${answers[q.id] === optIdx ? 'bg-blue-100 border-blue-500 text-blue-800 font-medium ring-1 ring-blue-500' : 'hover:bg-gray-50 border-gray-200'}`}>
+                                                <span className="font-bold mr-2">{String.fromCharCode(65 + optIdx)}.</span>
+                                                <MathText text={opt} />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {q.type === 'text' && (
+                                    <input type="text" value={answers[q.id] || ''} onChange={(e) => handleTextChange(q.id, e.target.value)} className="w-full md:w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nhập đáp án..." />
+                                )}
+                            </div>
+                        ))}
+
+                        <div className="flex justify-center pt-6">
+                            <button onClick={handleConfirmSubmit} disabled={isSubmitting} className={`px-8 py-4 text-white text-lg font-bold rounded-xl shadow-lg flex items-center gap-2 transition-all ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 transform hover:scale-105'}`}>
+                                {isSubmitting ? <><Icon name="loader"/> ĐANG GỬI...</> : <><Icon name="save"/> NỘP BÀI</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SolutionView = ({ questions, answers, score, onRetry }) => {
+            const [openExplain, setOpenExplain] = useState({});
+            const toggleExplain = (id) => setOpenExplain(prev => ({ ...prev, [id]: !prev[id] }));
+            const isPassed = score >= PASSING_SCORE;
+
+            return (
+                <div className={`min-h-screen pb-20 ${isPassed ? 'bg-green-50' : 'bg-red-50'}`}>
+                    <div className={`shadow p-6 text-center mb-6 ${isPassed ? 'bg-white' : 'bg-white border-b-4 border-red-500'}`}>
+                        <div className="flex justify-center mb-2">
+                             {isPassed ? <Icon name="trophy" size={56} className="text-yellow-500"/> : <Icon name="alert" size={56} className="text-red-500"/>}
+                        </div>
+                        <h2 className={`text-2xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{isPassed ? "Chúc Mừng! Bạn Đã Vượt Qua" : "Chưa Đạt Yêu Cầu"}</h2>
+                        <div className={`mt-4 inline-block px-6 py-3 rounded-xl border ${isPassed ? 'bg-green-100 border-green-200' : 'bg-red-100 border-red-200'}`}>
+                            <span className="text-gray-600 uppercase text-xs font-bold block">Tổng Điểm</span>
+                            <span className={`text-4xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{score.toFixed(2)}<span className="text-xl text-gray-500">/10</span></span>
+                        </div>
+                        <p className="text-gray-600 mt-3 text-sm max-w-md mx-auto">{isPassed ? "Kết quả đã được lưu. Hãy xem lại lời giải chi tiết bên dưới." : `Bạn cần đạt tối thiểu ${PASSING_SCORE} điểm. Kết quả này KHÔNG được lưu. Hãy bấm nút "Làm lại đề mới" ở cuối trang.`}</p>
+                    </div>
+
+                    {isPassed ? (
+                        <div className="max-w-3xl mx-auto p-4 space-y-6">
+                            <h3 className="font-bold text-gray-700 flex items-center gap-2 mb-4"><Icon name="check" size={20}/> Chi Tiết Bài Làm & Lời Giải</h3>
+                            {questions.map((q, idx) => {
+                                const isOpen = openExplain[q.id];
+                                return (
+                                    <div key={q.id} className="bg-white rounded-lg shadow-sm border-l-4 border-blue-400 overflow-hidden">
+                                        <div className="p-4 cursor-pointer" onClick={() => toggleExplain(q.id)}>
+                                            <div className="flex justify-between items-start">
+                                                <div className="font-medium text-gray-800 flex-1 flex gap-2"><span className="font-bold whitespace-nowrap">Câu {idx + 1}:</span> <MathText text={q.question} /></div>
+                                            </div>
+                                            <div className="text-right text-xs text-blue-500 mt-2">Xem chi tiết ý đúng/sai ▼</div>
+                                        </div>
+                                        {isOpen && (
+                                            <div className="bg-blue-50 p-4 text-sm text-blue-900 border-t border-blue-100">
+                                                {q.image && <div className="mb-4 flex justify-center">{q.image}</div>}
+                                                <span className="font-bold block mb-1">💡 Lời giải chi tiết:</span>
+                                                <MathText text={q.explanation} />
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="max-w-md mx-auto p-8 text-center text-gray-500">
+                            <div className="flex justify-center mb-4"><Icon name="eyeoff" size={64} className="text-gray-300"/></div>
+                            <p className="text-lg font-medium text-gray-600 mb-2">Chế độ ôn tập</p>
+                            <p className="text-sm">Hệ thống đã ẩn toàn bộ câu hỏi và lời giải để đảm bảo tính khách quan khi bạn làm lại đề.</p>
+                        </div>
+                    )}
+                    <div className="flex justify-center pt-6 pb-10">
+                        {isPassed ? 
+                            <button onClick={() => window.location.reload()} className="px-8 py-3 bg-gray-600 text-white rounded-lg font-bold hover:bg-gray-700 shadow-lg flex items-center gap-2"><Icon name="logout"/> Về trang chủ</button> :
+                            <button onClick={onRetry} className="px-8 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 shadow-lg flex items-center gap-2 animate-bounce"><Icon name="retry"/> Làm lại đề mới</button>
+                        }
+                    </div>
+                </div>
+            );
+        };
+
+        const TeacherDashboard = ({ onLogout }) => (
+             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+                 <div className="bg-white p-8 rounded-xl shadow text-center">
+                     <h2 className="text-xl font-bold mb-4">Khu vực Giáo viên</h2>
+                     <p className="text-gray-600 mb-6">Tính năng xem bảng điểm yêu cầu kết nối Firebase.</p>
+                     <button onClick={onLogout} className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">Đăng xuất</button>
+                 </div>
+             </div>
+        );
+
         // --- MAIN APP ---
         const App = () => {
             const [view, setView] = useState('welcome');
             const [user, setUser] = useState(null);
+            const [studentName, setStudentName] = useState('');
+            const [currentQuestions, setCurrentQuestions] = useState([]);
+            const [finalScore, setFinalScore] = useState(0);
+            const [userAnswers, setUserAnswers] = useState({});
 
             useEffect(() => {
-                // Auth ẩn danh để ghi điểm
-                signInAnonymously(auth).catch((error) => {
-                    console.warn("Lỗi đăng nhập ẩn danh:", error);
-                });
-                
-                const unsubscribe = onAuthStateChanged(auth, (u) => {
-                    if (u) setUser(u);
-                });
-                return () => unsubscribe();
+                if (isFirebaseReady && auth) {
+                    signInAnonymously(auth).catch(e => console.warn(e));
+                    const unsubscribe = onAuthStateChanged(auth, (u) => { if (u) setUser(u); });
+                    return () => unsubscribe();
+                }
             }, []);
+
+            const startNewQuiz = (name) => {
+                setStudentName(name);
+                const newQuestions = generateRandomQuiz();
+                setCurrentQuestions(newQuestions);
+                setView('quiz');
+            };
+
+            const handleRetry = () => {
+                const newQuestions = generateRandomQuiz();
+                setCurrentQuestions(newQuestions);
+                setView('quiz');
+            };
+
+            const handleSubmitQuiz = async (answers) => {
+                const score = calculateScore(currentQuestions, answers);
+                setFinalScore(score);
+                setUserAnswers(answers);
+                
+                if (score >= PASSING_SCORE && isFirebaseReady && user) {
+                    try {
+                        const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
+                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'quiz_results_conditional_prob'), {
+                            name: studentName, score: score, 
+                            questionIds: currentQuestions.map(q => q.id),
+                            answers: sanitizedAnswers, 
+                            timestamp: new Date().toISOString()
+                        });
+                    } catch (error) { console.error("Lỗi Firestore:", error); }
+                }
+                setView('result'); 
+            };
 
             return (
                 <div>
-                    {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'quiz' : 'teacher')} />}
-                    {view === 'quiz' && <div className="text-center p-10">Phần thi trắc nghiệm (Copy code QuizView vào đây)...</div>}
-                    {view === 'teacher' && <div className="text-center p-10">Phần giáo viên (Copy code TeacherDashboard vào đây)...</div>}
+                    {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'teacher')} isOnline={isFirebaseReady} />}
+                    {view === 'name' && <StudentNameInput onStart={startNewQuiz} />}
+                    {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} isConnected={isFirebaseReady} />}
+                    {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={handleRetry} />}
+                    {view === 'teacher' && <TeacherDashboard onLogout={() => setView('welcome')} />}
                 </div>
             );
         };
