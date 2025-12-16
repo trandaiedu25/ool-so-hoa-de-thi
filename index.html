@@ -65,7 +65,6 @@
                         console.log("Firebase initialized via config string.");
                     } else {
                         // Fallback: Kiểm tra nếu config đã là object toàn cục (hiếm gặp nhưng có thể)
-                        console.warn("Chưa tìm thấy config Firebase. Đang chờ...");
                         return false;
                     }
                 }
@@ -83,7 +82,7 @@
         };
 
         // Gọi khởi tạo lần đầu
-        let isGlobalFirebaseReady = initializeFirebase();
+        initializeFirebase();
 
         const COLLECTION_NAME = "quiz_results_math12_hk1";
 
@@ -515,12 +514,11 @@
             return 0;
         };
         
-        const WelcomeScreen = ({ onSelectMode, isOnline }) => (
+        const WelcomeScreen = ({ onSelectMode }) => (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-cyan-600 to-blue-800 p-4 text-white animate-fade-in">
                 <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-white/20">
                     <h1 className="text-4xl font-bold mb-2">TRANDAIEDU</h1>
                     <h2 className="text-xl mb-8 text-cyan-100 font-medium">ĐỀ THI HỌC KỲ 1 - TOÁN 12</h2>
-                    {!isOnline && (<div className="mb-6 bg-yellow-500/20 text-yellow-200 p-3 rounded-lg text-sm border border-yellow-500/50 flex items-center justify-center gap-2"><Icon name="alert-triangle" size={16}/> Chế độ Offline: Kết quả sẽ không được lưu.</div>)}
                     <div className="space-y-4">
                         <button onClick={() => onSelectMode('student')} className="w-full py-4 bg-white text-blue-800 rounded-xl font-bold hover:bg-blue-50 transition-all shadow-lg flex items-center justify-center gap-2"><Icon name="user"/> Học Sinh Vào Thi</button>
                         <button onClick={() => onSelectMode('teacher')} className="w-full py-4 bg-blue-900/50 text-white rounded-xl font-bold hover:bg-blue-900 transition-all border border-blue-400/30 flex items-center justify-center gap-2"><Icon name="lock"/> Giáo Viên Xem Điểm</button>
@@ -545,7 +543,7 @@
             );
         };
 
-        const QuizView = ({ studentName, questions, onSubmit, isConnected }) => {
+        const QuizView = ({ studentName, questions, onSubmit }) => {
             const [answers, setAnswers] = useState({});
             const [isSubmitting, setIsSubmitting] = useState(false);
             useEffect(() => { window.scrollTo(0, 0); }, []);
@@ -564,9 +562,6 @@
                     <div className="bg-white shadow-md p-4 sticky top-0 z-10 border-b border-gray-200">
                         <div className="max-w-3xl mx-auto flex justify-between items-center">
                             <div className="font-bold text-blue-700 flex items-center gap-2"><Icon name="user" size={18}/> {studentName}</div>
-                            <div className="flex items-center gap-3">
-                                {isConnected ? <span className="flex items-center gap-1 text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200"><Icon name="wifi" size={14}/> Online</span> : <span className="flex items-center gap-1 text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full border border-red-200 animate-pulse"><Icon name="wifi-off" size={14}/> Offline</span>}
-                            </div>
                         </div>
                     </div>
                     <div className="max-w-3xl mx-auto p-4 space-y-8 mt-4">
@@ -733,7 +728,6 @@
                     <div className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
                         <div className="flex items-center gap-3">
                             <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="list" className="text-blue-600"/> Bảng Điểm</h1>
-                            {!db && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded border border-yellow-200">Chế độ Demo (Dữ liệu mẫu)</span>}
                         </div>
                         <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="log-out" size={18}/> Đăng xuất</button>
                     </div>
@@ -767,16 +761,9 @@
             const [currentQuestions, setCurrentQuestions] = useState([]);
             const [finalScore, setFinalScore] = useState(0);
             const [userAnswers, setUserAnswers] = useState({});
-            const [isOnline, setIsOnline] = useState(isGlobalFirebaseReady);
 
-            // Auth Logic chính xác: Ưu tiên Custom Token trước, sau đó mới đến Anonymous
             useEffect(() => {
-                // Thử init lại nếu lần đầu chưa được
-                if (!isOnline) {
-                    const ready = initializeFirebase();
-                    if (ready) setIsOnline(true);
-                }
-
+                initializeFirebase();
                 if (auth) {
                     const initAuth = async () => {
                         try {
@@ -813,29 +800,21 @@
                 setFinalScore(score);
                 setUserAnswers(answers);
                 
-                // Thử kết nối lại nếu mất mạng
+                // Đảm bảo Firebase sẵn sàng
                 if (!db) initializeFirebase();
 
-                // Lưu kết quả kể cả khi KHÔNG đạt điểm (Miễn là có kết nối DB)
                 if (db) {
                     let currentUser = user;
-                    
-                    // Nếu user chưa sẵn sàng, thử đăng nhập ẩn danh ngay lập tức
                     if (!currentUser && auth) {
                          try {
-                             console.log("User not ready, attempting anonymous auth...");
                              const cred = await auth.signInAnonymously();
                              currentUser = cred.user;
-                         } catch (e) {
-                             console.error("Auth error during submit:", e);
-                         }
+                         } catch (e) { console.error("Auth error:", e); }
                     }
 
-                    // Chỉ cần có auth (ẩn danh hoặc token) là lưu được
-                    if (currentUser || auth.currentUser) {
+                    if (currentUser || (auth && auth.currentUser)) {
                         try {
                             const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-                            // Sử dụng đúng đường dẫn: /artifacts/{appId}/public/data/{COLLECTION_NAME}
                             await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
                                 name: studentName, 
                                 score: score, 
@@ -843,12 +822,8 @@
                                 answers: sanitizedAnswers, 
                                 timestamp: new Date().toISOString()
                             });
-                            console.log("Saved result successfully.");
-                        } catch (error) { 
-                            console.error("Lỗi lưu kết quả Firestore:", error); 
-                        }
-                    } else {
-                        console.warn("Cannot save score: User authentication failed.");
+                            console.log("Saved.");
+                        } catch (error) { console.error("Lỗi lưu:", error); }
                     }
                 }
                 setView('result'); 
@@ -856,9 +831,9 @@
 
             return (
                 <div>
-                    {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'login')} isOnline={isOnline} />}
+                    {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'login')} />}
                     {view === 'name' && <StudentNameInput onStart={startNewQuiz} />}
-                    {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} isConnected={isOnline} />}
+                    {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} />}
                     {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={handleRetry} />}
                     {view === 'login' && <TeacherLogin onLogin={() => setView('teacher')} onBack={() => setView('welcome')} />}
                     {view === 'teacher' && <TeacherDashboard onLogout={() => setView('welcome')} />}
