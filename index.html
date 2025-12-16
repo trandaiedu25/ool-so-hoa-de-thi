@@ -53,7 +53,6 @@
         let db = null;
         let auth = null;
         let isFirebaseReady = false;
-        const appId = "math12_hk1"; // Unique ID for this specific quiz
 
         try {
             if (firebaseConfig.apiKey !== "YOUR_API_KEY_HERE" && window.firebase) {
@@ -102,389 +101,411 @@
             return <span ref={containerRef} className={className} dangerouslySetInnerHTML={{__html: text}} />;
         };
 
-        // --- SVG IMAGES (Converted from Text to React Components) ---
+        // --- SVG IMAGES (Converted from Exam Content) ---
         
-        const ImageQ1 = () => (
+        const ArrowDefs = () => (
+            <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#000" />
+                </marker>
+            </defs>
+        );
+
+        const GraphQ2 = () => (
             <div className="flex justify-center my-4">
-                <svg width="300" height="200" viewBox="0 0 300 200" className="bg-white border rounded">
-                    <line x1="20" y1="180" x2="280" y2="180" stroke="black" strokeWidth="1.5"/>
-                    <line x1="150" y1="20" x2="150" y2="190" stroke="black" strokeWidth="1.5"/>
-                    <text x="270" y="175" fontSize="12">x</text>
-                    <text x="155" y="30" fontSize="12">y</text>
-                    <text x="140" y="195" fontSize="12">O</text>
-                    <path d="M 50 190 Q 90 -20 150 50 T 250 190" stroke="blue" strokeWidth="2" fill="none" strokeDasharray="5,0"/>
-                    <path d="M 70 180 C 110 180, 110 60, 150 60 S 190 140, 230 140 S 260 20, 260 20" stroke="blue" strokeWidth="2" fill="none" transform="translate(-40, 20)"/>
-                    <line x1="110" y1="80" x2="110" y2="180" stroke="gray" strokeDasharray="4"/>
-                    <text x="105" y="195" fontSize="12">-1</text>
-                    <line x1="190" y1="160" x2="190" y2="180" stroke="gray" strokeDasharray="4"/>
-                    <text x="185" y="195" fontSize="12">1</text>
+                <svg width="200" height="200" viewBox="0 0 200 200" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <ArrowDefs />
+                    <line x1="20" y1="100" x2="180" y2="100" stroke="black" markerEnd="url(#arrow)" />
+                    <line x1="100" y1="180" x2="100" y2="20" stroke="black" markerEnd="url(#arrow)" />
+                    <text x="180" y="115" fontSize="12">x</text>
+                    <text x="110" y="20" fontSize="12">y</text>
+                    <text x="90" y="115" fontSize="12">O</text>
+                    <line x1="130" y1="98" x2="130" y2="102" stroke="black" /> <text x="128" y="115" fontSize="10">1</text>
+                    <line x1="70" y1="98" x2="70" y2="102" stroke="black" /> <text x="65" y="115" fontSize="10">-1</text>
+                    <path d="M 40 40 Q 70 160 100 100 T 160 160" stroke="blue" strokeWidth="2" fill="none" />
+                    <circle cx="70" cy="140" r="3" fill="red" /> <circle cx="130" cy="60" r="3" fill="red" /> 
+                    <line x1="130" y1="100" x2="130" y2="60" stroke="gray" strokeDasharray="4"/>
+                    <line x1="100" y1="60" x2="130" y2="60" stroke="gray" strokeDasharray="4"/>
+                    <text x="85" y="65" fontSize="10">2</text>
                 </svg>
             </div>
         );
 
-        const ImageQ5 = () => (
+        const GraphQ4 = () => (
             <div className="flex justify-center my-4">
-                <svg width="300" height="200" viewBox="0 0 300 200" className="bg-white border rounded">
-                    <defs>
-                        <marker id="arrowQ5" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
-                            <path d="M0,0 L0,6 L9,3 z" fill="red" />
-                        </marker>
-                    </defs>
-                    <polygon points="50,150 150,150 200,100 100,100" fill="none" stroke="black" /> 
-                    <polygon points="50,50 150,50 200,0 100,0" fill="none" stroke="black" transform="translate(0, 50)" /> 
-                    <line x1="50" y1="150" x2="50" y2="100" stroke="black" /> 
-                    <line x1="150" y1="150" x2="150" y2="100" stroke="black" /> 
-                    <line x1="200" y1="100" x2="200" y2="50" stroke="black" /> 
-                    <line x1="100" y1="100" x2="100" y2="50" stroke="black" strokeDasharray="4" /> 
-                    <line x1="50" y1="150" x2="150" y2="150" stroke="red" strokeWidth="2" markerEnd="url(#arrowQ5)" /> 
-                    <text x="40" y="165">A</text> <text x="160" y="165">B</text>
-                    <text x="210" y="110">C</text> <text x="90" y="110">D</text>
-                    <text x="40" y="100">A'</text> <text x="160" y="100">B'</text>
-                    <text x="210" y="50">C'</text> <text x="90" y="50">D'</text>
+                <svg width="200" height="200" viewBox="0 0 200 200" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <line x1="20" y1="100" x2="180" y2="100" stroke="black" />
+                    <line x1="100" y1="180" x2="100" y2="20" stroke="black" />
+                    <path d="M 40 20 C 60 180, 80 180, 100 80 C 120 180, 140 180, 160 20" stroke="blue" strokeWidth="2" fill="none" />
                 </svg>
             </div>
         );
 
-        const ImageQ7 = () => (
+        const BoxQ7 = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white border rounded">
-                    <rect x="50" y="80" width="80" height="80" fill="none" stroke="black"/> 
-                    <polyline points="50,80 80,50 160,50 160,130 130,160" fill="none" stroke="black"/>
-                    <line x1="130" y1="80" x2="160" y2="50" stroke="black"/>
-                    <line x1="80" y1="50" x2="80" y2="130" stroke="black" strokeDasharray="4"/> 
-                    <line x1="50" y1="160" x2="80" y2="130" stroke="black" strokeDasharray="4"/> 
-                    <line x1="80" y1="130" x2="160" y2="130" stroke="black" strokeDasharray="4"/> 
-                    <line x1="50" y1="160" x2="130" y2="160" stroke="red" strokeWidth="2"/> 
-                    <line x1="80" y1="50" x2="160" y2="50" stroke="blue" strokeWidth="2"/> 
+                <svg width="200" height="200" viewBox="0 0 200 200" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <polygon points="60,60 140,60 140,140 60,140" fill="none" stroke="black" strokeDasharray="4" />
+                    <polygon points="40,80 120,80 120,160 40,160" fill="none" stroke="black" strokeWidth="1.5"/>
+                    <line x1="40" y1="80" x2="60" y2="60" stroke="black" strokeDasharray="4" />
+                    <line x1="120" y1="80" x2="140" y2="60" stroke="black" strokeWidth="1.5" />
+                    <line x1="120" y1="160" x2="140" y2="140" stroke="black" strokeWidth="1.5" />
+                    <line x1="40" y1="160" x2="60" y2="140" stroke="black" strokeDasharray="4" />
+                    <text x="40" y="175">A</text> <text x="120" y="175">B</text>
+                    <text x="145" y="145">C</text> <text x="65" y="145">D</text>
+                    <text x="35" y="80">A'</text> <text x="125" y="80">B'</text>
+                    <text x="145" y="60">C'</text> <text x="55" y="60">D'</text>
                 </svg>
             </div>
         );
 
-        const ImageQ11 = () => (
+        const ScatterQ11 = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white border rounded">
-                    <line x1="20" y1="100" x2="180" y2="100" stroke="black"/> 
-                    <line x1="100" y1="20" x2="100" y2="180" stroke="black"/> 
-                    <path d="M 95 180 Q 90 140 60 110" stroke="blue" fill="none"/> 
-                    <path d="M 20 80 Q 80 80 90 20" stroke="blue" fill="none" />
-                    <path d="M 110 180 Q 120 120 180 120" stroke="blue" fill="none" />
-                    <line x1="95" y1="20" x2="95" y2="180" stroke="gray" strokeDasharray="2" /> 
-                    <line x1="20" y1="95" x2="180" y2="95" stroke="gray" strokeDasharray="2" /> 
+                <svg width="200" height="200" viewBox="0 0 200 200" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <line x1="20" y1="180" x2="180" y2="180" stroke="black" />
+                    <line x1="20" y1="180" x2="20" y2="20" stroke="black" />
+                    <text x="180" y="195">X</text> <text x="10" y="30">Y</text>
+                    <circle cx="40" cy="160" r="2" fill="black" />
+                    <circle cx="50" cy="150" r="2" fill="black" />
+                    <circle cx="70" cy="130" r="2" fill="black" />
+                    <circle cx="90" cy="110" r="2" fill="black" />
+                    <circle cx="110" cy="90" r="2" fill="black" />
+                    <circle cx="130" cy="80" r="2" fill="black" />
+                    <circle cx="150" cy="60" r="2" fill="black" />
                 </svg>
             </div>
         );
 
-        const ImageTF1 = () => (
+        const GraphPart2Q1 = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white border rounded">
-                    <line x1="20" y1="100" x2="180" y2="100" stroke="black"/>
-                    <line x1="100" y1="20" x2="100" y2="180" stroke="black"/>
-                    <line x1="130" y1="20" x2="130" y2="180" stroke="red" strokeDasharray="4"/>
-                    <text x="135" y="190" fontSize="10" fill="red">x=1</text>
-                    <line x1="20" y1="70" x2="180" y2="70" stroke="red" strokeDasharray="4"/>
-                    <text x="25" y="65" fontSize="10" fill="red">y=2</text>
-                    <path d="M 20 85 Q 100 90 125 180" stroke="blue" fill="none"/>
-                    <path d="M 135 20 Q 140 50 180 60" stroke="blue" fill="none"/>
+                <svg width="200" height="200" viewBox="0 0 200 200" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <ArrowDefs />
+                    <line x1="10" y1="100" x2="190" y2="100" stroke="black" strokeWidth="1" markerEnd="url(#arrow)" />
+                    <line x1="100" y1="190" x2="100" y2="10" stroke="black" strokeWidth="1" markerEnd="url(#arrow)" />
+                    <line x1="120" y1="10" x2="120" y2="190" stroke="gray" strokeDasharray="4" />
+                    <line x1="20" y1="160" x2="180" y2="0" stroke="gray" strokeDasharray="4" /> 
+                    <path d="M 125 10 C 130 50, 150 80, 190 90" stroke="blue" fill="none" />
+                    <path d="M 115 190 C 110 150, 90 120, 10 110" stroke="blue" fill="none" />
                 </svg>
             </div>
         );
 
-        const ImageTF2 = () => (
+        const TetraPart2Q2 = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white border rounded">
-                    <line x1="100" y1="100" x2="180" y2="150" stroke="black"/> 
-                    <line x1="100" y1="100" x2="20" y2="150" stroke="black"/> 
-                    <line x1="100" y1="100" x2="100" y2="20" stroke="black"/> 
-                    <text x="180" y="160">y</text> <text x="10" y="160">x</text> <text x="105" y="15">z</text>
-                    <path d="M 60 130 L 150 130 L 100 40 Z" fill="none" stroke="blue"/> 
-                    <line x1="100" y1="40" x2="130" y2="20" stroke="blue"/> 
+                <svg width="200" height="200" viewBox="0 0 200 200" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <polygon points="100,20 40,150 160,150" fill="none" stroke="black" />
+                    <line x1="100" y1="20" x2="100" y2="120" stroke="black" strokeDasharray="4" /> 
+                    <line x1="40" y1="150" x2="130" y2="100" stroke="black" strokeDasharray="4" /> 
+                    <line x1="160" y1="150" x2="130" y2="100" stroke="black" strokeDasharray="4" />
+                    <line x1="100" y1="20" x2="130" y2="100" stroke="black" /> 
+                    <path d="M 100 20 L 40 140 L 160 140 Z" fill="none" stroke="black" />
+                    <path d="M 100 20 L 100 100" stroke="black" strokeDasharray="4" /> 
                 </svg>
             </div>
         );
 
-        const ImageTF4 = () => (
+        const ConcPart2Q4 = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="250" viewBox="0 0 200 250" className="bg-white border rounded">
-                    <rect x="50" y="100" width="100" height="120" fill="none" stroke="black"/>
-                    <path d="M 50 100 A 50 50 0 0 1 150 100" fill="none" stroke="black"/>
-                    <text x="40" y="230">D</text> <text x="160" y="230">C</text>
-                    <text x="40" y="100">A</text> <text x="160" y="100">B</text>
+                <svg width="200" height="150" viewBox="0 0 200 150" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <ArrowDefs />
+                    <line x1="20" y1="130" x2="180" y2="130" stroke="black" markerEnd="url(#arrow)"/>
+                    <line x1="20" y1="130" x2="20" y2="10" stroke="black" markerEnd="url(#arrow)"/>
+                    <text x="180" y="145">t</text> <text x="10" y="20">C(t)</text>
+                    <path d="M 20 130 Q 50 30 80 80 T 180 120" stroke="blue" fill="none" />
                 </svg>
             </div>
         );
 
-        const ImageShort3 = () => (
+        const BoxPart3Q1 = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white border rounded">
-                    <defs>
-                        <marker id="arrowShort3" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
-                            <path d="M0,0 L0,6 L9,3 z" fill="black" />
-                        </marker>
-                    </defs>
-                    <line x1="100" y1="100" x2="160" y2="100" stroke="black" strokeWidth="2" markerEnd="url(#arrowShort3)"/> <text x="165" y="100">b</text>
-                    <line x1="100" y1="100" x2="140" y2="60" stroke="black" strokeWidth="2" markerEnd="url(#arrowShort3)"/> <text x="145" y="60">a</text>
-                    <text x="90" y="110">O</text>
+                <svg width="200" height="200" viewBox="0 0 200 200" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <rect x="40" y="40" width="120" height="120" fill="lightgray" stroke="black" />
+                    <rect x="40" y="40" width="30" height="30" fill="white" stroke="black" strokeDasharray="2" /> 
+                    <rect x="130" y="40" width="30" height="30" fill="white" stroke="black" strokeDasharray="2" />
+                    <rect x="40" y="130" width="30" height="30" fill="white" stroke="black" strokeDasharray="2" />
+                    <rect x="130" y="130" width="30" height="30" fill="white" stroke="black" strokeDasharray="2" />
+                    <line x1="70" y1="70" x2="130" y2="70" stroke="black" strokeDasharray="4" />
+                    <line x1="70" y1="130" x2="130" y2="130" stroke="black" strokeDasharray="4" />
+                    <line x1="70" y1="70" x2="70" y2="130" stroke="black" strokeDasharray="4" />
+                    <line x1="130" y1="70" x2="130" y2="130" stroke="black" strokeDasharray="4" />
+                    <text x="50" y="60" fontSize="10">x</text>
                 </svg>
             </div>
         );
 
-        const ImageShort4 = () => (
+        const HistPart3Q4 = () => (
             <div className="flex justify-center my-4">
-                <svg width="300" height="200" viewBox="0 0 300 200" className="bg-white border rounded">
-                    <line x1="30" y1="180" x2="280" y2="180" stroke="black"/> <line x1="30" y1="20" x2="30" y2="180" stroke="black"/> <text x="270" y="170">v</text>
-                    <text x="40" y="30">C</text>
-                    <path d="M 40 20 Q 80 150 150 150 T 260 20" stroke="green" fill="none"/>
-                    <text x="140" y="170">vmin</text>
+                <svg width="200" height="100" viewBox="0 0 200 100" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <rect x="20" y="80" width="30" height="10" stroke="black" fill="white"/>
+                    <rect x="50" y="60" width="30" height="20" stroke="black" fill="white"/>
+                    <rect x="80" y="40" width="30" height="40" stroke="black" fill="gray"/> 
+                    <rect x="110" y="60" width="30" height="20" stroke="black" fill="white"/>
                 </svg>
             </div>
         );
 
-        const ImageShort6 = () => (
+        const ForcePart3Q5 = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="300" viewBox="0 0 200 300" className="bg-white border rounded">
-                    <polygon points="50,250 150,250 100,200" fill="none" stroke="black"/> <polygon points="50,100 150,100 100,50" fill="none" stroke="black"/> <line x1="50" y1="250" x2="50" y2="100" stroke="black"/>
-                    <line x1="150" y1="250" x2="150" y2="100" stroke="black"/>
-                    <line x1="100" y1="200" x2="100" y2="50" stroke="black" strokeDasharray="4"/> <line x1="50" y1="250" x2="150" y2="250" stroke="black"/> <circle cx="100" cy="250" r="2" fill="red"/> <text x="100" y="270">M</text>
-                    <circle cx="100" cy="50" r="2" fill="red"/> <text x="100" y="40">A'</text>
-                    <line x1="100" y1="50" x2="100" y2="250" stroke="red" strokeDasharray="4"/> <line x1="100" y1="200" x2="100" y2="250" stroke="black" strokeDasharray="4"/> 
+                <svg width="200" height="200" viewBox="0 0 200 200" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <ArrowDefs />
+                    <line x1="100" y1="100" x2="100" y2="40" stroke="black" markerEnd="url(#arrow)"/> <text x="105" y="50">F1</text>
+                    <line x1="100" y1="100" x2="160" y2="100" stroke="black" markerEnd="url(#arrow)"/> <text x="165" y="105">F2</text>
+                    <line x1="100" y1="100" x2="40" y2="160" stroke="red" markerEnd="url(#arrow)"/> <text x="45" y="170">F3</text>
+                    <circle cx="100" cy="100" r="2" fill="black"/>
                 </svg>
             </div>
         );
 
-        // --- QUESTION BANK (NEW CONTENT) ---
+        const GraphPart3Q6 = () => (
+            <div className="flex justify-center my-4">
+                <svg width="150" height="100" viewBox="0 0 150 100" className="border border-gray-200 bg-white rounded shadow-sm">
+                    <path d="M 10 90 Q 30 70 50 10" stroke="gray" fill="none" strokeDasharray="2"/>
+                    <path d="M 70 90 Q 90 30 110 10" stroke="gray" fill="none" strokeDasharray="2"/>
+                </svg>
+            </div>
+        );
+
+        // --- QUESTION BANK (NEW EXAM CONTENT) ---
         const QUESTION_BANK = [
-            // --- PHẦN 1: TRẮC NGHIỆM (12 câu) ---
+            // --- PHẦN I: TRẮC NGHIỆM (12 Câu) ---
             { 
                 id: 'p1_q1', type: 'mcq', 
-                question: "Cho hàm số $y=f(x)$ có đồ thị như hình vẽ bên dưới. Hàm số đã cho đồng biến trên khoảng nào dưới đây?", 
-                options: ["$(-\\infty; -1)$", "$(-1; 1)$", "$(1; +\\infty)$", "$(0; 1)$"], 
+                question: "Cho hàm số $y=f(x)$ có bảng biến thiên như sau:<br/>$$ \\begin{array}{|c|ccccccc|} \\hline x & -\\infty & & -1 & & 3 & & +\\infty \\\\ \\hline y' & & + & 0 & - & 0 & + & \\\\ \\hline y & & & 2 & & & & +\\infty \\\\ & -\\infty & & & \\searrow & & \\nearrow & \\\\ & & & & & -4 & & \\\\ \\hline \\end{array} $$<br/>Hàm số đã cho nghịch biến trên khoảng nào dưới đây?", 
+                options: ["$(-\\infty; -1)$", "$(3; +\\infty)$", "$(-1; 3)$", "$(-4; 2)$"], 
                 correct: 2, 
-                image: <ImageQ1 />,
-                explanation: "Quan sát hình vẽ, đồ thị đi lên trong khoảng $(-\\infty; -1)$ và $(1; +\\infty)$. Trong các đáp án, khoảng $(1; +\\infty)$ là đáp án đúng." 
+                explanation: "Dựa vào bảng biến thiên, ta thấy $y' < 0$ trên khoảng $(-1; 3)$. Do đó hàm số nghịch biến trên khoảng $(-1; 3)$." 
             },
             { 
                 id: 'p1_q2', type: 'mcq', 
-                question: "Giá trị cực đại của hàm số $y = x^3 - 3x + 2$ là:", 
-                options: ["4", "0", "2", "-2"], 
-                correct: 0, 
-                explanation: "$y' = 3x^2 - 3$. $y'=0 \\Leftrightarrow x=\\pm 1$. Tại $x=-1$, $y=4$ (CĐ). Tại $x=1$, $y=0$ (CT). Giá trị cực đại là 4." 
+                question: "Cho hàm số $y=f(x)$ liên tục trên $\\mathbb{R}$ và có đồ thị như hình vẽ bên dưới. Điểm cực đại của đồ thị hàm số là điểm nào?", 
+                image: <GraphQ2 />,
+                options: ["$(1; 0)$", "$(1; 2)$", "$(-1; -2)$", "$(0; 0)$"], 
+                correct: 1, 
+                explanation: "Quan sát đồ thị, điểm 'nhô cao nhất' trong vùng lân cận (đỉnh núi) có hoành độ $x=1$ và tung độ $y=2$. Vậy điểm cực đại của đồ thị hàm số là $(1; 2)$." 
             },
             { 
                 id: 'p1_q3', type: 'mcq', 
-                question: "Tiệm cận xiên của đồ thị hàm số $y = 2x - 1 + \\frac{3}{x+1}$ là đường thẳng:", 
-                options: ["$y = 2x$", "$y = 2x - 1$", "$x = -1$", "$y = 2x + 2$"], 
-                correct: 1, 
-                explanation: "Ta có $\\lim_{x \\to \\infty} [y - (2x-1)] = 0$. Vậy tiệm cận xiên là $y = 2x - 1$." 
+                question: "Tiệm cận xiên của đồ thị hàm số $y = 2x - 1 + \\frac{3}{x+1}$ là đường thẳng", 
+                options: ["$y = 2x$", "$y = x + 1$", "$y = 2x - 1$", "$y = 2x + 2$"], 
+                correct: 2, 
+                explanation: "Ta có $\\lim_{x \\to \\infty} [y - (2x-1)] = \\lim_{x \\to \\infty} \\frac{3}{x+1} = 0$. Vậy đường thẳng $y = 2x - 1$ là tiệm cận xiên của đồ thị hàm số." 
             },
             { 
                 id: 'p1_q4', type: 'mcq', 
-                question: "Trong không gian với hệ tọa độ Oxyz, cho $\\vec{a} = (2; -3; 1)$ và $\\vec{b} = (-1; 0; 4)$. Tọa độ của vectơ $\\vec{u} = \\vec{a} - 2\\vec{b}$ là:", 
-                options: ["$(4; -3; -7)$", "$(0; -3; 9)$", "$(4; -3; 9)$", "$(0; -3; -7)$"], 
+                question: "Đường cong trong hình vẽ bên là đồ thị của hàm số nào dưới đây?", 
+                image: <GraphQ4 />,
+                options: ["$y = x^4 - 2x^2 + 1$", "$y = -x^4 + 2x^2 + 1$", "$y = x^3 - 3x + 1$", "$y = -x^3 + 3x + 1$"], 
                 correct: 0, 
-                explanation: "$\\vec{u} = (2 - 2(-1); -3 - 2(0); 1 - 2(4)) = (4; -3; -7)$." 
+                explanation: "Đồ thị có dạng hình chữ W, bề lõm hướng lên trên nên hệ số $a > 0$. Đây là dạng đồ thị của hàm trùng phương $y = ax^4 + bx^2 + c$. Loại C, D (bậc 3) và B ($a<0$). Vậy chọn A." 
             },
             { 
                 id: 'p1_q5', type: 'mcq', 
-                question: "Cho hình hộp chữ nhật $ABCD.A'B'C'D'$ như hình vẽ. Vectơ nào dưới đây bằng vectơ $\\vec{AB}$?", 
-                options: ["$\\vec{DC}$", "$\\vec{BA}$", "$\\vec{A'C'}$", "$\\vec{AD}$"], 
+                question: "Giá trị nhỏ nhất của hàm số $f(x) = x^3 - 3x + 2$ trên đoạn $[0; 2]$ bằng", 
+                options: ["$0$", "$2$", "$4$", "$-2$"], 
                 correct: 0, 
-                image: <ImageQ5 />,
-                explanation: "Trong hình hộp chữ nhật, $\\vec{AB} = \\vec{DC}$." 
+                explanation: "$f'(x) = 3x^2 - 3$. Cho $f'(x) = 0 \\Leftrightarrow x = \\pm 1$. Trên đoạn $[0; 2]$, xét $x=1$. $f(0) = 2; f(1) = 0; f(2) = 4$. Vậy $\\min_{[0;2]} f(x) = 0$." 
             },
             { 
                 id: 'p1_q6', type: 'mcq', 
-                question: "Cho mẫu số liệu ghép nhóm về thời gian tập thể dục: Nhóm [0;20): 5, [20;40): 12, [40;60): 8, [60;80): 3. Nhóm chứa mốt của mẫu số liệu là:", 
-                options: ["$[0; 20)$", "$[20; 40)$", "$[40; 60)$", "$[60; 80)$"], 
+                question: "Trong không gian với hệ trục tọa độ $Oxyz$, cho vector $\\vec{a} = 2\\vec{i} - 3\\vec{k} + \\vec{j}$. Tọa độ của vector $\\vec{a}$ là", 
+                options: ["$(2; -3; 1)$", "$(2; 1; -3)$", "$(2; -3; 0)$", "$(1; -3; 2)$"], 
                 correct: 1, 
-                explanation: "Tần số lớn nhất là 12, tương ứng với nhóm $[20; 40)$." 
+                explanation: "Ta có $\\vec{a} = 2\\vec{i} + 1\\vec{j} - 3\\vec{k}$. Theo định nghĩa tọa độ vector $\\vec{u} = x\\vec{i} + y\\vec{j} + z\\vec{k} \\Rightarrow \\vec{u}(x; y; z)$. Vậy $\\vec{a} = (2; 1; -3)$." 
             },
             { 
                 id: 'p1_q7', type: 'mcq', 
-                question: "Cho hình lập phương $ABCD.A'B'C'D'$. Góc giữa hai vectơ $\\vec{AB}$ và $\\vec{A'D'}$ bằng:", 
-                options: ["$45^\\circ$", "$90^\\circ$", "$60^\\circ$", "$180^\\circ$"], 
+                question: "Cho hình hộp $ABCD.A'B'C'D'$ (như hình vẽ). Khẳng định nào sau đây đúng?", 
+                image: <BoxQ7 />,
+                options: ["$\\vec{AB} + \\vec{AD} + \\vec{AA'} = \\vec{AC}$", "$\\vec{AB} + \\vec{AD} + \\vec{AA'} = \\vec{AC'}$", "$\\vec{AB} + \\vec{AC} = \\vec{AD}$", "$\\vec{AC'} = \\vec{AB} + \\vec{AB'} + \\vec{AD}$"], 
                 correct: 1, 
-                image: <ImageQ7 />,
-                explanation: "$\\vec{A'D'} = \\vec{AD}$. Góc $(\\vec{AB}, \\vec{A'D'}) = (\\vec{AB}, \\vec{AD}) = 90^\\circ$ (do ABCD là hình vuông)." 
+                explanation: "Theo quy tắc hình hộp, tổng ba vectơ xuất phát từ một đỉnh bằng vectơ đường chéo xuất phát từ đỉnh đó: $\\vec{AB} + \\vec{AD} + \\vec{AA'} = \\vec{AC'}$." 
             },
             { 
                 id: 'p1_q8', type: 'mcq', 
-                question: "Tìm giá trị nhỏ nhất $m$ của hàm số $y = x + \\frac{4}{x}$ trên khoảng $(0; +\\infty)$.", 
-                options: ["$m = 2$", "$m = 4$", "$m = -4$", "$m = 5$"], 
-                correct: 1, 
-                explanation: "Áp dụng BĐT Cauchy: $x + \\frac{4}{x} \\ge 2\\sqrt{4} = 4$. Dấu bằng khi $x=2$." 
+                question: "Trong không gian $Oxyz$, cho hai điểm $A(1; 2; 3)$ và $B(3; 0; 1)$. Tọa độ trung điểm $I$ của đoạn thẳng $AB$ là", 
+                options: ["$(2; 1; 2)$", "$(4; 2; 4)$", "$(1; -1; -1)$", "$(2; 2; 2)$"], 
+                correct: 0, 
+                explanation: "$I = \\left(\\frac{1+3}{2}; \\frac{2+0}{2}; \\frac{3+1}{2}\\right) = (2; 1; 2)$." 
             },
             { 
                 id: 'p1_q9', type: 'mcq', 
-                question: "Trong không gian Oxyz, cho điểm $M(1; -2; 3)$. Hình chiếu vuông góc của M lên trục Oz có tọa độ là:", 
-                options: ["$(1; -2; 0)$", "$(1; 0; 3)$", "$(0; 0; 3)$", "$(0; -2; 0)$"], 
-                correct: 2, 
-                explanation: "Hình chiếu lên Oz giữ nguyên z, x=0, y=0. Vậy là $(0; 0; 3)$." 
+                question: "Trong không gian $Oxyz$, tích vô hướng của hai vectơ $\\vec{u}=(1; 2; 3)$ và $\\vec{v}=(-2; 1; 0)$ bằng", 
+                options: ["$-4$", "$0$", "$4$", "$\\sqrt{5}$"], 
+                correct: 1, 
+                explanation: "$\\vec{u} \\cdot \\vec{v} = 1.(-2) + 2.1 + 3.0 = -2 + 2 + 0 = 0$." 
             },
             { 
                 id: 'p1_q10', type: 'mcq', 
-                question: "Cho hai vectơ $\\vec{u} = (1; 1; -2)$ và $\\vec{v} = (1; 0; m)$. Để $\\vec{u} \\perp \\vec{v}$ thì giá trị của m là:", 
-                options: ["$m = 1/2$", "$m = 0$", "$m = 2$", "$m = 1$"], 
-                correct: 0, 
-                explanation: "$\\vec{u} \\cdot \\vec{v} = 1 + 0 - 2m = 0 \\Leftrightarrow m = 1/2$." 
+                question: "Để đánh giá mức độ phân tán của mẫu số liệu ghép nhóm, người ta **không** dùng đại lượng nào sau đây?", 
+                options: ["Khoảng biến thiên", "Độ lệch chuẩn", "Khoảng tứ phân vị", "Số trung bình cộng"], 
+                correct: 3, 
+                explanation: "Số trung bình cộng là số đặc trưng đo xu thế trung tâm, không dùng để đo mức độ phân tán." 
             },
             { 
                 id: 'p1_q11', type: 'mcq', 
-                question: "Đường cong trong hình bên là đồ thị của hàm số nào?", 
-                options: ["$y = \\frac{x-1}{x+1}$", "$y = \\frac{x}{x+1}$", "$y = \\frac{x+1}{x-1}$", "$y = \\frac{2x}{x+1}$"], 
-                correct: 1, 
-                image: <ImageQ11 />,
-                explanation: "Đồ thị đi qua gốc tọa độ O(0;0). Chỉ có đáp án B thỏa mãn $y(0)=0$." 
+                question: "Cho biểu đồ phân tán của hai đại lượng $X$ và $Y$ như hình vẽ. Khẳng định nào sau đây đúng về mối tương quan giữa $X$ và $Y$?", 
+                image: <ScatterQ11 />,
+                options: ["Tương quan dương (thuận)", "Tương quan âm (nghịch)", "Không có tương quan", "Tương quan phi tuyến tính hoàn hảo"], 
+                correct: 0, 
+                explanation: "Các điểm trên biểu đồ phân bố theo xu hướng đi lên từ trái sang phải, cho thấy khi $X$ tăng thì $Y$ cũng có xu hướng tăng. Đây là tương quan dương." 
             },
             { 
                 id: 'p1_q12', type: 'mcq', 
-                question: "Khoảng tứ phân vị $\\Delta_Q$ của mẫu số liệu là:", 
-                options: ["$Q_3 + Q_1$", "$Q_3 - Q_1$", "$(Q_3 - Q_1)/2$", "$Q_2 - Q_1$"], 
-                correct: 1, 
-                explanation: "Khoảng tứ phân vị là hiệu số giữa tứ phân vị thứ ba và thứ nhất: $\\Delta_Q = Q_3 - Q_1$." 
+                question: "Đồ thị hàm số $y=\\frac{2x+1}{x-1}$ có tâm đối xứng là điểm", 
+                options: ["$I(1; 2)$", "$I(2; 1)$", "$I(-1; 2)$", "$I(1; -2)$"], 
+                correct: 0, 
+                explanation: "Hàm phân thức bậc nhất/bậc nhất $y=\\frac{ax+b}{cx+d}$ có tâm đối xứng là giao điểm của hai đường tiệm cận. TCĐ: $x=1$; TCN: $y=2$. Vậy tâm đối xứng là $I(1; 2)$." 
             },
 
-            // --- PHẦN 2: ĐÚNG SAI (4 câu) ---
+            // --- PHẦN II: ĐÚNG/SAI (4 Câu) ---
             {
                 id: 'p2_q1', type: 'group_tf',
-                question: "Cho hàm số $y = f(x) = \\frac{2x-1}{x-1}$ có đồ thị (C).",
-                image: <ImageTF1 />,
+                question: "Cho hàm số $y = \\frac{x^2 - 3x + 3}{x - 1}$ có đồ thị $(C)$ như hình vẽ.",
+                image: <GraphPart2Q1 />,
                 subQuestions: [
-                    { id: 'a', text: "Hàm số nghịch biến trên từng khoảng xác định.", correct: true },
-                    { id: 'b', text: "Đồ thị hàm số có tiệm cận đứng là đường thẳng $x=2$.", correct: false },
-                    { id: 'c', text: "Đồ thị hàm số cắt trục tung tại điểm có tung độ bằng 1.", correct: true },
-                    { id: 'd', text: "Tâm đối xứng của đồ thị là điểm $I(1; 2)$.", correct: true }
+                    { id: 'a', text: "Hàm số đồng biến trên khoảng $(2; +\\infty)$.", correct: true },
+                    { id: 'b', text: "Đồ thị hàm số có tiệm cận đứng là đường thẳng $x=1$.", correct: true },
+                    { id: 'c', text: "Giá trị cực tiểu của hàm số bằng 1.", correct: true },
+                    { id: 'd', text: "Tiệm cận xiên của đồ thị hàm số đi qua điểm $M(0; -2)$.", correct: true }
                 ],
-                explanation: "a) Đúng ($y'<0$). b) Sai (TCĐ $x=1$). c) Đúng ($x=0 \\Rightarrow y=1$). d) Đúng (Giao 2 tiệm cận)."
+                explanation: "a) Đúng. $y' > 0$ trên $(2; +\\infty)$. b) Đúng. $\\lim_{x\\to 1} y = \\infty$. c) Đúng. Tại $x=2$, $y=1$. d) Đúng. TCX $y=x-2$, đi qua $M(0; -2)$."
             },
             {
                 id: 'p2_q2', type: 'group_tf',
-                question: "Trong không gian Oxyz, cho $A(1;0;0), B(0;2;0), C(0;0;3), D(1;2;3)$.",
-                image: <ImageTF2 />,
+                question: "Cho tứ diện đều $ABCD$ cạnh $a$. Gọi $M, N$ lần lượt là trung điểm của $AB$ và $CD$.",
+                image: <TetraPart2Q2 />,
                 subQuestions: [
-                    { id: 'a', text: "Vectơ $\\vec{AB} = (-1; 2; 0)$.", correct: true },
-                    { id: 'b', text: "Ba điểm A, B, C cùng nằm trên mặt phẳng (Oxy).", correct: false },
-                    { id: 'c', text: "Trọng tâm G của tam giác ABC là $G(\\frac{1}{3}; \\frac{2}{3}; 1)$.", correct: true },
-                    { id: 'd', text: "Độ dài đoạn thẳng $OD = \\sqrt{14}$.", correct: true }
+                    { id: 'a', text: "$\\vec{AB} \\cdot \\vec{AC} = \\frac{a^2}{2}$.", correct: true },
+                    { id: 'b', text: "Vectơ $\\vec{MN} = \\frac{1}{2}(\\vec{AD} + \\vec{BC})$.", correct: true },
+                    { id: 'c', text: "Góc giữa hai vectơ $\\vec{AB}$ và $\\vec{CD}$ bằng $60^\\circ$.", correct: false },
+                    { id: 'd', text: "$\\vec{MN}$ vuông góc với $\\vec{AB}$.", correct: true }
                 ],
-                explanation: "a) Đúng. b) Sai (C thuộc Oz). c) Đúng. d) Đúng ($1^2+2^2+3^2=14$)."
+                explanation: "c) Sai. Tứ diện đều có các cặp cạnh đối vuông góc, nên góc là $90^\\circ$."
             },
             {
                 id: 'p2_q3', type: 'group_tf',
-                question: "Cho mẫu số liệu doanh thu: [10;12): 4, [12;14): 8, [14;16): 6, [16;18): 2.",
+                question: "Trong không gian $Oxyz$, cho $A(1;0;0), B(0;2;0), C(0;0;3)$.",
                 subQuestions: [
-                    { id: 'a', text: "Số chi nhánh có doanh thu dưới 14 tỷ đồng là 8.", correct: false },
-                    { id: 'b', text: "Nhóm chứa trung vị là nhóm $[12; 14)$.", correct: true },
-                    { id: 'c', text: "Giá trị đại diện của nhóm $[14; 16)$ là 15.", correct: true },
-                    { id: 'd', text: "Doanh thu trung bình xấp xỉ 13,8 tỷ đồng.", correct: false }
+                    { id: 'a', text: "Phương trình đoạn chắn của mặt phẳng $(ABC)$ là $\\frac{x}{1} + \\frac{y}{2} + \\frac{z}{3} = 1$.", correct: true },
+                    { id: 'b', text: "Tam giác $ABC$ là tam giác vuông tại $O$.", correct: false },
+                    { id: 'c', text: "Trọng tâm $G$ của tam giác $ABC$ có tọa độ $(1/3; 2/3; 1)$.", correct: true },
+                    { id: 'd', text: "Độ dài đường cao kẻ từ $O$ xuống mặt phẳng $(ABC)$ bằng $\\frac{6}{7}$.", correct: true }
                 ],
-                explanation: "a) Sai (4+8=12). b) Đúng (Vị trí 10,11 thuộc nhóm 2). c) Đúng. d) Sai (TB = 13.6)."
+                explanation: "b) Sai. $O$ không thuộc tam giác $ABC$. $OABC$ là tứ diện vuông đỉnh $O$."
             },
             {
                 id: 'p2_q4', type: 'group_tf',
-                question: "Khung cửa sổ hình chữ nhật ABCD và hình bán nguyệt đường kính AB. Chu vi 4m.",
-                image: <ImageTF4 />,
+                question: "Nồng độ $C(t)$ của một loại thuốc trong máu sau $t$ giờ tiêm được tính bởi công thức $C(t) = \\frac{2t}{t^2 + 1}$ (mg/l).",
+                image: <ConcPart2Q4 />,
                 subQuestions: [
-                    { id: 'a', text: "Chiều rộng AB của hình chữ nhật là $2R$.", correct: true },
-                    { id: 'b', text: "Chiều cao AD biểu diễn theo R là $2 - R(2 + \\frac{\\pi}{2})$.", correct: false },
-                    { id: 'c', text: "Diện tích S được tính bằng $S = 4R - R^2(4 + \\frac{\\pi}{2})$.", correct: false },
-                    { id: 'd', text: "Bán kính R để diện tích lớn nhất xấp xỉ 0,56 mét.", correct: true }
+                    { id: 'a', text: "Nồng độ thuốc tăng liên tục trong 5 giờ đầu.", correct: false },
+                    { id: 'b', text: "Nồng độ thuốc đạt giá trị lớn nhất sau 1 giờ.", correct: true },
+                    { id: 'c', text: "Giá trị lớn nhất của nồng độ thuốc là 1 mg/l.", correct: true },
+                    { id: 'd', text: "Sau khi đạt nồng độ tối đa, nồng độ thuốc giảm dần về 0 nhưng không bao giờ bằng 0.", correct: true }
                 ],
-                explanation: "a) Đúng. b) Sai (CT sai hệ số). c) Sai. d) Đúng ($R \\approx 0.56$)."
+                explanation: "a) Sai. Hàm tăng trên $(0; 1)$ và giảm trên $(1; +\\infty)$."
             },
 
-            // --- PHẦN 3: TRẢ LỜI NGẮN (6 câu) ---
+            // --- PHẦN III: TRẢ LỜI NGẮN (6 Câu) ---
             { 
                 id: 'p3_q1', type: 'text', 
-                question: "Tìm giá trị nhỏ nhất của hàm số $f(x) = x^3 - 3x + 1$ trên đoạn $[0; 2]$.", 
-                acceptable: ["-1"], 
-                explanation: "Min tại $x=1$, $f(1) = -1$." 
+                question: "Người ta muốn làm một chiếc hộp hình hộp chữ nhật không nắp từ một tấm bìa hình vuông cạnh 12 cm bằng cách cắt bỏ 4 hình vuông nhỏ bằng nhau ở 4 góc và gấp lên. Độ dài cạnh hình vuông bị cắt (cm) bằng bao nhiêu để thể tích chiếc hộp là lớn nhất?", 
+                image: <BoxPart3Q1 />,
+                acceptable: ["2"], 
+                explanation: "Thể tích $V(x) = x(12-2x)^2$. $V'(x)=0 \\Leftrightarrow x=2$ hoặc $x=6$ (loại). Max tại $x=2$." 
             },
             { 
                 id: 'p3_q2', type: 'text', 
-                question: "Một chất điểm chuyển động $S(t) = t^3 - 3t^2 + 2t + 1$. Tính vận tốc (m/s) tại thời điểm gia tốc bằng 0.", 
-                acceptable: ["-1"], 
-                explanation: "$a(t)=0 \\Rightarrow t=1$. $v(1) = -1$." 
+                question: "Hệ số góc nhỏ nhất của tiếp tuyến đồ thị hàm số $y = x^3 - 3x^2 + 2$ là bao nhiêu?", 
+                acceptable: ["-3"], 
+                explanation: "$k = y' = 3x^2 - 6x$. Min tại $x=1$, $k_{min} = 3(1)^2 - 6(1) = -3$." 
             },
             { 
                 id: 'p3_q3', type: 'text', 
-                question: "Cho $\\vec{a} = (1; 0; -1)$ và $\\vec{b} = (0; 1; 1)$. Tính cosin của góc giữa hai vectơ.", 
-                acceptable: ["-0.5", "-0,5"], 
-                image: <ImageShort3 />,
-                explanation: "$\\cos = \\frac{-1}{\\sqrt{2}\\sqrt{2}} = -0.5$." 
+                question: "Trong không gian $Oxyz$, cho ba điểm $A(1;0;0), B(0;2;0), C(0;0;3)$. Thể tích của tứ diện $OABC$ bằng bao nhiêu?", 
+                acceptable: ["1"], 
+                explanation: "$V = \\frac{1}{6} OA.OB.OC = \\frac{1}{6} . 1 . 2 . 3 = 1$." 
             },
             { 
                 id: 'p3_q4', type: 'text', 
-                question: "Chi phí $C(v) = \\frac{1600}{v} + \\frac{v}{4}$. Vận tốc (km/h) để chi phí thấp nhất là bao nhiêu?", 
-                acceptable: ["80"], 
-                image: <ImageShort4 />,
-                explanation: "Cauchy: $v=80$." 
+                question: "Cho mẫu số liệu ghép nhóm về chiều cao (cm) của học sinh lớp 12A. Tìm mốt ($M_o$) của mẫu số liệu (làm tròn đến hàng phần mười). Biết nhóm chứa mốt là $[160; 165)$ với tần số 15, nhóm trước đó tần số 10, nhóm sau đó tần số 10.", 
+                image: <HistPart3Q4 />,
+                acceptable: ["162.5"], 
+                explanation: "$M_o = 160 + \\frac{15 - 10}{(15 - 10) + (15 - 10)} . 5 = 160 + 2.5 = 162.5$." 
             },
             { 
                 id: 'p3_q5', type: 'text', 
-                question: "Hình bình hành ABCD có $A(1; 1; 1), B(2; 3; 4), C(6; 5; 2)$. Tìm cao độ của đỉnh D.", 
-                acceptable: ["-1"], 
-                explanation: "$\\vec{AD} = \\vec{BC} \\Rightarrow z-1 = 2-4 \\Rightarrow z=-1$." 
+                question: "Một vật chịu tác dụng của ba lực $\\vec{F_1}, \\vec{F_2}, \\vec{F_3}$ cùng nằm trong một mặt phẳng và vật ở trạng thái cân bằng. Biết $|\\vec{F_1}| = 40N, |\\vec{F_2}| = 30N$ và góc giữa hai lực này bằng $90^\\circ$. Tính độ lớn của lực $\\vec{F_3}$ (đơn vị Newton).", 
+                image: <ForcePart3Q5 />,
+                acceptable: ["50"], 
+                explanation: "$|\\vec{F_3}| = |\\vec{F_1} + \\vec{F_2}| = \\sqrt{40^2 + 30^2} = 50$." 
             },
             { 
                 id: 'p3_q6', type: 'text', 
-                question: "Lăng trụ đều ABC.A'B'C' cạnh đáy 2, cạnh bên 4. M là trung điểm BC. Tính A'M (làm tròn 2 chữ số thập phân).", 
-                acceptable: ["4.36", "4,36"], 
-                image: <ImageShort6 />,
-                explanation: "$AM=\\sqrt{3}, AA'=4 \\Rightarrow A'M = \\sqrt{16+3} = \\sqrt{19} \\approx 4.36$." 
+                question: "Cho hàm số $f(x) = \\frac{x^2 - mx + 1}{x - 1}$. Có bao nhiêu giá trị nguyên của tham số $m$ thuộc đoạn $[-10; 10]$ để hàm số đồng biến trên từng khoảng xác định?", 
+                image: <GraphPart3Q6 />,
+                acceptable: ["9"], 
+                explanation: "Điều kiện $y' \\ge 0 \\Leftrightarrow m \\ge 2$. Với $m \\in [-10; 10]$, ta có $m \\in \\{2, ..., 10\\}$. Có 9 giá trị." 
             }
         ];
         
         // --- LOGIC HÀM ---
-        const PASSING_SCORE = 5.0; // Thang điểm 10, trung bình là 5
+        const PASSING_SCORE = 5.0; // Điều chỉnh điểm đạt nếu cần
         
         const generateRandomQuiz = () => {
-             // Đề thi này cố định 22 câu, không cần random từ pool lớn
-             // Sắp xếp theo thứ tự Phần 1 -> Phần 2 -> Phần 3
-             const p1 = QUESTION_BANK.filter(q => q.type === 'mcq');
-             const p2 = QUESTION_BANK.filter(q => q.type === 'group_tf');
-             const p3 = QUESTION_BANK.filter(q => q.type === 'text');
-             return [...p1, ...p2, ...p3];
+             // Lấy toàn bộ câu hỏi theo đúng thứ tự đề bài
+             const mcqPool = QUESTION_BANK.filter(q => q.type === 'mcq');
+             const tfPool = QUESTION_BANK.filter(q => q.type === 'group_tf');
+             const textPool = QUESTION_BANK.filter(q => q.type === 'text');
+             
+             return [...mcqPool, ...tfPool, ...textPool];
         };
 
         const calculateScore = (currentQuestions, answers) => {
             let score = 0;
-            // Cấu trúc điểm:
-            // Phần 1: 12 câu, mỗi câu 0.25đ -> 3.0đ
-            // Phần 2: 4 câu, mỗi câu 1.0đ -> 4.0đ (Quy tắc: 1 ý 0.1, 2 ý 0.25, 3 ý 0.5, 4 ý 1.0)
-            // Phần 3: 6 câu, mỗi câu 0.5đ -> 3.0đ
-            // Tổng: 10đ
+            let totalMaxScore = 0; 
 
             currentQuestions.forEach(q => {
+                let questionMaxScore = 0;
+                let questionScore = 0;
+
                 if (q.type === 'mcq') {
-                    if (answers[q.id] === q.correct) score += 0.25;
+                    questionMaxScore = 0.25; // 12 câu x 0.25 = 3 điểm
+                    if (answers[q.id] === q.correct) questionScore = 0.25;
                 } else if (q.type === 'text') {
-                    const userAns = (answers[q.id] || "").trim().replace(',', '.'); // Normalize decimal
-                    const acceptables = q.acceptable.map(a => a.replace(',', '.'));
-                    if (acceptables.includes(userAns)) score += 0.5;
+                    questionMaxScore = 0.5; // 6 câu x 0.5 = 3 điểm
+                    const userAns = (answers[q.id] || "").trim();
+                    if (q.acceptable.includes(userAns)) questionScore = 0.5;
                 } else if (q.type === 'group_tf') {
+                    questionMaxScore = 1.0; // 4 câu x 1.0 = 4 điểm
                     let correctCount = 0;
                     const userGroupAns = answers[q.id] || {};
                     q.subQuestions.forEach(sub => {
                         if (userGroupAns[sub.id] === sub.correct) correctCount++;
                     });
-                    if (correctCount === 1) score += 0.1;
-                    else if (correctCount === 2) score += 0.25;
-                    else if (correctCount === 3) score += 0.5;
-                    else if (correctCount === 4) score += 1.0;
+                    if (correctCount === 1) questionScore = 0.1;
+                    else if (correctCount === 2) questionScore = 0.25;
+                    else if (correctCount === 3) questionScore = 0.5;
+                    else if (correctCount === 4) questionScore = 1.0;
                 }
+                
+                score += questionScore;
+                totalMaxScore += questionMaxScore;
             });
             
-            return Math.round(score * 100) / 100;
+            // Tổng điểm tối đa là 10 (3 + 4 + 3)
+            if (totalMaxScore > 0) {
+                 const scaledScore = (score / totalMaxScore) * 10;
+                 return Math.round(scaledScore * 100) / 100;
+            }
+            return 0;
         };
-        
-        // --- COMPONENTS (Giữ nguyên cấu trúc cũ) ---
         
         const WelcomeScreen = ({ onSelectMode, isOnline }) => (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-cyan-600 to-blue-800 p-4 text-white">
                 <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-white/20">
                     <h1 className="text-4xl font-bold mb-2">TRANDAIEDU</h1>
-                    <h2 className="text-xl mb-8 text-cyan-100 font-medium">ĐỀ THI HỌC KỲ 1 TOÁN 12</h2>
-                    {!isOnline && (<div className="mb-6 bg-yellow-500/20 text-yellow-200 p-3 rounded-lg text-sm border border-yellow-500/50 flex items-center justify-center gap-2"><Icon name="alert-triangle" size={16}/> Chế độ Offline: Kết quả sẽ không được lưu.</div>)}
+                    <h2 className="text-xl mb-8 text-cyan-100 font-medium">ĐỀ THI HỌC KỲ 1 - TOÁN 12</h2>
+                    {!isOnline && (<div className="mb-6 bg-yellow-500/20 text-yellow-200 p-3 rounded-lg text-sm border border-yellow-500/50 flex items-center justify-center gap-2"><Icon name="alert" size={16}/> Chế độ Offline: Kết quả sẽ không được lưu.</div>)}
                     <div className="space-y-4">
                         <button onClick={() => onSelectMode('student')} className="w-full py-4 bg-white text-blue-800 rounded-xl font-bold hover:bg-blue-50 transition-all shadow-lg flex items-center justify-center gap-2"><Icon name="user"/> Học Sinh Vào Thi</button>
                         <button onClick={() => onSelectMode('teacher')} className="w-full py-4 bg-blue-900/50 text-white rounded-xl font-bold hover:bg-blue-900 transition-all border border-blue-400/30 flex items-center justify-center gap-2"><Icon name="lock"/> Giáo Viên Xem Điểm</button>
@@ -529,7 +550,7 @@
                         <div className="max-w-3xl mx-auto flex justify-between items-center">
                             <div className="font-bold text-blue-700 flex items-center gap-2"><Icon name="user" size={18}/> {studentName}</div>
                             <div className="flex items-center gap-3">
-                                {isConnected ? <span className="flex items-center gap-1 text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200"><Icon name="wifi" size={14}/> Online</span> : <span className="flex items-center gap-1 text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full border border-red-200 animate-pulse"><Icon name="wifi-off" size={14}/> Offline</span>}
+                                {isConnected ? <span className="flex items-center gap-1 text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200"><Icon name="wifi" size={14}/> Online</span> : <span className="flex items-center gap-1 text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full border border-red-200 animate-pulse"><Icon name="wifioff" size={14}/> Offline</span>}
                             </div>
                         </div>
                     </div>
@@ -575,7 +596,7 @@
                                     </div>
                                 )}
                                 {q.type === 'text' && (
-                                    <input type="text" value={answers[q.id] || ''} onChange={(e) => handleTextChange(q.id, e.target.value)} className="w-full md:w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nhập đáp án (dùng dấu chấm hoặc phẩy)..." />
+                                    <input type="text" value={answers[q.id] || ''} onChange={(e) => handleTextChange(q.id, e.target.value)} className="w-full md:w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nhập đáp án (số thập phân)..." />
                                 )}
                             </div>
                         ))}
@@ -597,18 +618,18 @@
             return (
                 <div className={`min-h-screen pb-20 ${isPassed ? 'bg-green-50' : 'bg-red-50'}`}>
                     <div className={`shadow p-6 text-center mb-6 ${isPassed ? 'bg-white' : 'bg-white border-b-4 border-red-500'}`}>
-                        <div className="flex justify-center mb-2">{isPassed ? <Icon name="trophy" size={56} className="text-yellow-500"/> : <Icon name="alert-circle" size={56} className="text-red-500"/>}</div>
-                        <h2 className={`text-2xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{isPassed ? "Chúc Mừng! Bạn Đã Hoàn Thành" : "Cần Cố Gắng Hơn"}</h2>
+                        <div className="flex justify-center mb-2">{isPassed ? <Icon name="trophy" size={56} className="text-yellow-500"/> : <Icon name="alert" size={56} className="text-red-500"/>}</div>
+                        <h2 className={`text-2xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{isPassed ? "Chúc Mừng! Bạn Đã Hoàn Thành" : "Chưa Đạt Yêu Cầu"}</h2>
                         <div className={`mt-4 inline-block px-6 py-3 rounded-xl border ${isPassed ? 'bg-green-100 border-green-200' : 'bg-red-100 border-red-200'}`}>
                             <span className="text-gray-600 uppercase text-xs font-bold block">Tổng Điểm</span>
                             <span className={`text-4xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{score.toFixed(2)}<span className="text-xl text-gray-500">/10</span></span>
                         </div>
-                        <p className="text-gray-600 mt-3 text-sm max-w-md mx-auto">{isPassed ? "Kết quả đã được lưu. Hãy xem lại lời giải chi tiết bên dưới." : `Bạn cần đạt tối thiểu ${PASSING_SCORE} điểm. Hãy xem lại lời giải và thử lại.`}</p>
+                        <p className="text-gray-600 mt-3 text-sm max-w-md mx-auto">{isPassed ? "Kết quả đã được lưu. Hãy xem lại lời giải chi tiết bên dưới." : `Bạn cần đạt tối thiểu ${PASSING_SCORE} điểm. Kết quả này KHÔNG được lưu. Hãy bấm nút "Làm lại đề mới" ở cuối trang.`}</p>
                     </div>
 
                     {isPassed ? (
                         <div className="max-w-3xl mx-auto p-4 space-y-6">
-                            <h3 className="font-bold text-gray-700 flex items-center gap-2 mb-4"><Icon name="check-circle" size={20}/> Chi Tiết Bài Làm & Lời Giải</h3>
+                            <h3 className="font-bold text-gray-700 flex items-center gap-2 mb-4"><Icon name="check" size={20}/> Chi Tiết Bài Làm & Lời Giải</h3>
                             {questions.map((q, idx) => {
                                 const isOpen = openExplain[q.id];
                                 return (
@@ -617,7 +638,7 @@
                                             <div className="flex justify-between items-start">
                                                 <div className="font-medium text-gray-800 flex-1 flex gap-2"><span className="font-bold whitespace-nowrap">Câu {idx + 1}:</span> <MathText text={q.question} /></div>
                                             </div>
-                                            <div className="text-right text-xs text-blue-500 mt-2">Xem chi tiết lời giải ▼</div>
+                                            <div className="text-right text-xs text-blue-500 mt-2">Xem chi tiết ý đúng/sai ▼</div>
                                         </div>
                                         {isOpen && (
                                             <div className="bg-blue-50 p-4 text-sm text-blue-900 border-t border-blue-100">
@@ -632,13 +653,13 @@
                         </div>
                     ) : (
                         <div className="max-w-md mx-auto p-8 text-center text-gray-500">
-                            <div className="flex justify-center mb-4"><Icon name="eye-off" size={64} className="text-gray-300"/></div>
+                            <div className="flex justify-center mb-4"><Icon name="eyeoff" size={64} className="text-gray-300"/></div>
                             <p className="text-lg font-medium text-gray-600 mb-2">Chế độ ôn tập</p>
                             <p className="text-sm">Hệ thống đã ẩn toàn bộ câu hỏi và lời giải để đảm bảo tính khách quan khi bạn làm lại đề.</p>
                         </div>
                     )}
                     <div className="flex justify-center pt-6 pb-10">
-                        {isPassed ? <button onClick={() => window.location.reload()} className="px-8 py-3 bg-gray-600 text-white rounded-lg font-bold hover:bg-gray-700 shadow-lg flex items-center gap-2"><Icon name="log-out"/> Về trang chủ</button> : <button onClick={onRetry} className="px-8 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 shadow-lg flex items-center gap-2 animate-bounce"><Icon name="refresh-cw"/> Làm lại đề mới</button>}
+                        {isPassed ? <button onClick={() => window.location.reload()} className="px-8 py-3 bg-gray-600 text-white rounded-lg font-bold hover:bg-gray-700 shadow-lg flex items-center gap-2"><Icon name="logout"/> Về trang chủ</button> : <button onClick={onRetry} className="px-8 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 shadow-lg flex items-center gap-2 animate-bounce"><Icon name="retry"/> Làm lại đề mới</button>}
                     </div>
                 </div>
             );
@@ -665,7 +686,7 @@
                     setLoading(false);
                     return;
                 }
-                const q = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME);
+                const q = db.collection('artifacts').doc(firebaseConfig.appId).collection('public').doc('data').collection(COLLECTION_NAME);
                 const unsubscribe = q.onSnapshot((snapshot) => {
                     const data = snapshot.docs.map(doc => {
                         const d = doc.data();
@@ -688,7 +709,7 @@
                             <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="list" className="text-blue-600"/> Bảng Điểm</h1>
                             {!isFirebaseReady && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded border border-yellow-200">Chế độ Demo (Dữ liệu mẫu)</span>}
                         </div>
-                        <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="log-out" size={18}/> Đăng xuất</button>
+                        <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="logout" size={18}/> Đăng xuất</button>
                     </div>
                     <div className="max-w-6xl mx-auto p-6">
                         <div className="bg-white rounded-xl shadow overflow-hidden">
@@ -749,7 +770,7 @@
                 if (score >= PASSING_SCORE && isFirebaseReady && user) {
                     try {
                         const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-                        await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
+                        await db.collection('artifacts').doc(firebaseConfig.appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
                             name: studentName, score: score, questionIds: currentQuestions.map(q => q.id), answers: sanitizedAnswers, timestamp: new Date().toISOString()
                         });
                     } catch (error) { console.error("Lỗi Firestore:", error); }
