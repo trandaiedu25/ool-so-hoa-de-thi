@@ -413,15 +413,98 @@
             );
         };
 
-        const TeacherDashboard = ({ onLogout }) => (
-             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-                 <div className="bg-white p-8 rounded-xl shadow text-center">
-                     <h2 className="text-xl font-bold mb-4">Khu vực Giáo viên</h2>
-                     <p className="text-gray-600 mb-6">Tính năng xem bảng điểm yêu cầu kết nối Firebase.</p>
-                     <button onClick={onLogout} className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">Đăng xuất</button>
-                 </div>
-             </div>
-        );
+        const TeacherLogin = ({ onLogin, onBack }) => {
+            const [pass, setPass] = useState('');
+            const [error, setError] = useState('');
+            const handleLogin = (e) => { e.preventDefault(); if (pass === '12345678T') { onLogin(); } else { setError('Mật khẩu không đúng!'); } };
+            return ( 
+                <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4"> 
+                <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"> 
+                    <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">Giáo Viên Đăng Nhập</h2> 
+                    <form onSubmit={handleLogin} className="space-y-4"> 
+                    <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nhập mật khẩu..." autoFocus/> 
+                    {error && <p className="text-red-500 text-sm text-center">{error}</p>} 
+                    <button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800">Truy cập</button> 
+                    <button type="button" onClick={onBack} className="w-full py-2 text-gray-500 hover:text-gray-800 text-sm">Quay lại</button> 
+                    </form> 
+                </div> 
+                </div> 
+            );
+        };
+
+        const TeacherDashboard = ({ onLogout }) => {
+            const [results, setResults] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                if (!isFirebaseReady || !db) {
+                    setLoading(false);
+                    return;
+                }
+                const q = collection(db, 'artifacts', appId, 'public', 'data', 'quiz_results_conditional_prob');
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const data = snapshot.docs.map(doc => {
+                        const d = doc.data();
+                        let time = 0;
+                        if (d.timestamp && d.timestamp.seconds) { time = d.timestamp.seconds; } else if (d.timestamp instanceof Date) { time = d.timestamp.getTime() / 1000; } else if (typeof d.timestamp === 'string') { time = new Date(d.timestamp).getTime() / 1000; }
+                        return { id: doc.id, ...d, sortTime: time };
+                    });
+                    data.sort((a, b) => b.sortTime - a.sortTime);
+                    setResults(data);
+                    setLoading(false);
+                }, (error) => { 
+                    console.error("Lỗi tải dữ liệu:", error); 
+                    setLoading(false);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            if (!isFirebaseReady) {
+                return (
+                    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+                        <div className="bg-white p-8 rounded-xl shadow text-center">
+                            <h2 className="text-xl font-bold mb-4">Khu vực Giáo viên</h2>
+                            <p className="text-gray-600 mb-6">Chế độ Offline không hỗ trợ xem bảng điểm.</p>
+                            <button onClick={onLogout} className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">Đăng xuất</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <div className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+                        <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="list" className="text-blue-600"/> Bảng Điểm (Chỉ hiện bài đạt)</h1>
+                        <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="logout" size={18}/> Đăng xuất</button>
+                    </div>
+                    <div className="max-w-6xl mx-auto p-6">
+                        <div className="bg-white rounded-xl shadow overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead className="bg-gray-100 border-b">
+                                        <tr><th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Thời gian</th><th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Họ và Tên</th><th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Điểm Số (10)</th><th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Xếp loại</th></tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {loading ? (
+                                            <tr><td colSpan="4" className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
+                                        ) : results.length === 0 ? ( 
+                                            <tr><td colSpan="4" className="p-8 text-center text-gray-500">Chưa có bài thi nào được nộp.</td></tr> 
+                                        ) : results.map((res) => (
+                                            <tr key={res.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{res.timestamp ? new Date(res.sortTime * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{res.name}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center"><span className="text-lg font-bold text-blue-700">{res.score?.toFixed(2)}</span></td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{res.score >= 8 ? 'Giỏi' : res.score >= 6.5 ? 'Khá' : 'Trung Bình'}</span></td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
 
         // --- MAIN APP ---
         const App = () => {
@@ -474,10 +557,11 @@
 
             return (
                 <div>
-                    {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'teacher')} isOnline={isFirebaseReady} />}
+                    {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'login')} isOnline={isFirebaseReady} />}
                     {view === 'name' && <StudentNameInput onStart={startNewQuiz} />}
                     {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} isConnected={isFirebaseReady} />}
                     {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={handleRetry} />}
+                    {view === 'login' && <TeacherLogin onLogin={() => setView('teacher')} onBack={() => setView('welcome')} />}
                     {view === 'teacher' && <TeacherDashboard onLogout={() => setView('welcome')} />}
                 </div>
             );
