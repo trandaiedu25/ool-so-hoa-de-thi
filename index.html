@@ -451,7 +451,7 @@
         ];
         
         // --- LOGIC HÀM ---
-        const PASSING_SCORE = 0.0; 
+        const PASSING_SCORE = 5.0; // Đã cập nhật điểm đạt lên 5.0 để logic Không Đạt hoạt động
         
         const generateRandomQuiz = () => {
              const mcqPool = QUESTION_BANK.filter(q => q.type === 'mcq');
@@ -624,7 +624,11 @@
                             <span className="text-gray-600 uppercase text-xs font-bold block">Tổng Điểm</span>
                             <span className={`text-4xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{score.toFixed(2)}<span className="text-xl text-gray-500">/10</span></span>
                         </div>
-                        <p className="text-gray-600 mt-3 text-sm max-w-md mx-auto">{isPassed ? "Kết quả đã được lưu. Hãy xem lại lời giải chi tiết bên dưới." : `Bạn cần đạt tối thiểu ${PASSING_SCORE} điểm. Kết quả này KHÔNG được lưu. Hãy bấm nút "Làm lại đề mới" ở cuối trang.`}</p>
+                        <p className="text-gray-600 mt-3 text-sm max-w-md mx-auto">
+                            {isPassed 
+                                ? "Kết quả đã được lưu. Hãy xem lại lời giải chi tiết bên dưới." 
+                                : `Bạn cần đạt tối thiểu ${PASSING_SCORE} điểm. Kết quả đã được lưu vào hệ thống. Vui lòng làm lại đề thi để xem lời giải chi tiết.`}
+                        </p>
                     </div>
 
                     {isPassed ? (
@@ -654,7 +658,7 @@
                     ) : (
                         <div className="max-w-md mx-auto p-8 text-center text-gray-500">
                             <div className="flex justify-center mb-4"><Icon name="eye-off" size={64} className="text-gray-300"/></div>
-                            <p className="text-lg font-medium text-gray-600 mb-2">Chế độ ôn tập</p>
+                            <p className="text-lg font-medium text-gray-600 mb-2">Chưa đạt yêu cầu</p>
                             <p className="text-sm">Hệ thống đã ẩn toàn bộ câu hỏi và lời giải để đảm bảo tính khách quan khi bạn làm lại đề.</p>
                         </div>
                     )}
@@ -784,8 +788,8 @@
                 setFinalScore(score);
                 setUserAnswers(answers);
                 
-                // Chỉ lưu nếu đạt điểm và có kết nối Firebase
-                if (score >= PASSING_SCORE && isFirebaseReady && user) {
+                // Lưu kết quả kể cả khi KHÔNG đạt điểm (Miễn là có mạng)
+                if (isFirebaseReady && user) {
                     try {
                         const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
                         // Sử dụng đúng đường dẫn: /artifacts/{appId}/public/data/{COLLECTION_NAME}
