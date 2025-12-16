@@ -3,52 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Số Hóa (Auto-Fix v3)</title>
+    <title>Tool Số Hóa (Support Gemini 2.5)</title>
     <script type="importmap">
       { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
+        body { font-family: sans-serif; padding: 20px; background: #eef2f6; }
         .container { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; }
-        .box { flex: 1; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #d32f2f; text-align: center; }
-        input, button, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { background: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; padding: 15px; font-size: 16px; }
-        button:hover { background: #0056b3; }
-        .log-entry { margin-bottom: 5px; padding: 5px; border-radius: 4px; font-size: 0.9em; }
-        .log-process { background: #e3f2fd; color: #0d47a1; }
-        .log-error { background: #ffebee; color: #c62828; }
-        .log-success { background: #e8f5e9; color: #2e7d32; font-weight: bold; }
+        .box { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { color: #2563eb; text-align: center; margin-bottom: 30px; }
+        input, button, textarea { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        button { background: #2563eb; color: white; font-weight: bold; border: none; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #1d4ed8; }
+        button:disabled { background: #94a3b8; }
+        .log-box { margin-top: 15px; padding: 10px; background: #f8fafc; border-radius: 8px; font-size: 0.9em; max-height: 200px; overflow-y: auto; border: 1px dashed #cbd5e1; }
+        .log-item { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid #eee; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; }
     </style>
 </head>
 <body>
 
-<h1>⚡ PHIÊN BẢN MỚI NHẤT (AUTO-FIX) ⚡</h1>
+<h1>✨ TOOL SỐ HÓA (HỖ TRỢ GEMINI 2.5) ✨</h1>
 
 <div class="container">
     <div class="box">
         <h3>1. Cấu hình</h3>
-        <input type="password" id="geminiKey" placeholder="Dán Gemini API Key vào đây...">
+        <input type="password" id="geminiKey" placeholder="Dán Gemini API Key của bạn vào đây...">
         <input type="file" id="fileInput" accept="image/*, application/pdf">
         <button id="btnRun" onclick="startProcess()">🚀 CHẠY NGAY</button>
         
-        <div id="statusLog" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;"></div>
+        <div id="statusLog" class="log-box">Trạng thái sẽ hiện ở đây...</div>
     </div>
 
     <div class="box">
-        <h3>2. Kết quả</h3>
-        <textarea id="output" rows="15" placeholder="JSON sẽ hiện ở đây..."></textarea>
+        <h3>2. Kết quả JSON</h3>
+        <textarea id="output" rows="15" placeholder="Kết quả JSON..."></textarea>
     </div>
 </div>
 
 <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    // Danh sách model để thử lần lượt. Nếu cái này lỗi 404 -> tự động nhảy sang cái kia.
+    // CẬP NHẬT DANH SÁCH MODEL DỰA TRÊN ẢNH JSON CỦA BẠN
     const MODEL_LIST = [
-        "gemini-1.5-flash", 
-        "gemini-1.5-pro", 
-        "gemini-pro" // Bản cũ nhưng siêu ổn định
+        "gemini-2.5-flash",      // Ưu tiên 1: Bản mới nhất trong tài khoản bạn
+        "gemini-2.5-pro",        // Ưu tiên 2: Bản Pro mới
+        "gemini-2.0-flash-exp",  // Ưu tiên 3: Bản thử nghiệm
+        "gemini-1.5-flash",      // Dự phòng
+        "gemini-pro"             // Cũ nhất
     ];
 
     async function fileToBase64(file) {
@@ -60,17 +63,22 @@
     }
 
     window.startProcess = async () => {
-        // Dán cứng Key vào đây (Nhớ để trong dấu ngoặc kép)
-const key = "AIzaSyBlC7FUzJtlYoDy4HNk7WchvqJUyaJsehU";
+        // --- 1. LẤY KEY (Ưu tiên lấy từ ô nhập, nếu trống thì dùng key cứng để test) ---
+        let key = document.getElementById('geminiKey').value.trim();
+        
+        // MẸO: Bạn có thể dán cứng Key vào dòng dưới để đỡ phải nhập lại nhiều lần
+        // if (!key) key = "AIzaSy_KEY_CUA_BAN"; 
+
         const fileInput = document.getElementById('fileInput');
         const log = document.getElementById('statusLog');
         const out = document.getElementById('output');
+        const btn = document.getElementById('btnRun');
         
         if (!key || !fileInput.files.length) { alert("Thiếu Key hoặc File!"); return; }
 
-        log.innerHTML = "";
+        log.innerHTML = "⏳ Đang khởi động...";
         out.value = "";
-        document.getElementById('btnRun').disabled = true;
+        btn.disabled = true;
 
         try {
             const file = fileInput.files[0];
@@ -79,40 +87,41 @@ const key = "AIzaSyBlC7FUzJtlYoDy4HNk7WchvqJUyaJsehU";
             
             let success = false;
 
-            // VÒNG LẶP THỬ MODEL
+            // --- 2. VÒNG LẶP THÔNG MINH ---
             for (const modelName of MODEL_LIST) {
-                log.innerHTML += `<div class="log-entry log-process">🔄 Đang thử kết nối: <b>${modelName}</b>...</div>`;
+                log.innerHTML = `<div class='log-item' style='color:blue'>🔄 Đang thử kết nối model: <b>${modelName}</b>...</div>` + log.innerHTML;
                 
                 try {
                     const model = genAI.getGenerativeModel({ model: modelName });
                     const result = await model.generateContent([
-                        "Trích xuất nội dung đề thi thành JSON. Dùng LaTeX cho toán. Nếu có hình vẽ hãy mô tả.", 
+                        "Hãy trích xuất nội dung file này thành JSON câu hỏi trắc nghiệm. Dùng LaTeX cho toán ($...$). Nếu có hình vẽ, hãy mô tả hoặc vẽ SVG. Trả về JSON thuần.", 
                         { inlineData: { data: fileData, mimeType: file.type } }
                     ]);
                     
                     const text = result.response.text();
+                    // Làm sạch JSON
                     out.value = text.replace(/```json/g, "").replace(/```/g, "").trim();
-                    log.innerHTML += `<div class="log-entry log-success">✅ THÀNH CÔNG với ${modelName}!</div>`;
+                    
+                    log.innerHTML = `<div class='log-item success'>✅ THÀNH CÔNG VỚI ${modelName}!</div>` + log.innerHTML;
                     success = true;
-                    break; // Thoát vòng lặp ngay
+                    break; // Dừng lại ngay khi tìm được model đúng
 
                 } catch (e) {
                     console.error(e);
-                    let err = e.message;
-                    if (err.includes("400")) {
-                        log.innerHTML += `<div class="log-entry log-error">⛔ SAI KEY! Kiểm tra lại API Key.</div>`;
-                        throw new Error("Key sai"); 
-                    }
-                    log.innerHTML += `<div class="log-entry log-error">❌ ${modelName} lỗi: ${err.includes('404') ? 'Không tìm thấy (404)' : err}</div>`;
+                    let errMsg = e.message;
+                    if (errMsg.includes("404")) errMsg = "Không tìm thấy (Do tài khoản chưa hỗ trợ version này)";
+                    log.innerHTML = `<div class='log-item error'>❌ ${modelName} thất bại: ${errMsg}</div>` + log.innerHTML;
                 }
             }
 
-            if (!success) log.innerHTML += `<div class="log-entry log-error">😭 Tất cả model đều thất bại. Vui lòng tạo Key mới.</div>`;
+            if (!success) {
+                log.innerHTML = `<div class='log-item error'>😭 Thất bại toàn tập. Key đúng nhưng không model nào nhận.</div>` + log.innerHTML;
+            }
 
         } catch (e) {
-            // Lỗi chung
+            alert("Lỗi hệ thống: " + e.message);
         } finally {
-            document.getElementById('btnRun').disabled = false;
+            btn.disabled = false;
         }
     };
 </script>
