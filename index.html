@@ -3,127 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Số Hóa (Support Gemini 2.5)</title>
+    <title>Scanner: Chọn Model Đúng</title>
     <script type="importmap">
       { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #eef2f6; }
-        .container { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; }
-        .box { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h1 { color: #2563eb; text-align: center; margin-bottom: 30px; }
-        input, button, textarea { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        button { background: #2563eb; color: white; font-weight: bold; border: none; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #1d4ed8; }
-        button:disabled { background: #94a3b8; }
-        .log-box { margin-top: 15px; padding: 10px; background: #f8fafc; border-radius: 8px; font-size: 0.9em; max-height: 200px; overflow-y: auto; border: 1px dashed #cbd5e1; }
-        .log-item { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid #eee; }
-        .success { color: green; font-weight: bold; }
-        .error { color: red; }
+        body { font-family: sans-serif; padding: 20px; background: #f0f9ff; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        h1 { color: #0284c7; text-align: center; }
+        
+        .step { margin-bottom: 20px; padding: 15px; border: 1px solid #e0f2fe; border-radius: 8px; }
+        .step-title { font-weight: bold; color: #0369a1; margin-bottom: 10px; display: block; }
+        
+        input, button { width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background: #0284c7; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #0369a1; }
+        
+        #modelList { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .model-tag { padding: 8px 12px; background: #e0f2fe; color: #0284c7; border-radius: 20px; cursor: pointer; border: 1px solid #bae6fd; font-size: 0.9em; }
+        .model-tag:hover, .model-tag.selected { background: #0284c7; color: white; border-color: #0284c7; }
+        
+        #status { margin-top: 15px; padding: 10px; border-radius: 6px; display: none; }
+        .error { background: #fee2e2; color: #b91c1c; display: block; }
+        .success { background: #dcfce7; color: #15803d; display: block; }
+        
+        textarea { width: 100%; height: 300px; margin-top: 10px; font-family: monospace; border: 1px solid #ccc; border-radius: 6px; padding: 10px; }
     </style>
 </head>
 <body>
 
-<h1>✨ TOOL SỐ HÓA (HỖ TRỢ GEMINI 2.5) ✨</h1>
-
 <div class="container">
-    <div class="box">
-        <h3>1. Cấu hình</h3>
-        <input type="password" id="geminiKey" placeholder="Dán Gemini API Key của bạn vào đây...">
-        <input type="file" id="fileInput" accept="image/*, application/pdf">
-        <button id="btnRun" onclick="startProcess()">🚀 CHẠY NGAY</button>
+    <h1>📡 MÁY QUÉT & CHẠY ĐỀ THI</h1>
+
+    <div class="step">
+        <span class="step-title">BƯỚC 1: Nhập Key & Quét Model khả dụng</span>
+        <input type="password" id="apiKey" placeholder="Dán Gemini API Key vào đây...">
+        <button onclick="scanModels()" style="margin-top: 10px;">🔍 1. QUÉT TÌM MODEL TRONG TÀI KHOẢN</button>
         
-        <div id="statusLog" class="log-box">Trạng thái sẽ hiện ở đây...</div>
+        <div id="modelArea" style="display:none; margin-top:15px; border-top: 1px dashed #ccc; padding-top:10px;">
+            <span style="font-size:0.9em; color:#555;">Google đã tìm thấy các model sau trong tài khoản của bạn (Hãy bấm chọn 1 cái):</span>
+            <div id="modelList"></div>
+            <input type="hidden" id="selectedModelId">
+        </div>
     </div>
 
-    <div class="box">
-        <h3>2. Kết quả JSON</h3>
-        <textarea id="output" rows="15" placeholder="Kết quả JSON..."></textarea>
+    <div class="step" id="step2" style="opacity: 0.5; pointer-events: none;">
+        <span class="step-title">BƯỚC 2: Upload Đề & Chạy</span>
+        <input type="file" id="fileInput" accept="image/*, application/pdf">
+        <button onclick="runExam()" id="btnRun" style="margin-top: 10px; background: #16a34a;">🚀 2. TẠO ĐỀ THI NGAY</button>
     </div>
+
+    <div id="status"></div>
+    <textarea id="output" placeholder="Kết quả JSON sẽ hiện ở đây..."></textarea>
 </div>
 
 <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    // CẬP NHẬT DANH SÁCH MODEL DỰA TRÊN ẢNH JSON CỦA BẠN
-    const MODEL_LIST = [
-        "gemini-2.5-flash",      // Ưu tiên 1: Bản mới nhất trong tài khoản bạn
-        "gemini-2.5-pro",        // Ưu tiên 2: Bản Pro mới
-        "gemini-2.0-flash-exp",  // Ưu tiên 3: Bản thử nghiệm
-        "gemini-1.5-flash",      // Dự phòng
-        "gemini-pro"             // Cũ nhất
-    ];
-
-    async function fileToBase64(file) {
-        return new Promise((r) => {
-            const reader = new FileReader();
-            reader.onloadend = () => r(reader.result.split(',')[1]);
-            reader.readAsDataURL(file);
-        });
-    }
-
-    window.startProcess = async () => {
-        // --- 1. LẤY KEY (Ưu tiên lấy từ ô nhập, nếu trống thì dùng key cứng để test) ---
-        let key = document.getElementById('geminiKey').value.trim();
+    // Hàm 1: Dùng fetch thuần để quét list model (Giống hệt trình duyệt)
+    window.scanModels = async () => {
+        const key = document.getElementById('apiKey').value.trim();
+        const status = document.getElementById('status');
+        const listDiv = document.getElementById('modelList');
+        const area = document.getElementById('modelArea');
         
-        // MẸO: Bạn có thể dán cứng Key vào dòng dưới để đỡ phải nhập lại nhiều lần
-        // if (!key) key = "AIzaSy_KEY_CUA_BAN"; 
+        if (!key) { alert("Chưa nhập Key!"); return; }
 
-        const fileInput = document.getElementById('fileInput');
-        const log = document.getElementById('statusLog');
-        const out = document.getElementById('output');
-        const btn = document.getElementById('btnRun');
-        
-        if (!key || !fileInput.files.length) { alert("Thiếu Key hoặc File!"); return; }
-
-        log.innerHTML = "⏳ Đang khởi động...";
-        out.value = "";
-        btn.disabled = true;
+        status.style.display = 'block';
+        status.className = ''; 
+        status.innerText = "⏳ Đang kết nối tới Google...";
+        listDiv.innerHTML = "";
 
         try {
-            const file = fileInput.files[0];
-            const fileData = await fileToBase64(file);
-            const genAI = new GoogleGenerativeAI(key);
-            
-            let success = false;
+            // Gọi API trực tiếp để lấy danh sách
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+            const data = await res.json();
 
-            // --- 2. VÒNG LẶP THÔNG MINH ---
-            for (const modelName of MODEL_LIST) {
-                log.innerHTML = `<div class='log-item' style='color:blue'>🔄 Đang thử kết nối model: <b>${modelName}</b>...</div>` + log.innerHTML;
-                
-                try {
-                    const model = genAI.getGenerativeModel({ model: modelName });
-                    const result = await model.generateContent([
-                        "Hãy trích xuất nội dung file này thành JSON câu hỏi trắc nghiệm. Dùng LaTeX cho toán ($...$). Nếu có hình vẽ, hãy mô tả hoặc vẽ SVG. Trả về JSON thuần.", 
-                        { inlineData: { data: fileData, mimeType: file.type } }
-                    ]);
-                    
-                    const text = result.response.text();
-                    // Làm sạch JSON
-                    out.value = text.replace(/```json/g, "").replace(/```/g, "").trim();
-                    
-                    log.innerHTML = `<div class='log-item success'>✅ THÀNH CÔNG VỚI ${modelName}!</div>` + log.innerHTML;
-                    success = true;
-                    break; // Dừng lại ngay khi tìm được model đúng
+            if (data.error) throw new Error(data.error.message);
+            if (!data.models) throw new Error("Không tìm thấy model nào!");
 
-                } catch (e) {
-                    console.error(e);
-                    let errMsg = e.message;
-                    if (errMsg.includes("404")) errMsg = "Không tìm thấy (Do tài khoản chưa hỗ trợ version này)";
-                    log.innerHTML = `<div class='log-item error'>❌ ${modelName} thất bại: ${errMsg}</div>` + log.innerHTML;
-                }
-            }
+            // Lọc ra các model tạo nội dung (generateContent)
+            const validModels = data.models.filter(m => 
+                m.supportedGenerationMethods.includes("generateContent")
+            );
 
-            if (!success) {
-                log.innerHTML = `<div class='log-item error'>😭 Thất bại toàn tập. Key đúng nhưng không model nào nhận.</div>` + log.innerHTML;
-            }
+            if (validModels.length === 0) throw new Error("Key đúng nhưng không có model nào hỗ trợ tạo văn bản.");
+
+            status.className = 'success';
+            status.innerText = `✅ Đã tìm thấy ${validModels.length} model! Hãy bấm chọn 1 cái bên dưới.`;
+            area.style.display = 'block';
+
+            // Vẽ các nút bấm
+            validModels.forEach(m => {
+                // Chỉ lấy tên ngắn (bỏ models/) để hiển thị đẹp
+                const shortName = m.name.replace('models/', '');
+                const btn = document.createElement('div');
+                btn.className = 'model-tag';
+                btn.innerText = shortName;
+                btn.onclick = () => selectModel(m.name, btn);
+                listDiv.appendChild(btn);
+            });
 
         } catch (e) {
-            alert("Lỗi hệ thống: " + e.message);
+            status.className = 'error';
+            status.innerText = "❌ Lỗi Quét: " + e.message;
+        }
+    };
+
+    // Hàm chọn model
+    function selectModel(fullName, btnElement) {
+        document.getElementById('selectedModelId').value = fullName; // Lưu tên đầy đủ (models/gemini-...)
+        
+        // Highlight nút được chọn
+        document.querySelectorAll('.model-tag').forEach(b => b.classList.remove('selected'));
+        btnElement.classList.add('selected');
+
+        // Mở khóa Bước 2
+        document.getElementById('step2').style.opacity = '1';
+        document.getElementById('step2').style.pointerEvents = 'auto';
+        
+        const status = document.getElementById('status');
+        status.className = 'success';
+        status.innerText = `Đã chọn: ${fullName}. Sẵn sàng chạy!`;
+    }
+
+    // Hàm 2: Chạy chính thức bằng SDK
+    window.runExam = async () => {
+        const key = document.getElementById('apiKey').value.trim();
+        const modelName = document.getElementById('selectedModelId').value;
+        const fileInput = document.getElementById('fileInput');
+        const output = document.getElementById('output');
+        const status = document.getElementById('status');
+        const btn = document.getElementById('btnRun');
+
+        if (!fileInput.files.length) { alert("Chưa chọn file!"); return; }
+        if (!modelName) { alert("Chưa chọn model!"); return; }
+
+        btn.disabled = true;
+        status.className = '';
+        status.innerText = "⏳ Đang xử lý đề thi... (Model: " + modelName + ")";
+        output.value = "";
+
+        try {
+            // Chuyển file
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            const base64Promise = new Promise(resolve => {
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
+            const base64Data = await base64Promise;
+
+            // Gọi AI
+            const genAI = new GoogleGenerativeAI(key);
+            // Quan trọng: Truyền đúng tên model lấy từ bước 1 (bỏ prefix models/ nếu SDK tự thêm, nhưng SDK mới xử lý được cả hai)
+            // Để an toàn nhất, ta dùng modelName.replace('models/', '')
+            const cleanModelName = modelName.replace('models/', '');
+            
+            const model = genAI.getGenerativeModel({ model: cleanModelName });
+            
+            const result = await model.generateContent([
+                "Trích xuất đề thi thành JSON (câu hỏi, đáp án, giải thích). Dùng LaTeX cho toán. Nếu có hình thì mô tả.",
+                { inlineData: { data: base64Data, mimeType: file.type } }
+            ]);
+            
+            const text = result.response.text();
+            output.value = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            status.className = 'success';
+            status.innerText = "✅ THÀNH CÔNG RỰC RỠ!";
+
+        } catch (e) {
+            console.error(e);
+            status.className = 'error';
+            status.innerText = "❌ Lỗi Chạy: " + e.message;
         } finally {
             btn.disabled = false;
         }
     };
 </script>
+
 </body>
 </html>
