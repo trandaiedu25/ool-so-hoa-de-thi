@@ -94,8 +94,8 @@ const geminiKey = "AIzaSyBcXKTm0w611xLyfuVi2LCK_klPSIPA1Ek"; // Dòng mới
             // 1. Cấu hình Gemini
             const genAI = new GoogleGenerativeAI(geminiKey);
             // Dùng model Pro để ổn định hơn Flash (tránh lỗi 404)
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
-
+            // Đổi sang model 1.5 Pro bản ổn định nhất
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
             // 2. Chuẩn bị dữ liệu gửi đi
             const base64Data = await fileToBase64(file);
             const mimeType = file.type;
