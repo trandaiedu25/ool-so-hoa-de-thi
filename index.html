@@ -789,20 +789,38 @@
                 setUserAnswers(answers);
                 
                 // Lưu kết quả kể cả khi KHÔNG đạt điểm (Miễn là có mạng)
-                if (isFirebaseReady && user) {
-                    try {
-                        const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-                        // Sử dụng đúng đường dẫn: /artifacts/{appId}/public/data/{COLLECTION_NAME}
-                        await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
-                            name: studentName, 
-                            score: score, 
-                            questionIds: currentQuestions.map(q => q.id), 
-                            answers: sanitizedAnswers, 
-                            timestamp: new Date().toISOString()
-                        });
-                        console.log("Saved result successfully.");
-                    } catch (error) { 
-                        console.error("Lỗi lưu kết quả Firestore:", error); 
+                // Cải tiến: Đảm bảo user đã được xác thực trước khi lưu
+                if (isFirebaseReady) {
+                    let currentUser = user;
+                    
+                    // Nếu user chưa sẵn sàng, thử đăng nhập ẩn danh ngay lập tức
+                    if (!currentUser && auth) {
+                         try {
+                             console.log("User not ready, attempting anonymous auth...");
+                             const cred = await auth.signInAnonymously();
+                             currentUser = cred.user;
+                         } catch (e) {
+                             console.error("Auth error during submit:", e);
+                         }
+                    }
+
+                    if (currentUser) {
+                        try {
+                            const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
+                            // Sử dụng đúng đường dẫn: /artifacts/{appId}/public/data/{COLLECTION_NAME}
+                            await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
+                                name: studentName, 
+                                score: score, 
+                                questionIds: currentQuestions.map(q => q.id), 
+                                answers: sanitizedAnswers, 
+                                timestamp: new Date().toISOString()
+                            });
+                            console.log("Saved result successfully.");
+                        } catch (error) { 
+                            console.error("Lỗi lưu kết quả Firestore:", error); 
+                        }
+                    } else {
+                        console.warn("Cannot save score: User authentication failed.");
                     }
                 }
                 setView('result'); 
