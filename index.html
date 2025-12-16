@@ -44,10 +44,35 @@
         const { useState, useEffect, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- CẤU HÌNH FIREBASE & UTILS ---
+        // ==================================================================================
+        // HƯỚNG DẪN CẤU HÌNH FIREBASE CHO GITHUB/VERCEL
+        // 1. Tạo project tại https://console.firebase.google.com/
+        // 2. Vào Project Settings -> General -> Your apps -> Web (</>) -> Lấy config
+        // 3. Vào Firestore Database -> Rules -> Sửa "allow read, write: if false;" thành "if true;" (Chế độ test)
+        // 4. Thay thế nội dung bên dưới bằng config của bạn:
+        // ==================================================================================
+        
+        const USER_CONFIG = {
+            apiKey: "AIzaSyCEgOrAaEHjZbhYTSkVHGRkGa8WfjjnWvg",
+
+            authDomain: "trandaiedu-39df1.firebaseapp.com",
+
+            projectId: "trandaiedu-39df1",
+
+            storageBucket: "trandaiedu-39df1.firebasestorage.app",
+
+            messagingSenderId: "286264195114",
+
+            appId: "1:286264195114:web:c6ca2fe8e1b3e7e25ceb53",
+
+            measurementId: "G-JB82DY2KHT"
+        };
+
+        // --- HỆ THỐNG FIREBASE & UTILS ---
         
         let db = null;
         let auth = null;
+        let isUsingCustomConfig = false;
         let appId = 'default-app-id';
 
         // Hàm khởi tạo Firebase an toàn
@@ -55,32 +80,39 @@
             try {
                 if (!window.firebase) return false;
 
-                // 1. Lấy App ID từ môi trường (QUAN TRỌNG)
-                if (typeof __app_id !== 'undefined') appId = __app_id;
-
-                // 2. Nếu chưa có App nào, thử init từ biến môi trường
-                if (!firebase.apps.length) {
-                    if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                        const config = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
-                        firebase.initializeApp(config);
-                        console.log("Firebase initialized via config string.");
-                    } else {
-                        // Fallback: Kiểm tra xem đã có config toàn cục chưa
-                        console.warn("Chưa tìm thấy config Firebase.");
-                        return false;
-                    }
-                }
-
-                // 3. Gán biến global
+                // 1. Nếu đã init rồi thì trả về true luôn
                 if (firebase.apps.length > 0) {
                     if (!auth) auth = firebase.auth();
                     if (!db) db = firebase.firestore();
                     return true;
                 }
+
+                // 2. Ưu tiên 1: Config từ môi trường Canvas (biến __firebase_config)
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    const config = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+                    firebase.initializeApp(config);
+                    if (typeof __app_id !== 'undefined') appId = __app_id;
+                    console.log("Firebase: Đã kết nối qua Environment (Canvas).");
+                } 
+                // 3. Ưu tiên 2: Config do người dùng tự điền (cho Vercel/Github)
+                else if (USER_CONFIG.apiKey && USER_CONFIG.apiKey.length > 0) {
+                    firebase.initializeApp(USER_CONFIG);
+                    isUsingCustomConfig = true; // Đánh dấu đang dùng config riêng
+                    console.log("Firebase: Đã kết nối qua USER_CONFIG.");
+                } else {
+                    console.warn("Firebase: Chưa có cấu hình. Vui lòng điền USER_CONFIG trong code.");
+                    return false;
+                }
+
+                // Gán biến global sau khi init
+                auth = firebase.auth();
+                db = firebase.firestore();
+                return true;
+
             } catch (e) {
                 console.error("Lỗi khởi tạo Firebase:", e);
+                return false;
             }
-            return false;
         };
 
         // Gọi khởi tạo lần đầu
@@ -521,6 +553,11 @@
                 <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-white/20">
                     <h1 className="text-4xl font-bold mb-2">TRANDAIEDU</h1>
                     <h2 className="text-xl mb-8 text-cyan-100 font-medium">ĐỀ THI HỌC KỲ 1 - TOÁN 12</h2>
+                    {isUsingCustomConfig === false && !window.__firebase_config && (
+                        <div className="mb-4 bg-red-500/20 text-red-100 p-2 rounded text-sm border border-red-500/50">
+                            Cảnh báo: Chưa cấu hình Firebase. Điểm sẽ KHÔNG được lưu.
+                        </div>
+                    )}
                     <div className="space-y-4">
                         <button onClick={() => onSelectMode('student')} className="w-full py-4 bg-white text-blue-800 rounded-xl font-bold hover:bg-blue-50 transition-all shadow-lg flex items-center justify-center gap-2"><Icon name="user"/> Học Sinh Vào Thi</button>
                         <button onClick={() => onSelectMode('teacher')} className="w-full py-4 bg-blue-900/50 text-white rounded-xl font-bold hover:bg-blue-900 transition-all border border-blue-400/30 flex items-center justify-center gap-2"><Icon name="lock"/> Giáo Viên Xem Điểm</button>
@@ -568,7 +605,7 @@
             };
 
             return (
-                <div className="min-h-screen bg-gray-100 pb-20 relative animate-fade-in">
+                <div className="min-h-screen bg-gray-100 pb-20 relative">
                     {/* Header */}
                     <div className="bg-white shadow-md p-4 sticky top-0 z-10 border-b border-gray-200">
                         <div className="max-w-3xl mx-auto flex justify-between items-center">
@@ -577,7 +614,7 @@
                     </div>
 
                     {/* Questions */}
-                    <div className="max-w-3xl mx-auto p-4 space-y-8 mt-4">
+                    <div className="max-w-3xl mx-auto p-4 space-y-8 mt-4 animate-fade-in">
                         {questions.map((q, idx) => (
                             <div key={q.id} className="bg-white rounded-xl shadow-sm p-6 transition-all hover:shadow-md">
                                 <div className="mb-3">
@@ -632,8 +669,8 @@
 
                     {/* Custom Confirmation Modal */}
                     {showConfirmModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay p-4 animate-fade-in">
-                            <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                            <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in">
                                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
                                     <Icon name="help-circle" size={24} className="text-blue-600"/>
                                 </div>
@@ -735,8 +772,14 @@
                     return;
                 }
 
-                // Truy vấn đúng đường dẫn /artifacts/{appId}/public/data/...
-                const q = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME);
+                let q;
+                // Nếu dùng custom config, dùng path ngắn gọn
+                if (isUsingCustomConfig) {
+                    q = db.collection(COLLECTION_NAME);
+                } else {
+                    // Nếu dùng môi trường Canvas, dùng strict path
+                    q = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME);
+                }
                 
                 const unsubscribe = q.onSnapshot((snapshot) => {
                     const data = snapshot.docs.map(doc => {
@@ -855,8 +898,18 @@
 
                             if (currentUser) {
                                 const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-                                // 3. Ghi vào Firestore
-                                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
+                                
+                                let collectionRef;
+                                // Logic chọn đường dẫn lưu
+                                if (isUsingCustomConfig) {
+                                    // Chế độ custom config (Vercel/GitHub): Lưu vào root collection
+                                    collectionRef = db.collection(COLLECTION_NAME);
+                                } else {
+                                    // Chế độ Canvas: Lưu vào artifacts path
+                                    collectionRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME);
+                                }
+
+                                await collectionRef.add({
                                     name: studentName, 
                                     score: score, 
                                     questionIds: currentQuestions.map(q => q.id), 
@@ -874,8 +927,7 @@
                     }
                 })();
 
-                // 4. Timeout an toàn: Đợi lưu tối đa 3 giây, sau đó chuyển trang
-                // Điều này giúp nút Nộp bài không bao giờ bị treo
+                // 4. Timeout an toàn
                 const timeoutPromise = new Promise(resolve => setTimeout(resolve, 3000));
                 
                 await Promise.race([savePromise, timeoutPromise]);
