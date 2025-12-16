@@ -49,12 +49,12 @@
         let auth = null;
         let appId = 'default-app-id';
 
-        // Hàm khởi tạo Firebase an toàn, có thể gọi lại nhiều lần
+        // Hàm khởi tạo Firebase an toàn
         const initializeFirebase = () => {
             try {
                 if (!window.firebase) return false;
 
-                // 1. Lấy App ID
+                // 1. Lấy App ID từ môi trường (QUAN TRỌNG)
                 if (typeof __app_id !== 'undefined') appId = __app_id;
 
                 // 2. Nếu chưa có App nào, thử init từ biến môi trường
@@ -62,14 +62,13 @@
                     if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                         const config = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
                         firebase.initializeApp(config);
-                        console.log("Firebase initialized via config string.");
+                        console.log("Firebase initialized.");
                     } else {
-                        // Fallback: Kiểm tra nếu config đã là object toàn cục (hiếm gặp nhưng có thể)
                         return false;
                     }
                 }
 
-                // 3. Gán biến global nếu đã init thành công
+                // 3. Gán biến global
                 if (firebase.apps.length > 0) {
                     if (!auth) auth = firebase.auth();
                     if (!db) db = firebase.firestore();
@@ -800,32 +799,46 @@
                 setFinalScore(score);
                 setUserAnswers(answers);
                 
-                // Đảm bảo Firebase sẵn sàng
-                if (!db) initializeFirebase();
+                // Force initialize if needed
+                if (!db || !auth) {
+                    initializeFirebase();
+                }
 
-                if (db) {
-                    let currentUser = user;
-                    if (!currentUser && auth) {
-                         try {
-                             const cred = await auth.signInAnonymously();
-                             currentUser = cred.user;
-                         } catch (e) { console.error("Auth error:", e); }
-                    }
+                if (db && auth) {
+                    try {
+                        // Ensure we have a user
+                        let currentUser = auth.currentUser;
+                        if (!currentUser) {
+                            console.log("No user, signing in anonymously...");
+                            const cred = await auth.signInAnonymously();
+                            currentUser = cred.user;
+                        }
 
-                    if (currentUser || (auth && auth.currentUser)) {
-                        try {
+                        if (currentUser) {
                             const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-                            await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
+                            // Construct path carefully
+                            const collectionRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME);
+                            
+                            await collectionRef.add({
                                 name: studentName, 
                                 score: score, 
                                 questionIds: currentQuestions.map(q => q.id), 
                                 answers: sanitizedAnswers, 
-                                timestamp: new Date().toISOString()
+                                timestamp: new Date().toISOString(),
+                                uid: currentUser.uid // useful for debugging/rules
                             });
-                            console.log("Saved.");
-                        } catch (error) { console.error("Lỗi lưu:", error); }
+                            console.log("Score saved successfully to", appId);
+                        } else {
+                            console.error("Auth failed: Could not get a user.");
+                        }
+                    } catch (error) { 
+                        console.error("Error saving score:", error);
+                        // Optional: alert user differently or just log as requested to remove "offline" mode
                     }
+                } else {
+                    console.error("Firebase not initialized. Cannot save.");
                 }
+                
                 setView('result'); 
             };
 
