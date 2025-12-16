@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đề Thi Học Kỳ 1 - Toán 12 (CT Mới)</title>
+    <title>TRANDAIEDU - Đề Thi Học Kỳ 1 Toán 12</title>
     
-    <!-- React & ReactDOM -->
+    <!-- React & ReactDOM (UMD) -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     
@@ -15,7 +15,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- KaTeX for Math -->
+    <!-- KaTeX -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
@@ -23,7 +23,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Firebase (Optional) -->
+    <!-- Firebase (Compat version for simple HTML usage) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -31,14 +31,10 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
         .katex { font-size: 1.1em; }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        table.custom-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px; font-size: 0.9em; }
-        table.custom-table th, table.custom-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        table.custom-table th { background-color: #f3f4f6; font-weight: bold; }
+        /* Tùy chỉnh thêm để hiển thị bảng trong lời giải đẹp hơn */
+        .explanation-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9em; }
+        .explanation-table th, .explanation-table td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }
+        .explanation-table th { background-color: #f1f5f9; }
     </style>
 </head>
 <body>
@@ -49,14 +45,13 @@
         const { createRoot } = ReactDOM;
 
         // --- CẤU HÌNH FIREBASE ---
-        // Để trống để chạy chế độ Offline
         const firebaseConfig = {
-            apiKey: "",
-            authDomain: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
+            apiKey: "YOUR_API_KEY_HERE",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         let db = null;
@@ -64,14 +59,14 @@
         let isFirebaseReady = false;
 
         try {
-            if (firebaseConfig.apiKey && window.firebase) {
+            if (firebaseConfig.apiKey !== "YOUR_API_KEY_HERE" && window.firebase) {
                 const app = firebase.initializeApp(firebaseConfig);
                 auth = firebase.auth();
                 db = firebase.firestore();
                 isFirebaseReady = true;
                 console.log("Firebase connected.");
             } else {
-                console.warn("Chạy chế độ Offline.");
+                console.warn("Chạy chế độ Offline (chưa cấu hình Firebase).");
             }
         } catch (e) {
             console.error("Lỗi Firebase:", e);
@@ -79,7 +74,7 @@
 
         const COLLECTION_NAME = "exam_results_grade12_hk1";
 
-        // --- ICONS COMPONENT ---
+        // --- ICONS ---
         const Icon = ({ name, size=24, className="" }) => {
             const iconRef = useRef(null);
             useEffect(() => {
@@ -110,7 +105,7 @@
             return <span ref={containerRef} className={className} dangerouslySetInnerHTML={{__html: text}} />;
         };
 
-        // --- HÌNH VẼ SVG (Dựa trên đề bài) ---
+        // --- SVG IMAGES (Đã cập nhật theo đề thi Toán 12) ---
         
         // Hình Câu 1: Đồ thị hàm bậc 3
         const GraphCubic = () => (
@@ -133,7 +128,7 @@
         // Hình Câu 5: Hình hộp chữ nhật & Vector
         const BoxVector = () => (
             <div className="flex justify-center my-4">
-                <svg width="250" height="180" viewBox="0 0 250 180" className="bg-white rounded border">
+                <svg width="250" height="180" viewBox="0 0 250 180" className="bg-white rounded border border-gray-200">
                     <polygon points="50,150 150,150 200,100 100,100" fill="none" stroke="black" />
                     <polygon points="50,50 150,50 200,0 100,0" fill="none" stroke="black" transform="translate(0, 50)" />
                     <line x1="50" y1="150" x2="50" y2="100" stroke="black" />
@@ -157,7 +152,7 @@
         // Hình Câu 7: Hình lập phương góc Vector
         const CubeAngle = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white rounded border">
+                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white rounded border border-gray-200">
                     <rect x="50" y="80" width="80" height="80" fill="none" stroke="black"/>
                     <polyline points="50,80 80,50 160,50 160,130 130,160" fill="none" stroke="black"/>
                     <line x1="130" y1="80" x2="160" y2="50" stroke="black"/>
@@ -175,7 +170,7 @@
         // Hình Câu 11: Hàm phân thức
         const GraphRational = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white rounded border">
+                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white rounded border border-gray-200">
                     <line x1="20" y1="100" x2="180" y2="100" stroke="black"/>
                     <line x1="100" y1="20" x2="100" y2="180" stroke="black"/>
                     <path d="M 20 80 Q 80 80 90 20" stroke="blue" fill="none" />
@@ -190,7 +185,7 @@
         // Hình Phần 2 - Câu 1: Hàm số
         const GraphRational2 = () => (
              <div className="flex justify-center my-4">
-                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white rounded border">
+                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white rounded border border-gray-200">
                   <line x1="20" y1="100" x2="180" y2="100" stroke="black"/>
                   <line x1="100" y1="20" x2="100" y2="180" stroke="black"/>
                   <line x1="130" y1="20" x2="130" y2="180" stroke="red" strokeDasharray="4"/>
@@ -206,7 +201,7 @@
         // Hình Phần 2 - Câu 2: Tứ diện Oxyz
         const TetrahedronOxyz = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white rounded border">
+                <svg width="200" height="200" viewBox="0 0 200 200" className="bg-white rounded border border-gray-200">
                   <line x1="100" y1="100" x2="180" y2="150" stroke="black"/>
                   <line x1="100" y1="100" x2="20" y2="150" stroke="black"/>
                   <line x1="100" y1="100" x2="100" y2="20" stroke="black"/>
@@ -222,7 +217,7 @@
         // Hình Phần 2 - Câu 4: Cửa sổ
         const WindowShape = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="250" viewBox="0 0 200 250" className="bg-white rounded border">
+                <svg width="200" height="250" viewBox="0 0 200 250" className="bg-white rounded border border-gray-200">
                   <rect x="50" y="100" width="100" height="120" fill="none" stroke="black"/>
                   <path d="M 50 100 A 50 50 0 0 1 150 100" fill="none" stroke="black"/>
                   <text x="40" y="230" fontSize="12">D</text> <text x="160" y="230" fontSize="12">C</text>
@@ -234,7 +229,7 @@
         // Hình Phần 3 - Câu 3: Góc vector
         const AngleVector = () => (
              <div className="flex justify-center my-4">
-                <svg width="200" height="150" viewBox="0 0 200 150" className="bg-white rounded border">
+                <svg width="200" height="150" viewBox="0 0 200 150" className="bg-white rounded border border-gray-200">
                   <defs>
                     <marker id="arrowBlack" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
                       <path d="M0,0 L0,6 L9,3 z" fill="black" />
@@ -250,7 +245,7 @@
         // Hình Phần 3 - Câu 4: Chi phí
         const CostGraph = () => (
             <div className="flex justify-center my-4">
-                <svg width="300" height="200" viewBox="0 0 300 200" className="bg-white rounded border">
+                <svg width="300" height="200" viewBox="0 0 300 200" className="bg-white rounded border border-gray-200">
                   <line x1="30" y1="180" x2="280" y2="180" stroke="black"/>
                   <line x1="30" y1="20" x2="30" y2="180" stroke="black"/>
                   <text x="270" y="170" fontSize="12">v</text>
@@ -264,7 +259,7 @@
         // Hình Phần 3 - Câu 6: Lăng trụ tam giác
         const PrismShape = () => (
             <div className="flex justify-center my-4">
-                <svg width="200" height="300" viewBox="0 0 200 300" className="bg-white rounded border">
+                <svg width="200" height="300" viewBox="0 0 200 300" className="bg-white rounded border border-gray-200">
                   <polygon points="50,250 150,250 100,200" fill="none" stroke="black"/>
                   <polygon points="50,100 150,100 100,50" fill="none" stroke="black"/>
                   <line x1="50" y1="250" x2="50" y2="100" stroke="black"/>
@@ -279,8 +274,7 @@
             </div>
         );
 
-
-        // --- DỮ LIỆU ĐỀ THI ---
+        // --- QUESTION BANK (ĐÃ CẬP NHẬT TOÀN BỘ ĐỀ THI VÀ LỜI GIẢI CHI TIẾT) ---
         const QUESTION_BANK = [
             // PHẦN 1: TRẮC NGHIỆM (12 câu)
             { 
@@ -298,7 +292,7 @@
                 question: "Giá trị cực đại của hàm số $y = x^3 - 3x + 2$ là:", 
                 options: ["$4$", "$0$", "$2$", "$-2$"], 
                 correct: 0, 
-                explanation: "1. Tập xác định: $D = \\mathbb{R}$.<br/>2. Đạo hàm: $y' = 3x^2 - 3$.<br/>3. Cho $y' = 0 \\Leftrightarrow 3x^2 - 3 = 0 \\Leftrightarrow x = 1$ hoặc $x = -1$.<br/>4. Bảng biến thiên (hoặc xét dấu): $y'$ dương ngoài khoảng nghiệm, âm trong khoảng nghiệm.<br/>- Tại $x = -1$, hàm số đạt cực đại. $y_{CĐ} = (-1)^3 - 3(-1) + 2 = -1 + 3 + 2 = 4$.<br/>- Tại $x = 1$, hàm số đạt cực tiểu. $y_{CT} = 1^3 - 3(1) + 2 = 0$.<br/>Giá trị cực đại là $4$." 
+                explanation: "1. Tập xác định: $D = \\mathbb{R}$.<br/>2. Đạo hàm: $y' = 3x^2 - 3$.<br/>3. Cho $y' = 0 \\Leftrightarrow 3x^2 - 3 = 0 \\Leftrightarrow x = 1$ hoặc $x = -1$.<br/>4. Bảng biến thiên (hoặc xét dấu): $y'$ dương ngoài khoảng nghiệm, âm trong khoảng nghiệm.<br/>   - Tại $x = -1$, hàm số đạt cực đại. $y_{CĐ} = (-1)^3 - 3(-1) + 2 = -1 + 3 + 2 = 4$.<br/>   - Tại $x = 1$, hàm số đạt cực tiểu. $y_{CT} = 1^3 - 3(1) + 2 = 0$.<br/>Giá trị cực đại là $4$." 
             },
             { 
                 id: 'p1_q3', 
@@ -328,7 +322,7 @@
             { 
                 id: 'p1_q6', 
                 type: 'mcq', 
-                question: "Cho mẫu số liệu ghép nhóm về thời gian tập thể dục (phút) của học sinh:<table class='custom-table'><tr><th>Thời gian</th><th>[0; 20)</th><th>[20; 40)</th><th>[40; 60)</th><th>[60; 80)</th></tr><tr><td>Số HS</td><td>5</td><td>12</td><td>8</td><td>3</td></tr></table>Nhóm chứa mốt của mẫu số liệu là:", 
+                question: "Cho mẫu số liệu ghép nhóm về thời gian tập thể dục (phút) của học sinh:<table class='explanation-table'><tr><th>Thời gian</th><th>[0; 20)</th><th>[20; 40)</th><th>[40; 60)</th><th>[60; 80)</th></tr><tr><td>Số HS</td><td>5</td><td>12</td><td>8</td><td>3</td></tr></table>Nhóm chứa mốt của mẫu số liệu là:", 
                 options: ["$[0; 20)$", "$[20; 40)$", "$[40; 60)$", "$[60; 80)$"], 
                 correct: 1, 
                 explanation: "Nhóm chứa mốt là nhóm có tần số lớn nhất.<br/>Tần số các nhóm lần lượt là 5, 12, 8, 3.<br/>Tần số lớn nhất là 12, tương ứng với nhóm $[20; 40)$." 
@@ -414,7 +408,7 @@
             { 
                 id: 'p2_q3', 
                 type: 'group_tf', 
-                question: "Cho mẫu số liệu ghép nhóm về doanh thu (tỷ đồng) của 20 chi nhánh công ty:<table class='custom-table'><tr><th>Doanh thu</th><th>[10; 12)</th><th>[12; 14)</th><th>[14; 16)</th><th>[16; 18)</th></tr><tr><td>Số chi nhánh</td><td>4</td><td>8</td><td>6</td><td>2</td></tr></table>", 
+                question: "Cho mẫu số liệu ghép nhóm về doanh thu (tỷ đồng) của 20 chi nhánh công ty:<table class='explanation-table'><tr><th>Doanh thu</th><th>[10; 12)</th><th>[12; 14)</th><th>[14; 16)</th><th>[16; 18)</th></tr><tr><td>Số chi nhánh</td><td>4</td><td>8</td><td>6</td><td>2</td></tr></table>", 
                 subQuestions: [
                     { id: 'a', text: "Số chi nhánh có doanh thu dưới 14 tỷ đồng là 8.", correct: false },
                     { id: 'b', text: "Nhóm chứa trung vị là nhóm $[12; 14)$.", correct: true },
@@ -485,50 +479,77 @@
             }
         ];
         
-        // --- LOGIC TÍNH ĐIỂM ---
-        const calculateScore = (questions, answers) => {
+        // --- LOGIC HÀM ---
+        const PASSING_SCORE = 6.0;
+        
+        const generateRandomQuiz = () => {
+             // Logic trộn đề: Lấy đủ 22 câu theo cấu trúc 12-4-6
+             const mcqPool = QUESTION_BANK.filter(q => q.type === 'mcq');
+             const tfPool = QUESTION_BANK.filter(q => q.type === 'group_tf');
+             const textPool = QUESTION_BANK.filter(q => q.type === 'text');
+             
+             // Shuffle và slice
+             const selectedMcq = [...mcqPool].sort(() => 0.5 - Math.random()).slice(0, 12);
+             const selectedTf = [...tfPool].sort(() => 0.5 - Math.random()).slice(0, 4);
+             const selectedText = [...textPool].sort(() => 0.5 - Math.random()).slice(0, 6);
+             
+             // Nếu chưa đủ câu (do dữ liệu demo ít), lấy hết những gì có
+             // Trong thực tế khi bạn điền đủ, nó sẽ lấy đúng 22 câu
+             return [...selectedMcq, ...selectedTf, ...selectedText];
+        };
+
+        const calculateScore = (currentQuestions, answers) => {
             let score = 0;
-            let maxScore = 0; // Sẽ là 10
+            let totalMaxScore = 0; 
 
-            // Phần 1: 12 câu x 0.25 = 3.0 điểm
-            questions.filter(q => q.type === 'mcq').forEach(q => {
-                if(answers[q.id] === q.correct) score += 0.25;
-            });
+            currentQuestions.forEach(q => {
+                let questionMaxScore = 0;
+                let questionScore = 0;
 
-            // Phần 2: 4 câu x 1.0 = 4.0 điểm (Lũy tiến)
-            questions.filter(q => q.type === 'group_tf').forEach(q => {
-                let correctCount = 0;
-                const userAns = answers[q.id] || {};
-                q.subQuestions.forEach(sub => {
-                    if(userAns[sub.id] === sub.correct) correctCount++;
-                });
+                if (q.type === 'mcq') {
+                    questionMaxScore = 0.25;
+                    if (answers[q.id] === q.correct) questionScore = 0.25;
+                } else if (q.type === 'text') {
+                    questionMaxScore = 0.5;
+                    const userAns = (answers[q.id] || "").trim();
+                    if (q.acceptable.includes(userAns)) questionScore = 0.5;
+                } else if (q.type === 'group_tf') {
+                    questionMaxScore = 1.0;
+                    let correctCount = 0;
+                    const userGroupAns = answers[q.id] || {};
+                    q.subQuestions.forEach(sub => {
+                        if (userGroupAns[sub.id] === sub.correct) correctCount++;
+                    });
+                    if (correctCount === 1) questionScore = 0.1;
+                    else if (correctCount === 2) questionScore = 0.25;
+                    else if (correctCount === 3) questionScore = 0.5;
+                    else if (correctCount === 4) questionScore = 1.0;
+                }
                 
-                if (correctCount === 1) score += 0.1;
-                else if (correctCount === 2) score += 0.25;
-                else if (correctCount === 3) score += 0.5;
-                else if (correctCount === 4) score += 1.0;
+                score += questionScore;
+                totalMaxScore += questionMaxScore;
             });
-
-            // Phần 3: 6 câu x 0.5 = 3.0 điểm
-            questions.filter(q => q.type === 'text').forEach(q => {
-                const userVal = (answers[q.id] || "").trim().replace(',', '.'); // Chuẩn hóa dấu phẩy
-                if(q.acceptable.includes(userVal)) score += 0.5;
-            });
-
-            return Math.round(score * 100) / 100;
+            
+            // Nếu tổng điểm tối đa < 10, quy đổi về 10. Nếu >= 10, giữ nguyên.
+            // Logic này đảm bảo nếu bạn chỉ test 5 câu thì vẫn được 10 điểm nếu đúng hết.
+            if (totalMaxScore > 0) {
+                 const scaledScore = (score / totalMaxScore) * 10;
+                 return Math.round(scaledScore * 100) / 100;
+            }
+            return 0;
         };
         
-        // --- COMPONENTS GIAO DIỆN ---
-
+        // ... (Các Component WelcomeScreen, StudentNameInput, QuizView, SolutionView, TeacherLogin giữ nguyên như phiên bản trước) ...
+        
         const WelcomeScreen = ({ onSelectMode, isOnline }) => (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-600 to-purple-800 p-4 text-white">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-cyan-600 to-blue-800 p-4 text-white">
                 <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-white/20">
-                    <h1 className="text-4xl font-bold mb-2">TOÁN 12</h1>
-                    <h2 className="text-xl mb-8 text-indigo-100 font-medium">ĐỀ THI HỌC KỲ 1 (CẤU TRÚC MỚI)</h2>
-                    {!isOnline && (<div className="mb-6 bg-yellow-500/20 text-yellow-200 p-3 rounded-lg text-sm border border-yellow-500/50 flex items-center justify-center gap-2"><Icon name="alert-triangle" size={16}/> Chế độ Offline: Kết quả sẽ không được lưu.</div>)}
+                    <h1 className="text-4xl font-bold mb-2">TRANDAIEDU</h1>
+                    <h2 className="text-xl mb-8 text-cyan-100 font-medium">ĐỀ THI HỌC KỲ 1 - TOÁN 12</h2>
+                    {!isOnline && (<div className="mb-6 bg-yellow-500/20 text-yellow-200 p-3 rounded-lg text-sm border border-yellow-500/50 flex items-center justify-center gap-2"><Icon name="alert" size={16}/> Chế độ Offline: Kết quả sẽ không được lưu.</div>)}
                     <div className="space-y-4">
-                        <button onClick={() => onSelectMode('student')} className="w-full py-4 bg-white text-indigo-800 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg flex items-center justify-center gap-2"><Icon name="user"/> Bắt Đầu Làm Bài</button>
-                        <button onClick={() => onSelectMode('teacher')} className="w-full py-4 bg-indigo-900/50 text-white rounded-xl font-bold hover:bg-indigo-900 transition-all border border-indigo-400/30 flex items-center justify-center gap-2"><Icon name="lock"/> Giáo Viên Xem Điểm</button>
+                        <button onClick={() => onSelectMode('student')} className="w-full py-4 bg-white text-blue-800 rounded-xl font-bold hover:bg-blue-50 transition-all shadow-lg flex items-center justify-center gap-2"><Icon name="user"/> Học Sinh Vào Thi</button>
+                        <button onClick={() => onSelectMode('teacher')} className="w-full py-4 bg-blue-900/50 text-white rounded-xl font-bold hover:bg-blue-900 transition-all border border-blue-400/30 flex items-center justify-center gap-2"><Icon name="lock"/> Giáo Viên Xem Điểm</button>
                     </div>
                 </div>
             </div>
@@ -541,9 +562,10 @@
                     <form onSubmit={(e) => { e.preventDefault(); if(name.trim()) onStart(name); }} className="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full">
                         <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">Nhập Thông Tin</h2>
                         <div className="mb-6">
-                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Họ và tên..." required />
+                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500" placeholder="Họ và tên..." required />
+                            <p className="text-xs text-green-600 mt-2 flex items-center gap-1"><Icon name="check" size={12}/> Chế độ: Học sinh (Không cần đăng nhập)</p>
                         </div>
-                        <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors">Vào Thi</button>
+                        <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors">Bắt Đầu</button>
                     </form>
                 </div>
             );
@@ -552,35 +574,12 @@
         const QuizView = ({ studentName, questions, onSubmit, isConnected }) => {
             const [answers, setAnswers] = useState({});
             const [isSubmitting, setIsSubmitting] = useState(false);
-            const [timeLeft, setTimeLeft] = useState(90 * 60); // 90 phút
-
-            useEffect(() => { 
-                window.scrollTo(0, 0); 
-                const timer = setInterval(() => {
-                    setTimeLeft(prev => {
-                        if(prev <= 1) {
-                            clearInterval(timer);
-                            handleConfirmSubmit(true);
-                            return 0;
-                        }
-                        return prev - 1;
-                    });
-                }, 1000);
-                return () => clearInterval(timer);
-            }, []);
-
-            const formatTime = (s) => {
-                const m = Math.floor(s / 60);
-                const sec = s % 60;
-                return `${m}:${sec < 10 ? '0' : ''}${sec}`;
-            };
-
+            useEffect(() => { window.scrollTo(0, 0); }, []);
             const handleMcqChange = (qId, optIdx) => setAnswers(prev => ({ ...prev, [qId]: optIdx }));
-            const handleTfChange = (qId, subId, val) => setAnswers(prev => ({ ...prev, [qId]: { ...(prev[qId] || {}), [subId]: val } }));
+            const handleTfChange = (qId, subId, val) => setAnswers(prev => ({ ...prev, [qId]: { ...(prev[qId] || {}), [subId]: val } })); // Fixed TF handler
             const handleTextChange = (qId, val) => setAnswers(prev => ({ ...prev, [qId]: val }));
-            
-            const handleConfirmSubmit = async (force = false) => {
-                if(force || confirm("Bạn có chắc chắn muốn nộp bài?")) {
+            const handleConfirmSubmit = async () => {
+                if(confirm("Bạn có chắc chắn muốn nộp bài?")) {
                     setIsSubmitting(true);
                     try { await onSubmit(answers); } catch (error) { setIsSubmitting(false); }
                 }
@@ -588,88 +587,63 @@
 
             return (
                 <div className="min-h-screen bg-gray-100 pb-20 relative">
-                    <div className="bg-white shadow-md p-4 sticky top-0 z-20 border-b border-gray-200">
-                        <div className="max-w-4xl mx-auto flex justify-between items-center">
-                            <div className="font-bold text-blue-700 flex items-center gap-2 truncate max-w-[150px]"><Icon name="user" size={18}/> {studentName}</div>
+                    <div className="bg-white shadow-md p-4 sticky top-0 z-10 border-b border-gray-200">
+                        <div className="max-w-3xl mx-auto flex justify-between items-center">
+                            <div className="font-bold text-blue-700 flex items-center gap-2"><Icon name="user" size={18}/> {studentName}</div>
                             <div className="flex items-center gap-3">
-                                <span className={`font-mono text-xl font-bold ${timeLeft < 300 ? 'text-red-600 animate-pulse' : 'text-gray-700'}`}>{formatTime(timeLeft)}</span>
+                                {isConnected ? <span className="flex items-center gap-1 text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200"><Icon name="wifi" size={14}/> Online</span> : <span className="flex items-center gap-1 text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full border border-red-200 animate-pulse"><Icon name="wifioff" size={14}/> Offline</span>}
                             </div>
                         </div>
                     </div>
-                    <div className="max-w-4xl mx-auto p-4 space-y-8 mt-4">
-                        {/* Phần 1 */}
-                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                            <h3 className="font-bold text-blue-800 text-lg">PHẦN 1: TRẮC NGHIỆM (3.0 điểm)</h3>
-                            <p className="text-sm text-blue-600">Chọn 1 đáp án đúng duy nhất.</p>
-                        </div>
-                        {questions.filter(q => q.type === 'mcq').map((q, idx) => (
-                            <div key={q.id} className="bg-white rounded-xl shadow-sm p-6 relative">
-                                <span className="absolute top-4 right-4 text-xs font-bold text-gray-400">Câu {idx + 1}</span>
-                                <div className="mb-4 font-medium text-gray-800">
-                                    <MathText text={q.question} />
+                    <div className="max-w-3xl mx-auto p-4 space-y-8 mt-4">
+                        {questions.map((q, idx) => (
+                            <div key={q.id} className="bg-white rounded-xl shadow-sm p-6">
+                                <div className="mb-3">
+                                    <span className={`inline-block text-xs font-bold px-2 py-1 rounded mb-2 ${q.type === 'mcq' ? 'bg-blue-100 text-blue-800' : q.type === 'group_tf' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'}`}>
+                                        {q.type === 'mcq' ? 'Phần 1: Trắc nghiệm' : q.type === 'group_tf' ? 'Phần 2: Đúng/Sai' : 'Phần 3: Trả lời ngắn'}
+                                    </span>
+                                    <div className="font-medium text-gray-800 flex gap-2">
+                                        <span className="font-bold text-blue-600 whitespace-nowrap">Câu {idx + 1}:</span>
+                                        <MathText text={q.question} />
+                                    </div>
                                     {q.image && <div className="mt-3 flex justify-center">{q.image}</div>}
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {q.options.map((opt, optIdx) => (
-                                        <button key={optIdx} onClick={() => handleMcqChange(q.id, optIdx)} className={`p-3 text-left rounded-lg border text-sm transition-all ${answers[q.id] === optIdx ? 'bg-blue-100 border-blue-500 text-blue-800 font-medium ring-1 ring-blue-500' : 'hover:bg-gray-50 border-gray-200'}`}>
-                                            <span className="font-bold mr-2">{String.fromCharCode(65 + optIdx)}.</span><MathText text={opt} />
-                                        </button>
-                                    ))}
-                                </div>
+                                {q.type === 'mcq' && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {q.options.map((opt, optIdx) => (
+                                            <button key={optIdx} onClick={() => handleMcqChange(q.id, optIdx)} className={`p-3 text-left rounded-lg border text-sm transition-all ${answers[q.id] === optIdx ? 'bg-blue-100 border-blue-500 text-blue-800 font-medium ring-1 ring-blue-500' : 'hover:bg-gray-50 border-gray-200'}`}>
+                                                <span className="font-bold mr-2">{String.fromCharCode(65 + optIdx)}.</span><MathText text={opt} />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {q.type === 'group_tf' && (
+                                    <div className="border rounded-lg overflow-hidden">
+                                        <table className="w-full text-sm">
+                                            <thead className="bg-gray-100"><tr><th className="p-3 text-left">Mệnh đề</th><th className="p-3 w-16 text-center">Đúng</th><th className="p-3 w-16 text-center">Sai</th></tr></thead>
+                                            <tbody className="divide-y">
+                                                {q.subQuestions.map(sub => {
+                                                    const currentVal = (answers[q.id] || {})[sub.id];
+                                                    return (
+                                                        <tr key={sub.id} className="hover:bg-gray-50">
+                                                            <td className="p-3"><MathText text={sub.text} /></td>
+                                                            <td className="p-3 text-center"><input type="radio" name={`${q.id}-${sub.id}`} checked={currentVal === true} onChange={() => handleTfChange(q.id, sub.id, true)} className="w-5 h-5 cursor-pointer accent-blue-600"/></td>
+                                                            <td className="p-3 text-center"><input type="radio" name={`${q.id}-${sub.id}`} checked={currentVal === false} onChange={() => handleTfChange(q.id, sub.id, false)} className="w-5 h-5 cursor-pointer accent-red-600"/></td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                                {q.type === 'text' && (
+                                    <input type="text" value={answers[q.id] || ''} onChange={(e) => handleTextChange(q.id, e.target.value)} className="w-full md:w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nhập đáp án..." />
+                                )}
                             </div>
                         ))}
-
-                        {/* Phần 2 */}
-                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 mt-8">
-                            <h3 className="font-bold text-purple-800 text-lg">PHẦN 2: ĐÚNG/SAI (4.0 điểm)</h3>
-                            <p className="text-sm text-purple-600">Trả lời Đúng hoặc Sai cho từng ý a, b, c, d.</p>
-                        </div>
-                        {questions.filter(q => q.type === 'group_tf').map((q, idx) => (
-                            <div key={q.id} className="bg-white rounded-xl shadow-sm p-6 relative">
-                                <span className="absolute top-4 right-4 text-xs font-bold text-gray-400">Câu {idx + 1}</span>
-                                <div className="mb-4 font-medium text-gray-800">
-                                    <MathText text={q.question} />
-                                    {q.image && <div className="mt-3 flex justify-center">{q.image}</div>}
-                                </div>
-                                <div className="border rounded-lg overflow-hidden">
-                                    <table className="w-full text-sm">
-                                        <thead className="bg-gray-100"><tr><th className="p-3 text-left">Mệnh đề</th><th className="p-3 w-14 text-center">Đ</th><th className="p-3 w-14 text-center">S</th></tr></thead>
-                                        <tbody className="divide-y">
-                                            {q.subQuestions.map(sub => {
-                                                const currentVal = (answers[q.id] || {})[sub.id];
-                                                return (
-                                                    <tr key={sub.id} className="hover:bg-gray-50">
-                                                        <td className="p-3"><span className="font-bold mr-1">{sub.id})</span><MathText text={sub.text} /></td>
-                                                        <td className="p-3 text-center"><input type="radio" name={`${q.id}-${sub.id}`} checked={currentVal === true} onChange={() => handleTfChange(q.id, sub.id, true)} className="w-5 h-5 cursor-pointer accent-blue-600"/></td>
-                                                        <td className="p-3 text-center"><input type="radio" name={`${q.id}-${sub.id}`} checked={currentVal === false} onChange={() => handleTfChange(q.id, sub.id, false)} className="w-5 h-5 cursor-pointer accent-red-600"/></td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Phần 3 */}
-                        <div className="bg-orange-50 p-4 rounded-lg border border-orange-200 mt-8">
-                            <h3 className="font-bold text-orange-800 text-lg">PHẦN 3: TRẢ LỜI NGẮN (3.0 điểm)</h3>
-                            <p className="text-sm text-orange-600">Nhập số thập phân, dùng dấu chấm hoặc phẩy.</p>
-                        </div>
-                        {questions.filter(q => q.type === 'text').map((q, idx) => (
-                            <div key={q.id} className="bg-white rounded-xl shadow-sm p-6 relative">
-                                <span className="absolute top-4 right-4 text-xs font-bold text-gray-400">Câu {idx + 1}</span>
-                                <div className="mb-4 font-medium text-gray-800">
-                                    <MathText text={q.question} />
-                                    {q.image && <div className="mt-3 flex justify-center">{q.image}</div>}
-                                </div>
-                                <input type="text" value={answers[q.id] || ''} onChange={(e) => handleTextChange(q.id, e.target.value)} className="w-full md:w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" placeholder="Nhập đáp án số..." />
-                            </div>
-                        ))}
-
                         <div className="flex justify-center pt-6">
-                            <button onClick={() => handleConfirmSubmit(false)} disabled={isSubmitting} className={`px-8 py-4 text-white text-lg font-bold rounded-xl shadow-lg flex items-center gap-2 transition-all ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 transform hover:scale-105'}`}>
-                                {isSubmitting ? <><Icon name="loader" className="animate-spin"/> ĐANG NỘP...</> : <><Icon name="save"/> NỘP BÀI</>}
+                            <button onClick={handleConfirmSubmit} disabled={isSubmitting} className={`px-8 py-4 text-white text-lg font-bold rounded-xl shadow-lg flex items-center gap-2 transition-all ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 transform hover:scale-105'}`}>
+                                {isSubmitting ? <><Icon name="loader"/> ĐANG GỬI...</> : <><Icon name="save"/> NỘP BÀI</>}
                             </button>
                         </div>
                     </div>
@@ -680,93 +654,53 @@
         const SolutionView = ({ questions, answers, score, onRetry }) => {
             const [openExplain, setOpenExplain] = useState({});
             const toggleExplain = (id) => setOpenExplain(prev => ({ ...prev, [id]: !prev[id] }));
-            
-            // Xếp loại
-            let grade = "";
-            let color = "";
-            if(score >= 8) { grade = "GIỎI"; color = "text-green-600"; }
-            else if(score >= 6.5) { grade = "KHÁ"; color = "text-blue-600"; }
-            else if(score >= 5) { grade = "TRUNG BÌNH"; color = "text-yellow-600"; }
-            else { grade = "YẾU"; color = "text-red-600"; }
+            const isPassed = score >= PASSING_SCORE;
 
             return (
-                <div className="min-h-screen pb-20 bg-gray-50">
-                    <div className="bg-white shadow p-6 text-center mb-6 sticky top-0 z-10">
-                        <h2 className="text-2xl font-bold text-gray-800">KẾT QUẢ</h2>
-                        <div className="mt-4 flex justify-center items-center gap-6">
-                             <div className="text-center">
-                                <span className="block text-sm text-gray-500 uppercase font-bold">Điểm số</span>
-                                <span className={`text-5xl font-bold ${color}`}>{score}<span className="text-2xl text-gray-400">/10</span></span>
-                             </div>
-                             <div className="text-center border-l pl-6">
-                                <span className="block text-sm text-gray-500 uppercase font-bold">Xếp loại</span>
-                                <span className={`text-2xl font-bold ${color}`}>{grade}</span>
-                             </div>
+                <div className={`min-h-screen pb-20 ${isPassed ? 'bg-green-50' : 'bg-red-50'}`}>
+                    <div className={`shadow p-6 text-center mb-6 ${isPassed ? 'bg-white' : 'bg-white border-b-4 border-red-500'}`}>
+                        <div className="flex justify-center mb-2">{isPassed ? <Icon name="trophy" size={56} className="text-yellow-500"/> : <Icon name="alert" size={56} className="text-red-500"/>}</div>
+                        <h2 className={`text-2xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{isPassed ? "Chúc Mừng! Bạn Đã Vượt Qua" : "Chưa Đạt Yêu Cầu"}</h2>
+                        <div className={`mt-4 inline-block px-6 py-3 rounded-xl border ${isPassed ? 'bg-green-100 border-green-200' : 'bg-red-100 border-red-200'}`}>
+                            <span className="text-gray-600 uppercase text-xs font-bold block">Tổng Điểm</span>
+                            <span className={`text-4xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{score.toFixed(2)}<span className="text-xl text-gray-500">/10</span></span>
                         </div>
+                        <p className="text-gray-600 mt-3 text-sm max-w-md mx-auto">{isPassed ? "Kết quả đã được lưu. Hãy xem lại lời giải chi tiết bên dưới." : `Bạn cần đạt tối thiểu ${PASSING_SCORE} điểm. Kết quả này KHÔNG được lưu. Hãy bấm nút "Làm lại đề mới" ở cuối trang.`}</p>
                     </div>
 
-                    <div className="max-w-4xl mx-auto p-4 space-y-6">
-                        {questions.map((q, idx) => {
-                            const isOpen = openExplain[q.id];
-                            // Logic check đúng sai cho hiển thị màu sắc
-                            let statusColor = "border-gray-300";
-                            if (q.type === 'mcq') {
-                                statusColor = answers[q.id] === q.correct ? "border-green-500" : "border-red-500";
-                            } else if (q.type === 'text') {
-                                const userVal = (answers[q.id] || "").trim().replace(',', '.');
-                                statusColor = q.acceptable.includes(userVal) ? "border-green-500" : "border-red-500";
-                            } else {
-                                statusColor = "border-purple-300"; // Group question luôn trung tính hoặc xử lý phức tạp hơn
-                            }
-
-                            return (
-                                <div key={q.id} className={`bg-white rounded-lg shadow-sm border-l-4 ${statusColor} overflow-hidden`}>
-                                    <div className="p-4 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleExplain(q.id)}>
-                                        <div className="flex justify-between items-start">
-                                            <div className="font-medium text-gray-800 flex-1 gap-2"><span className="font-bold text-gray-500 mr-2">Câu {idx + 1}:</span> <MathText text={q.question} /></div>
-                                            <div className="ml-2">{isOpen ? <Icon name="chevron-up" size={20}/> : <Icon name="chevron-down" size={20}/>}</div>
+                    {isPassed ? (
+                        <div className="max-w-3xl mx-auto p-4 space-y-6">
+                            <h3 className="font-bold text-gray-700 flex items-center gap-2 mb-4"><Icon name="check" size={20}/> Chi Tiết Bài Làm & Lời Giải</h3>
+                            {questions.map((q, idx) => {
+                                const isOpen = openExplain[q.id];
+                                return (
+                                    <div key={q.id} className="bg-white rounded-lg shadow-sm border-l-4 border-blue-400 overflow-hidden">
+                                        <div className="p-4 cursor-pointer" onClick={() => toggleExplain(q.id)}>
+                                            <div className="flex justify-between items-start">
+                                                <div className="font-medium text-gray-800 flex-1 flex gap-2"><span className="font-bold whitespace-nowrap">Câu {idx + 1}:</span> <MathText text={q.question} /></div>
+                                            </div>
+                                            <div className="text-right text-xs text-blue-500 mt-2">Xem chi tiết ý đúng/sai ▼</div>
                                         </div>
-                                        <div className="text-sm text-gray-500 mt-2">
-                                            {q.type === 'mcq' && <span>Đáp án của bạn: <span className="font-bold">{answers[q.id] !== undefined ? String.fromCharCode(65 + answers[q.id]) : "Trống"}</span></span>}
-                                            {q.type === 'text' && <span>Đáp án của bạn: <span className="font-bold">{answers[q.id] || "Trống"}</span></span>}
-                                        </div>
-                                    </div>
-                                    {isOpen && (
-                                        <div className="bg-gray-50 p-4 text-sm border-t">
-                                            {q.image && <div className="mb-4 flex justify-center">{q.image}</div>}
-                                            
-                                            {/* Hiển thị chi tiết cho nhóm đúng sai */}
-                                            {q.type === 'group_tf' && (
-                                                <div className="mb-3">
-                                                    <table className="w-full text-sm border bg-white">
-                                                        <thead><tr className="bg-gray-100"><th className="p-2 border">Ý</th><th className="p-2 border">Đáp án đúng</th><th className="p-2 border">Bạn chọn</th></tr></thead>
-                                                        <tbody>
-                                                            {q.subQuestions.map(sub => (
-                                                                <tr key={sub.id}>
-                                                                    <td className="p-2 border">{sub.id}</td>
-                                                                    <td className="p-2 border font-bold text-green-600">{sub.correct ? "Đúng" : "Sai"}</td>
-                                                                    <td className={`p-2 border font-bold ${(answers[q.id]||{})[sub.id] === sub.correct ? "text-green-600" : "text-red-600"}`}>{(answers[q.id]||{})[sub.id] === true ? "Đúng" : (answers[q.id]||{})[sub.id] === false ? "Sai" : "Trống"}</td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            )}
-
-                                            <div className="bg-blue-50 p-3 rounded text-blue-900">
+                                        {isOpen && (
+                                            <div className="bg-blue-50 p-4 text-sm text-blue-900 border-t border-blue-100">
+                                                {q.image && <div className="mb-4 flex justify-center">{q.image}</div>}
                                                 <span className="font-bold block mb-1">💡 Lời giải chi tiết:</span>
                                                 <MathText text={q.explanation} />
-                                                {q.type === 'mcq' && <div className="mt-2 font-bold">Đáp án đúng: {String.fromCharCode(65 + q.correct)}</div>}
-                                                {q.type === 'text' && <div className="mt-2 font-bold">Đáp án chấp nhận: {q.acceptable.join(" hoặc ")}</div>}
                                             </div>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="max-w-md mx-auto p-8 text-center text-gray-500">
+                            <div className="flex justify-center mb-4"><Icon name="eyeoff" size={64} className="text-gray-300"/></div>
+                            <p className="text-lg font-medium text-gray-600 mb-2">Chế độ ôn tập</p>
+                            <p className="text-sm">Hệ thống đã ẩn toàn bộ câu hỏi và lời giải để đảm bảo tính khách quan khi bạn làm lại đề.</p>
+                        </div>
+                    )}
                     <div className="flex justify-center pt-6 pb-10">
-                         <button onClick={onRetry} className="px-8 py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 shadow-lg flex items-center gap-2"><Icon name="rotate-ccw"/> Làm Lại Đề Này</button>
+                        {isPassed ? <button onClick={() => window.location.reload()} className="px-8 py-3 bg-gray-600 text-white rounded-lg font-bold hover:bg-gray-700 shadow-lg flex items-center gap-2"><Icon name="logout"/> Về trang chủ</button> : <button onClick={onRetry} className="px-8 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 shadow-lg flex items-center gap-2 animate-bounce"><Icon name="retry"/> Làm lại đề mới</button>}
                     </div>
                 </div>
             );
@@ -775,26 +709,28 @@
         const TeacherLogin = ({ onLogin, onBack }) => {
             const [pass, setPass] = useState('');
             const [error, setError] = useState('');
-            const handleLogin = (e) => { e.preventDefault(); if (pass === 'admin123') { onLogin(); } else { setError('Mật khẩu sai (Gợi ý: admin123)'); } };
-            return ( <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4"> <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"> <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">Giáo Viên Đăng Nhập</h2> <form onSubmit={handleLogin} className="space-y-4"> <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Mật khẩu..." autoFocus/> {error && <p className="text-red-500 text-sm text-center">{error}</p>} <button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800">Truy cập</button> <button type="button" onClick={onBack} className="w-full py-2 text-gray-500 hover:text-gray-800 text-sm">Quay lại</button> </form> </div> </div> );
+            const handleLogin = (e) => { e.preventDefault(); if (pass === '12345678T') { onLogin(); } else { setError('Mật khẩu không đúng!'); } };
+            return ( <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4"> <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"> <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">Giáo Viên Đăng Nhập</h2> <form onSubmit={handleLogin} className="space-y-4"> <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nhập mật khẩu..." autoFocus/> {error && <p className="text-red-500 text-sm text-center">{error}</p>} <button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800">Truy cập</button> <button type="button" onClick={onBack} className="w-full py-2 text-gray-500 hover:text-gray-800 text-sm">Quay lại</button> </form> </div> </div> );
         };
 
         const TeacherDashboard = ({ onLogout }) => {
             const [results, setResults] = useState([]);
             const [loading, setLoading] = useState(true);
 
+            // SỬA LỖI: Tạo dữ liệu mẫu nếu Offline, hoặc fetch từ Firebase nếu Online
             useEffect(() => {
                 if (!isFirebaseReady || !db) {
-                    // MOCK DATA
+                    // MOCK DATA: Hiển thị khi không có Database để giáo viên test giao diện
                     setResults([
-                        { id: 1, timestamp: { seconds: Date.now()/1000 }, name: "Nguyễn Văn An", score: 8.5 },
-                        { id: 2, timestamp: { seconds: Date.now()/1000 - 3600 }, name: "Trần Thị Bích", score: 6.0 },
-                        { id: 3, timestamp: { seconds: Date.now()/1000 - 7200 }, name: "Lê Văn Cường", score: 9.25 },
+                        { id: 1, timestamp: { seconds: Date.now()/1000 }, name: "Nguyễn Văn Demo", score: 8.5 },
+                        { id: 2, timestamp: { seconds: Date.now()/1000 - 3600 }, name: "Trần Thị Test", score: 6.0 },
+                        { id: 3, timestamp: { seconds: Date.now()/1000 - 7200 }, name: "Lê Văn Mẫu", score: 9.25 },
                     ]);
                     setLoading(false);
                     return;
                 }
-                const q = db.collection('artifacts').doc("exam_app").collection('public').doc('data').collection(COLLECTION_NAME);
+                // Nếu có DB thì fetch thật
+                const q = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME);
                 const unsubscribe = q.onSnapshot((snapshot) => {
                     const data = snapshot.docs.map(doc => {
                         const d = doc.data();
@@ -806,7 +742,7 @@
                     data.sort((a, b) => b.sortTime - a.sortTime);
                     setResults(data);
                     setLoading(false);
-                }, (error) => { console.error(error); setLoading(false); });
+                }, (error) => { console.error("Lỗi tải dữ liệu:", error); setLoading(false); });
                 return () => unsubscribe();
             }, []);
 
@@ -815,9 +751,9 @@
                     <div className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
                         <div className="flex items-center gap-3">
                             <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="list" className="text-blue-600"/> Bảng Điểm</h1>
-                            {!isFirebaseReady && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded border border-yellow-200">Chế độ Demo</span>}
+                            {!isFirebaseReady && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded border border-yellow-200">Chế độ Demo (Dữ liệu mẫu)</span>}
                         </div>
-                        <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="log-out" size={18}/> Đăng xuất</button>
+                        <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="logout" size={18}/> Đăng xuất</button>
                     </div>
                     <div className="max-w-6xl mx-auto p-6">
                         <div className="bg-white rounded-xl shadow overflow-hidden">
@@ -825,12 +761,12 @@
                                 <table className="w-full">
                                     <thead className="bg-gray-100 border-b"><tr><th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Thời gian</th><th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Họ và Tên</th><th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Điểm Số (10)</th><th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Xếp loại</th></tr></thead>
                                     <tbody className="divide-y divide-gray-200">
-                                        {loading ? ( <tr><td colSpan="4" className="p-8 text-center text-gray-500">Đang tải...</td></tr> ) : results.length === 0 ? ( <tr><td colSpan="4" className="p-8 text-center text-gray-500">Chưa có bài thi nào.</td></tr> ) : results.map((res) => (
+                                        {loading ? ( <tr><td colSpan="4" className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr> ) : results.length === 0 ? ( <tr><td colSpan="4" className="p-8 text-center text-gray-500">Chưa có bài thi nào được nộp.</td></tr> ) : results.map((res) => (
                                             <tr key={res.id} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{res.timestamp ? new Date((res.sortTime || res.timestamp.seconds) * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{res.name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center"><span className="text-lg font-bold text-blue-700">{res.score?.toFixed(2)}</span></td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : res.score >= 5 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>{res.score >= 8 ? 'Giỏi' : res.score >= 6.5 ? 'Khá' : res.score >= 5 ? 'TB' : 'Yếu'}</span></td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{res.score >= 8 ? 'Giỏi' : res.score >= 6.5 ? 'Khá' : 'Trung Bình'}</span></td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -842,33 +778,46 @@
             );
         };
 
-        // --- APP MAIN ---
         const App = () => {
             const [view, setView] = useState('welcome');
+            const [user, setUser] = useState(null);
             const [studentName, setStudentName] = useState('');
+            const [currentQuestions, setCurrentQuestions] = useState([]);
             const [finalScore, setFinalScore] = useState(0);
             const [userAnswers, setUserAnswers] = useState({});
 
-            const handleStart = (name) => {
+            useEffect(() => {
+                if (isFirebaseReady && auth) {
+                    auth.signInAnonymously().catch(e => console.warn(e));
+                    const unsubscribe = auth.onAuthStateChanged((u) => { if (u) setUser(u); });
+                    return () => unsubscribe();
+                }
+            }, []);
+
+            const startNewQuiz = (name) => {
                 setStudentName(name);
+                const newQuestions = generateRandomQuiz();
+                setCurrentQuestions(newQuestions);
+                setView('quiz');
+            };
+
+            const handleRetry = () => {
+                const newQuestions = generateRandomQuiz();
+                setCurrentQuestions(newQuestions);
                 setView('quiz');
             };
 
             const handleSubmitQuiz = async (answers) => {
-                const score = calculateScore(QUESTION_BANK, answers);
+                const score = calculateScore(currentQuestions, answers);
                 setFinalScore(score);
                 setUserAnswers(answers);
-                
-                if (isFirebaseReady && auth) {
+                if (score >= PASSING_SCORE && isFirebaseReady && user) {
                     try {
-                        const user = auth.currentUser || await auth.signInAnonymously();
-                        if (user) {
-                             const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-                             await db.collection('artifacts').doc("exam_app").collection('public').doc('data').collection(COLLECTION_NAME).add({
-                                name: studentName, score: score, answers: sanitizedAnswers, timestamp: new Date().toISOString()
-                             });
-                        }
-                    } catch (error) { console.error("Lỗi lưu điểm:", error); }
+                        const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
+                        await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
+                            name: studentName, score: score, questionIds: currentQuestions.map(q => q.id), answers: sanitizedAnswers, timestamp: new Date().toISOString()
+                        });
+                    } catch (error) { console.error("Lỗi Firestore:", error); }
                 }
                 setView('result'); 
             };
@@ -876,9 +825,9 @@
             return (
                 <div>
                     {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'login')} isOnline={isFirebaseReady} />}
-                    {view === 'name' && <StudentNameInput onStart={handleStart} />}
-                    {view === 'quiz' && <QuizView studentName={studentName} questions={QUESTION_BANK} onSubmit={handleSubmitQuiz} isConnected={isFirebaseReady} />}
-                    {view === 'result' && <SolutionView questions={QUESTION_BANK} answers={userAnswers} score={finalScore} onRetry={() => setView('welcome')} />}
+                    {view === 'name' && <StudentNameInput onStart={startNewQuiz} />}
+                    {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} isConnected={isFirebaseReady} />}
+                    {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={handleRetry} />}
                     {view === 'login' && <TeacherLogin onLogin={() => setView('teacher')} onBack={() => setView('welcome')} />}
                     {view === 'teacher' && <TeacherDashboard onLogout={() => setView('welcome')} />}
                 </div>
