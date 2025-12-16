@@ -23,7 +23,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Firebase (Compat version for simple HTML usage) -->
+    <!-- Firebase (Compat version for HTML usage) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -31,6 +31,9 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
         .katex { font-size: 1.1em; }
+        /* Animation utilities */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
     </style>
 </head>
 <body>
@@ -40,32 +43,31 @@
         const { useState, useEffect, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // --- CẤU HÌNH FIREBASE ---
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY_HERE",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
+        // --- CẤU HÌNH FIREBASE & UTILS ---
+        
         let db = null;
         let auth = null;
         let isFirebaseReady = false;
+        let appId = 'default-app-id';
 
         try {
-            if (firebaseConfig.apiKey !== "YOUR_API_KEY_HERE" && window.firebase) {
-                const app = firebase.initializeApp(firebaseConfig);
+            // Kiểm tra biến môi trường được cung cấp bởi nền tảng
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
                 auth = firebase.auth();
                 db = firebase.firestore();
                 isFirebaseReady = true;
-                console.log("Firebase connected.");
+                console.log("Firebase connected via Environment Config.");
             } else {
-                console.warn("Chạy chế độ Offline (chưa cấu hình Firebase).");
+                console.warn("Chưa tìm thấy cấu hình Firebase. Chạy chế độ Offline/Demo.");
             }
         } catch (e) {
-            console.error("Lỗi Firebase:", e);
+            console.error("Lỗi khởi tạo Firebase:", e);
         }
 
         const COLLECTION_NAME = "quiz_results_math12_hk1";
@@ -101,7 +103,7 @@
             return <span ref={containerRef} className={className} dangerouslySetInnerHTML={{__html: text}} />;
         };
 
-        // --- SVG IMAGES (Converted from Exam Content) ---
+        // --- SVG IMAGES ---
         
         const ArrowDefs = () => (
             <defs>
@@ -264,7 +266,7 @@
             </div>
         );
 
-        // --- QUESTION BANK (NEW EXAM CONTENT) ---
+        // --- QUESTION BANK ---
         const QUESTION_BANK = [
             // --- PHẦN I: TRẮC NGHIỆM (12 Câu) ---
             { 
@@ -449,10 +451,9 @@
         ];
         
         // --- LOGIC HÀM ---
-        const PASSING_SCORE = 0.0; // Điều chỉnh điểm đạt nếu cần
+        const PASSING_SCORE = 0.0; 
         
         const generateRandomQuiz = () => {
-             // Lấy toàn bộ câu hỏi theo đúng thứ tự đề bài
              const mcqPool = QUESTION_BANK.filter(q => q.type === 'mcq');
              const tfPool = QUESTION_BANK.filter(q => q.type === 'group_tf');
              const textPool = QUESTION_BANK.filter(q => q.type === 'text');
@@ -469,14 +470,14 @@
                 let questionScore = 0;
 
                 if (q.type === 'mcq') {
-                    questionMaxScore = 0.25; // 12 câu x 0.25 = 3 điểm
+                    questionMaxScore = 0.25; 
                     if (answers[q.id] === q.correct) questionScore = 0.25;
                 } else if (q.type === 'text') {
-                    questionMaxScore = 0.5; // 6 câu x 0.5 = 3 điểm
+                    questionMaxScore = 0.5; 
                     const userAns = (answers[q.id] || "").trim();
                     if (q.acceptable.includes(userAns)) questionScore = 0.5;
                 } else if (q.type === 'group_tf') {
-                    questionMaxScore = 1.0; // 4 câu x 1.0 = 4 điểm
+                    questionMaxScore = 1.0; 
                     let correctCount = 0;
                     const userGroupAns = answers[q.id] || {};
                     q.subQuestions.forEach(sub => {
@@ -492,7 +493,6 @@
                 totalMaxScore += questionMaxScore;
             });
             
-            // Tổng điểm tối đa là 10 (3 + 4 + 3)
             if (totalMaxScore > 0) {
                  const scaledScore = (score / totalMaxScore) * 10;
                  return Math.round(scaledScore * 100) / 100;
@@ -501,11 +501,11 @@
         };
         
         const WelcomeScreen = ({ onSelectMode, isOnline }) => (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-cyan-600 to-blue-800 p-4 text-white">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-cyan-600 to-blue-800 p-4 text-white animate-fade-in">
                 <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-white/20">
                     <h1 className="text-4xl font-bold mb-2">TRANDAIEDU</h1>
                     <h2 className="text-xl mb-8 text-cyan-100 font-medium">ĐỀ THI HỌC KỲ 1 - TOÁN 12</h2>
-                    {!isOnline && (<div className="mb-6 bg-yellow-500/20 text-yellow-200 p-3 rounded-lg text-sm border border-yellow-500/50 flex items-center justify-center gap-2"><Icon name="alert" size={16}/> Chế độ Offline: Kết quả sẽ không được lưu.</div>)}
+                    {!isOnline && (<div className="mb-6 bg-yellow-500/20 text-yellow-200 p-3 rounded-lg text-sm border border-yellow-500/50 flex items-center justify-center gap-2"><Icon name="alert-triangle" size={16}/> Chế độ Offline: Kết quả sẽ không được lưu.</div>)}
                     <div className="space-y-4">
                         <button onClick={() => onSelectMode('student')} className="w-full py-4 bg-white text-blue-800 rounded-xl font-bold hover:bg-blue-50 transition-all shadow-lg flex items-center justify-center gap-2"><Icon name="user"/> Học Sinh Vào Thi</button>
                         <button onClick={() => onSelectMode('teacher')} className="w-full py-4 bg-blue-900/50 text-white rounded-xl font-bold hover:bg-blue-900 transition-all border border-blue-400/30 flex items-center justify-center gap-2"><Icon name="lock"/> Giáo Viên Xem Điểm</button>
@@ -517,7 +517,7 @@
         const StudentNameInput = ({ onStart }) => {
             const [name, setName] = useState('');
             return (
-                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 animate-fade-in">
                     <form onSubmit={(e) => { e.preventDefault(); if(name.trim()) onStart(name); }} className="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full">
                         <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">Nhập Thông Tin</h2>
                         <div className="mb-6">
@@ -540,23 +540,23 @@
             const handleConfirmSubmit = async () => {
                 if(confirm("Bạn có chắc chắn muốn nộp bài?")) {
                     setIsSubmitting(true);
-                    try { await onSubmit(answers); } catch (error) { setIsSubmitting(false); }
+                    try { await onSubmit(answers); } catch (error) { setIsSubmitting(false); alert("Lỗi nộp bài: " + error.message); }
                 }
             };
 
             return (
-                <div className="min-h-screen bg-gray-100 pb-20 relative">
+                <div className="min-h-screen bg-gray-100 pb-20 relative animate-fade-in">
                     <div className="bg-white shadow-md p-4 sticky top-0 z-10 border-b border-gray-200">
                         <div className="max-w-3xl mx-auto flex justify-between items-center">
                             <div className="font-bold text-blue-700 flex items-center gap-2"><Icon name="user" size={18}/> {studentName}</div>
                             <div className="flex items-center gap-3">
-                                {isConnected ? <span className="flex items-center gap-1 text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200"><Icon name="wifi" size={14}/> Online</span> : <span className="flex items-center gap-1 text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full border border-red-200 animate-pulse"><Icon name="wifioff" size={14}/> Offline</span>}
+                                {isConnected ? <span className="flex items-center gap-1 text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200"><Icon name="wifi" size={14}/> Online</span> : <span className="flex items-center gap-1 text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full border border-red-200 animate-pulse"><Icon name="wifi-off" size={14}/> Offline</span>}
                             </div>
                         </div>
                     </div>
                     <div className="max-w-3xl mx-auto p-4 space-y-8 mt-4">
                         {questions.map((q, idx) => (
-                            <div key={q.id} className="bg-white rounded-xl shadow-sm p-6">
+                            <div key={q.id} className="bg-white rounded-xl shadow-sm p-6 transition-all hover:shadow-md">
                                 <div className="mb-3">
                                     <span className={`inline-block text-xs font-bold px-2 py-1 rounded mb-2 ${q.type === 'mcq' ? 'bg-blue-100 text-blue-800' : q.type === 'group_tf' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'}`}>
                                         {q.type === 'mcq' ? 'Phần 1: Trắc nghiệm' : q.type === 'group_tf' ? 'Phần 2: Đúng/Sai' : 'Phần 3: Trả lời ngắn'}
@@ -602,7 +602,7 @@
                         ))}
                         <div className="flex justify-center pt-6">
                             <button onClick={handleConfirmSubmit} disabled={isSubmitting} className={`px-8 py-4 text-white text-lg font-bold rounded-xl shadow-lg flex items-center gap-2 transition-all ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 transform hover:scale-105'}`}>
-                                {isSubmitting ? <><Icon name="loader"/> ĐANG GỬI...</> : <><Icon name="save"/> NỘP BÀI</>}
+                                {isSubmitting ? <><Icon name="loader" className="animate-spin"/> ĐANG GỬI...</> : <><Icon name="save"/> NỘP BÀI</>}
                             </button>
                         </div>
                     </div>
@@ -616,9 +616,9 @@
             const isPassed = score >= PASSING_SCORE;
 
             return (
-                <div className={`min-h-screen pb-20 ${isPassed ? 'bg-green-50' : 'bg-red-50'}`}>
+                <div className={`min-h-screen pb-20 animate-fade-in ${isPassed ? 'bg-green-50' : 'bg-red-50'}`}>
                     <div className={`shadow p-6 text-center mb-6 ${isPassed ? 'bg-white' : 'bg-white border-b-4 border-red-500'}`}>
-                        <div className="flex justify-center mb-2">{isPassed ? <Icon name="trophy" size={56} className="text-yellow-500"/> : <Icon name="alert" size={56} className="text-red-500"/>}</div>
+                        <div className="flex justify-center mb-2">{isPassed ? <Icon name="trophy" size={56} className="text-yellow-500"/> : <Icon name="alert-circle" size={56} className="text-red-500"/>}</div>
                         <h2 className={`text-2xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{isPassed ? "Chúc Mừng! Bạn Đã Hoàn Thành" : "Chưa Đạt Yêu Cầu"}</h2>
                         <div className={`mt-4 inline-block px-6 py-3 rounded-xl border ${isPassed ? 'bg-green-100 border-green-200' : 'bg-red-100 border-red-200'}`}>
                             <span className="text-gray-600 uppercase text-xs font-bold block">Tổng Điểm</span>
@@ -629,16 +629,16 @@
 
                     {isPassed ? (
                         <div className="max-w-3xl mx-auto p-4 space-y-6">
-                            <h3 className="font-bold text-gray-700 flex items-center gap-2 mb-4"><Icon name="check" size={20}/> Chi Tiết Bài Làm & Lời Giải</h3>
+                            <h3 className="font-bold text-gray-700 flex items-center gap-2 mb-4"><Icon name="check-circle" size={20}/> Chi Tiết Bài Làm & Lời Giải</h3>
                             {questions.map((q, idx) => {
                                 const isOpen = openExplain[q.id];
                                 return (
                                     <div key={q.id} className="bg-white rounded-lg shadow-sm border-l-4 border-blue-400 overflow-hidden">
-                                        <div className="p-4 cursor-pointer" onClick={() => toggleExplain(q.id)}>
+                                        <div className="p-4 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleExplain(q.id)}>
                                             <div className="flex justify-between items-start">
                                                 <div className="font-medium text-gray-800 flex-1 flex gap-2"><span className="font-bold whitespace-nowrap">Câu {idx + 1}:</span> <MathText text={q.question} /></div>
                                             </div>
-                                            <div className="text-right text-xs text-blue-500 mt-2">Xem chi tiết ý đúng/sai ▼</div>
+                                            <div className="text-right text-xs text-blue-500 mt-2 font-medium flex items-center justify-end gap-1">{isOpen ? 'Thu gọn' : 'Xem chi tiết'} <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={14}/></div>
                                         </div>
                                         {isOpen && (
                                             <div className="bg-blue-50 p-4 text-sm text-blue-900 border-t border-blue-100">
@@ -653,13 +653,13 @@
                         </div>
                     ) : (
                         <div className="max-w-md mx-auto p-8 text-center text-gray-500">
-                            <div className="flex justify-center mb-4"><Icon name="eyeoff" size={64} className="text-gray-300"/></div>
+                            <div className="flex justify-center mb-4"><Icon name="eye-off" size={64} className="text-gray-300"/></div>
                             <p className="text-lg font-medium text-gray-600 mb-2">Chế độ ôn tập</p>
                             <p className="text-sm">Hệ thống đã ẩn toàn bộ câu hỏi và lời giải để đảm bảo tính khách quan khi bạn làm lại đề.</p>
                         </div>
                     )}
                     <div className="flex justify-center pt-6 pb-10">
-                        {isPassed ? <button onClick={() => window.location.reload()} className="px-8 py-3 bg-gray-600 text-white rounded-lg font-bold hover:bg-gray-700 shadow-lg flex items-center gap-2"><Icon name="logout"/> Về trang chủ</button> : <button onClick={onRetry} className="px-8 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 shadow-lg flex items-center gap-2 animate-bounce"><Icon name="retry"/> Làm lại đề mới</button>}
+                        {isPassed ? <button onClick={() => window.location.reload()} className="px-8 py-3 bg-gray-600 text-white rounded-lg font-bold hover:bg-gray-700 shadow-lg flex items-center gap-2"><Icon name="log-out"/> Về trang chủ</button> : <button onClick={onRetry} className="px-8 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 shadow-lg flex items-center gap-2 animate-bounce"><Icon name="refresh-ccw"/> Làm lại đề mới</button>}
                     </div>
                 </div>
             );
@@ -669,7 +669,7 @@
             const [pass, setPass] = useState('');
             const [error, setError] = useState('');
             const handleLogin = (e) => { e.preventDefault(); if (pass === '12345678T') { onLogin(); } else { setError('Mật khẩu không đúng!'); } };
-            return ( <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4"> <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"> <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">Giáo Viên Đăng Nhập</h2> <form onSubmit={handleLogin} className="space-y-4"> <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nhập mật khẩu..." autoFocus/> {error && <p className="text-red-500 text-sm text-center">{error}</p>} <button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800">Truy cập</button> <button type="button" onClick={onBack} className="w-full py-2 text-gray-500 hover:text-gray-800 text-sm">Quay lại</button> </form> </div> </div> );
+            return ( <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 animate-fade-in"> <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"> <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">Giáo Viên Đăng Nhập</h2> <form onSubmit={handleLogin} className="space-y-4"> <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nhập mật khẩu..." autoFocus/> {error && <p className="text-red-500 text-sm text-center">{error}</p>} <button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800">Truy cập</button> <button type="button" onClick={onBack} className="w-full py-2 text-gray-500 hover:text-gray-800 text-sm">Quay lại</button> </form> </div> </div> );
         };
 
         const TeacherDashboard = ({ onLogout }) => {
@@ -677,6 +677,7 @@
             const [loading, setLoading] = useState(true);
 
             useEffect(() => {
+                // Nếu chưa có Firebase, trả về dữ liệu mẫu
                 if (!isFirebaseReady || !db) {
                     setResults([
                         { id: 1, timestamp: { seconds: Date.now()/1000 }, name: "Nguyễn Văn Demo", score: 8.5 },
@@ -686,7 +687,10 @@
                     setLoading(false);
                     return;
                 }
-                const q = db.collection('artifacts').doc(firebaseConfig.appId).collection('public').doc('data').collection(COLLECTION_NAME);
+
+                // Truy vấn đúng đường dẫn /artifacts/{appId}/public/data/...
+                const q = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME);
+                
                 const unsubscribe = q.onSnapshot((snapshot) => {
                     const data = snapshot.docs.map(doc => {
                         const d = doc.data();
@@ -703,13 +707,13 @@
             }, []);
 
             return (
-                <div className="min-h-screen bg-gray-50">
+                <div className="min-h-screen bg-gray-50 animate-fade-in">
                     <div className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
                         <div className="flex items-center gap-3">
                             <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="list" className="text-blue-600"/> Bảng Điểm</h1>
                             {!isFirebaseReady && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded border border-yellow-200">Chế độ Demo (Dữ liệu mẫu)</span>}
                         </div>
-                        <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="logout" size={18}/> Đăng xuất</button>
+                        <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="log-out" size={18}/> Đăng xuất</button>
                     </div>
                     <div className="max-w-6xl mx-auto p-6">
                         <div className="bg-white rounded-xl shadow overflow-hidden">
@@ -722,7 +726,7 @@
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{res.timestamp ? new Date((res.sortTime || res.timestamp.seconds) * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{res.name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center"><span className="text-lg font-bold text-blue-700">{res.score?.toFixed(2)}</span></td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{res.score >= 8 ? 'Giỏi' : res.score >= 6.5 ? 'Khá' : 'Trung Bình'}</span></td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : res.score >= 5 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>{res.score >= 8 ? 'Giỏi' : res.score >= 6.5 ? 'Khá' : res.score >= 5 ? 'Trung Bình' : 'Yếu'}</span></td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -742,9 +746,21 @@
             const [finalScore, setFinalScore] = useState(0);
             const [userAnswers, setUserAnswers] = useState({});
 
+            // Auth Logic chính xác: Ưu tiên Custom Token trước, sau đó mới đến Anonymous
             useEffect(() => {
                 if (isFirebaseReady && auth) {
-                    auth.signInAnonymously().catch(e => console.warn(e));
+                    const initAuth = async () => {
+                        try {
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                await auth.signInWithCustomToken(__initial_auth_token);
+                            } else {
+                                await auth.signInAnonymously();
+                            }
+                        } catch (err) {
+                            console.error("Auth failed:", err);
+                        }
+                    };
+                    initAuth();
                     const unsubscribe = auth.onAuthStateChanged((u) => { if (u) setUser(u); });
                     return () => unsubscribe();
                 }
@@ -767,13 +783,23 @@
                 const score = calculateScore(currentQuestions, answers);
                 setFinalScore(score);
                 setUserAnswers(answers);
+                
+                // Chỉ lưu nếu đạt điểm và có kết nối Firebase
                 if (score >= PASSING_SCORE && isFirebaseReady && user) {
                     try {
                         const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-                        await db.collection('artifacts').doc(firebaseConfig.appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
-                            name: studentName, score: score, questionIds: currentQuestions.map(q => q.id), answers: sanitizedAnswers, timestamp: new Date().toISOString()
+                        // Sử dụng đúng đường dẫn: /artifacts/{appId}/public/data/{COLLECTION_NAME}
+                        await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
+                            name: studentName, 
+                            score: score, 
+                            questionIds: currentQuestions.map(q => q.id), 
+                            answers: sanitizedAnswers, 
+                            timestamp: new Date().toISOString()
                         });
-                    } catch (error) { console.error("Lỗi Firestore:", error); }
+                        console.log("Saved result successfully.");
+                    } catch (error) { 
+                        console.error("Lỗi lưu kết quả Firestore:", error); 
+                    }
                 }
                 setView('result'); 
             };
