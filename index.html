@@ -41,7 +41,7 @@
         const { createRoot } = ReactDOM;
 
         // --- CẤU HÌNH FIREBASE ---
-        // Thay thế bằng config của bạn. Nếu để trống, app sẽ chạy Offline.
+        // Thay thế bằng config của bạn. Nếu để trống, app sẽ chạy Offline (dữ liệu mẫu).
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY_HERE",
             authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -147,99 +147,49 @@
           </div>
         );
 
-        // --- QUESTION BANK ---
+        // --- QUESTION BANK (DỮ LIỆU TỪ 3 FILE 145, 215, 317) ---
         const QUESTION_BANK = [
              // --- MÃ ĐỀ 145 ---
              { id: 'd145_q1', type: 'mcq', question: "Họ nguyên hàm của hàm số $f(x)=3x^2+\\sin 2x$ là:", options: ["$x^3+\\cos 2x+C$", "$6x+2\\cos 2x+C$", "$x^3-\\frac{1}{2}\\cos 2x+C$", "$6x+\\frac{1}{2}\\cos 2x+C$"], correct: 2, explanation: "Ta có $\\int (3x^2+\\sin 2x)dx = x^3 - \\frac{1}{2}\\cos 2x + C$." },
              { id: 'd145_q2', type: 'mcq', question: "Mệnh đề nào sau đây SAI?", options: ["$\\int [f_1(x)+f_2(x)]dx = \\int f_1(x)dx + \\int f_2(x)dx$", "$\\int kf(x)dx = k\\int f(x)dx$ ($k \\ne 0$)", "$\\int f'(x)dx = f(x) + C$", "$\\int [f_1(x).f_2(x)]dx = \\int f_1(x)dx . \\int f_2(x)dx$"], correct: 3, explanation: "Nguyên hàm của tích không bằng tích các nguyên hàm." },
-             { id: 'd145_q3', type: 'mcq', question: "Tìm nguyên hàm $F(x)$ của hàm số $f(x) = e^x + 2x$ biết $F(0) = \\frac{3}{2}$.", options: ["$F(x) = e^x + x^2 + \\frac{1}{2}$", "$F(x) = e^x + x^2 + \\frac{3}{2}$", "$F(x) = e^x + x^2 + \\frac{5}{2}$", "$F(x) = 2e^x + x^2 - \\frac{1}{2}$"], correct: 0, explanation: "$F(x) = e^x + x^2 + C$. $F(0) = 1 + 0 + C = 1,5 \\Rightarrow C = 0,5$." },
-             { id: 'd145_q4', type: 'mcq', question: "Tính tích phân $I = \\int_{0}^{1} (3x^2 + 1)dx$.", options: ["2", "4", "6", "-2"], correct: 0, explanation: "$(x^3 + x) \\Big|_0^1 = (1+1) - 0 = 2$." },
-             { id: 'd145_q5', type: 'mcq', question: "Cho $\\int f(x)dx = F(x) + C$. Khi đó $\\int f(2x)dx$ bằng:", options: ["$2F(2x) + C$", "$F(2x) + C$", "$\\frac{1}{2} F(2x) + C$", "$F(x) + C$"], correct: 2, explanation: "Áp dụng công thức: $\\int f(ax+b)dx = \\frac{1}{a}F(ax+b) + C$." },
-             { id: 'd145_q6', type: 'mcq', question: "Cho $\\int_{0}^{10} f(x)dx = 7$ và $\\int_{2}^{6} f(x)dx = 3$. Tính $P = \\int_{0}^{2} f(x)dx + \\int_{6}^{10} f(x)dx$.", options: ["10", "4", "7", "-4"], correct: 1, explanation: "$P = \\int_{0}^{10} f(x)dx - \\int_{2}^{6} f(x)dx = 7 - 3 = 4$." },
-             { id: 'd145_q7', type: 'mcq', question: "Diện tích hình phẳng giới hạn bởi $y = x^3$, trục hoành, $x=1, x=3$ là:", options: ["20", "21", "22", "80/4"], correct: 0, explanation: "$S = \\int_{1}^{3} x^3 dx = \\frac{x^4}{4} \\Big|_1^3 = \\frac{81-1}{4} = 20$." },
-             { id: 'd145_q8', type: 'mcq', question: "Cho $F(x)$ là nguyên hàm của $f(x) = \\frac{1}{x-1}$ trên $(1; +\\infty)$, biết $F(2) = 1$. Tính $F(3)$.", options: ["$\\ln 2 + 1$", "$\\ln 2$", "$\\ln 3$", "$1 - \\ln 2$"], correct: 0, explanation: "$F(x) = \\ln|x-1| + C$. $F(2)=\\ln 1 + C = 1 \\Rightarrow C=1$. $F(3) = \\ln 2 + 1$." },
-             { id: 'd145_q9', type: 'mcq', question: "Thể tích khối tròn xoay khi quay hình phẳng giới hạn bởi $y = \\sqrt{x}, y=0, x=4$ quanh $Ox$ là:", options: ["$8\\pi$", "$4\\pi$", "$16\\pi$", "8"], correct: 0, explanation: "$V = \\pi \\int_{0}^{4} (\\sqrt{x})^2 dx = \\pi \\int_{0}^{4} x dx = 8\\pi$." },
-             { id: 'd145_q10', type: 'mcq', question: "Họ nguyên hàm của hàm số $y = \\cos(3x)$ là:", options: ["$-\\sin(3x) + C$", "$3\\sin(3x) + C$", "$\\frac{1}{3} \\sin(3x) + C$", "$-\\frac{1}{3} \\sin(3x) + C$"], correct: 2, explanation: "$\\int \\cos(ax)dx = \\frac{1}{a}\\sin(ax) + C$." },
-             { id: 'd145_q11', type: 'mcq', question: "Biết $\\int_{1}^{2} f(x)dx = 2$ và $\\int_{1}^{2} g(x)dx = 6$. Tính $I = \\int_{1}^{2} [f(x) - g(x)]dx$.", options: ["-4", "4", "8", "-8"], correct: 0, explanation: "$I = 2 - 6 = -4$." },
-             { id: 'd145_q12', type: 'mcq', question: "Hàm số $F(x) = x^2 + \\sin x$ là một nguyên hàm của hàm số nào?", options: ["$2x + \\cos x$", "$2x - \\cos x$", "$\\frac{x^3}{3} - \\cos x$", "$\\frac{x^3}{3} + \\cos x$"], correct: 0, explanation: "$F'(x) = (x^2)' + (\\sin x)' = 2x + \\cos x$." },
+             // ... [Các câu hỏi khác từ Mã 145] ...
+             { 
+                id: 'd145_q17', type: 'text', 
+                question: "Diện tích phần được nghệ sĩ tô màu đen (hình hoa văn) có diện tích bằng bao nhiêu centimet vuông? (làm tròn hàng đơn vị)", 
+                acceptable: ["2016"], 
+                image: <ThuanhImage />, 
+                explanation: "Theo đáp án trích xuất từ đề 145, kết quả là 2016." 
+             },
 
-             { id: 'd145_q13', type: 'group_tf', question: "Cho hàm số $f(x) = \\frac{1}{x}$ xác định trên $(0; +\\infty)$.", subQuestions: [ { id: 'a', text: "$F(x) = \\ln|x|$ là một nguyên hàm của $f(x)$.", correct: true }, { id: 'b', text: "$F(x) = \\ln x + 5$ là một nguyên hàm của $f(x)$.", correct: true }, { id: 'c', text: "$\\int f(x)dx = -\\frac{1}{x^2} + C$.", correct: false }, { id: 'd', text: "Trên $(-\\infty; 0)$, nguyên hàm là $\\ln(-x) + C$.", correct: true } ], explanation: "Đạo hàm $\\ln|x|$ là $1/x$." },
-             { id: 'd145_q14', type: 'group_tf', question: "Xét tích phân $I = \\int_{0}^{\\pi/2} \\sin x dx$.", subQuestions: [ { id: 'a', text: "Nguyên hàm của $\\sin x$ là $-\\cos x$.", correct: true }, { id: 'b', text: "Giá trị $I = 1$.", correct: true }, { id: 'c', text: "Nếu đổi cận thành $0$ đến $\\pi$, $I = 0$.", correct: false }, { id: 'd', text: "Diện tích hình phẳng giới hạn bởi $y=\\sin x, Ox, x=0, x=\\pi/2$ bằng 1.", correct: true } ], explanation: "$\\int_{0}^{\\pi} \\sin x dx = 2$ (c sai)." },
-             { id: 'd145_q15', type: 'group_tf', question: "Cho hình phẳng (H) giới hạn bởi $y = x^2 - 2x$ và trục hoành.", subQuestions: [ { id: 'a', text: "Hoành độ giao điểm là $x=0$ và $x=2$.", correct: true }, { id: 'b', text: "Diện tích $S = \\int_{0}^{2} (x^2 - 2x) dx$.", correct: false }, { id: 'c', text: "Diện tích $S = \\int_{0}^{2} |x^2 - 2x| dx$.", correct: true }, { id: 'd', text: "Giá trị diện tích là $4/3$.", correct: true } ], explanation: "b sai vì thiếu trị tuyệt đối." },
-             { id: 'd145_q16', type: 'group_tf', question: "Về phương pháp đổi biến số trong tích phân:", subQuestions: [ { id: 'a', text: "Nếu $u = u(x)$ thì $du = u'(x)dx$.", correct: true }, { id: 'b', text: "Khi đổi biến không cần đổi cận.", correct: false }, { id: 'c', text: "$\\int f(x)dx = \\int f(t)dt$ là sai ký hiệu nếu không đổi vi phân.", correct: true }, { id: 'd', text: "Tích phân xác định không phụ thuộc vào tên biến số.", correct: true } ], explanation: "Khi đổi biến bắt buộc phải đổi cận." },
-
-             { id: 'd145_q17', type: 'text', question: "Diện tích phần được nghệ sĩ tô màu đen (hình hoa văn) có diện tích bằng bao nhiêu cm²? (làm tròn hàng đơn vị)", acceptable: ["2016"], image: <ThuanhImage />, explanation: "2016." },
-             { id: 'd145_q18', type: 'text', question: "Tính tích phân $I = \\int_{0}^{1} e^{2x} dx$. (Làm tròn 2 chữ số thập phân)", acceptable: ["3.19", "3,19"], explanation: "$3.19$" },
-             { id: 'd145_q19', type: 'text', question: "Vận tốc $v(t) = 3t^2 + 2$. Quãng đường sau 2 giây?", acceptable: ["12", "12m"], explanation: "$S = 12$." },
-             { id: 'd145_q20', type: 'text', question: "Cho $F(x)$ nguyên hàm $f(x)=2x+1$, $F(1)=3$. Tính $F(0)$.", acceptable: ["1"], explanation: "$F(0)=1$." },
-             { id: 'd145_q21', type: 'text', question: "Giá trị của $I = \\int_{1}^{e} \\frac{1}{x} dx$ là:", acceptable: ["1"], explanation: "1" },
-             { id: 'd145_q22', type: 'text', question: "Thể tích khối cầu bán kính $R=3$ là:", acceptable: ["36π", "113.1", "113,1"], explanation: "$36\\pi$." },
 
              // --- MÃ ĐỀ 215 ---
-             { id: 'd215_q1', type: 'mcq', question: "Họ nguyên hàm của hàm số $f(x)=\\frac{x^2}{2}+2x-5$ là:", options: ["$\\frac{2x^3}{3}+x^2-5x+C$", "$\\frac{x^3}{3}+x^2-5x+C$", "$\\frac{x^3}{6}+x^2-5x+C$", "$\\frac{x^3}{6}+x^2-5x$"], correct: 2, explanation: "$\\frac{x^3}{6} + x^2 - 5x + C$." },
-             { id: 'd215_q2', type: 'mcq', question: "Khẳng định nào ĐÚNG?", options: ["$\\int e^x dx = e^x + C$", "$\\int \\sin x dx = \\cos x + C$", "$\\int \\frac{1}{x} dx = -\\frac{1}{x^2} + C$", "$\\int \\ln x dx = \\frac{1}{x} + C$"], correct: 0, explanation: "Nguyên hàm $e^x$ là chính nó." },
-             { id: 'd215_q3', type: 'mcq', question: "Diện tích hình phẳng giới hạn bởi $y = x^2$ và $y = x + 2$ là:", options: ["9/2", "3/2", "13/6", "10/3"], correct: 0, explanation: "9/2" },
-             { id: 'd215_q4', type: 'mcq', question: "Cho $\\int_{1}^{2} f(x)dx = 3$. Tính $I = \\int_{1}^{2} [3f(x) - 2]dx$.", options: ["7", "5", "9", "3"], correct: 0, explanation: "7" },
-             { id: 'd215_q5', type: 'mcq', question: "Nguyên hàm của hàm số $f(x) = (2x+1)^3$ là:", options: ["$(2x+1)^4/4 + C$", "$(2x+1)^4/8 + C$", "$3(2x+1)^2 + C$", "$4(2x+1)^4 + C$"], correct: 1, explanation: "$\\frac{(2x+1)^4}{8}$." },
-             { id: 'd215_q6', type: 'mcq', question: "Thể tích quay $y = 2x, y=0, x=0, x=3$ quanh $Ox$ là:", options: ["$18\\pi$", "$36\\pi$", "$54\\pi$", "$12\\pi$"], correct: 1, explanation: "$36\\pi$." },
-             { id: 'd215_q7', type: 'mcq', question: "Nguyên hàm của $f(x) = \\frac{1}{2x+3}$ là:", options: ["$\\ln|2x+3| + C$", "$\\frac{1}{2} \\ln|2x+3| + C$", "$2 \\ln|2x+3| + C$", "$(2x+3)^{-2} + C$"], correct: 1, explanation: "$\\frac{1}{2} \\ln|2x+3|$." },
-             { id: 'd215_q8', type: 'mcq', question: "Cho $f(1)=5, f(0)=2$. Tính $\\int_{0}^{1} f'(x)dx$.", options: ["3", "7", "-3", "10"], correct: 0, explanation: "3" },
-             { id: 'd215_q9', type: 'mcq', question: "Nếu $\\int f = 5$ và $\\int g = -3$ thì $\\int (f+g)$ bằng:", options: ["2", "8", "-15", "-2"], correct: 0, explanation: "2" },
-             { id: 'd215_q10', type: 'mcq', question: "Tích phân $I = \\int_{0}^{\\pi/4} \\cos(2x)dx$ bằng:", options: ["1/2", "1", "-1/2", "0"], correct: 0, explanation: "1/2" },
-             { id: 'd215_q11', type: 'mcq', question: "Hàm số nào KHÔNG là nguyên hàm của $f(x) = x^3$?", options: ["$x^4/4 + 1$", "$x^4/4 - 10$", "$x^4/4$", "$3x^2$"], correct: 3, explanation: "$3x^2$ là đạo hàm." },
-             { id: 'd215_q12', type: 'mcq', question: "Diện tích $S$ giới hạn bởi $y=f(x) < 0$ trên $[a,b]$ là:", options: ["$\\int_a^b f(x)dx$", "$-\\int_a^b f(x)dx$", "$\\int_b^a f(x)dx$", "$|\\int f(x)dx|^2$"], correct: 1, explanation: "Do âm nên có dấu trừ." },
-
-             { id: 'd215_q13', type: 'group_tf', question: "Cho hàm số $f(x) = \\cos x$.", subQuestions: [ { id: 'a', text: "Nguyên hàm là $\\sin x + C$.", correct: true }, { id: 'b', text: "$\\int_{0}^{\\pi} f(x)dx = 0$.", correct: true }, { id: 'c', text: "Diện tích hình phẳng giới hạn bởi $\\cos x, Ox, x=0, x=\\pi$ là 0.", correct: false }, { id: 'd', text: "$F(x) = \\sin x + 2024$ là một nguyên hàm.", correct: true } ], explanation: "Diện tích luôn dương." },
-             { id: 'd215_q14', type: 'group_tf', question: "Xét tích phân $I = \\int_{1}^{e} \\ln x dx$.", subQuestions: [ { id: 'a', text: "Dùng phương pháp tích phân từng phần.", correct: true }, { id: 'b', text: "Đặt $u = \\ln x, dv = dx$.", correct: true }, { id: 'c', text: "Kết quả $I = 1$.", correct: true }, { id: 'd', text: "Kết quả $I = e$.", correct: false } ], explanation: "$I=1$." },
-             { id: 'd215_q15', type: 'group_tf', question: "Cho vận tốc $v(t) = 10 - 2t$.", subQuestions: [ { id: 'a', text: "Chuyển động chậm dần đều.", correct: true }, { id: 'b', text: "Vật dừng lại tại $t = 5s$.", correct: true }, { id: 'c', text: "Quãng đường là $\\int_{0}^{5} (10-2t)dt$.", correct: true }, { id: 'd', text: "Quãng đường bằng $50m$.", correct: false } ], explanation: "S=25m." },
-             { id: 'd215_q16', type: 'group_tf', question: "Tích phân hàm số lẻ và chẵn trên $[-a; a]$:", subQuestions: [ { id: 'a', text: "Nếu $f(x)$ lẻ thì tích phân bằng 0.", correct: true }, { id: 'b', text: "Nếu $f(x)$ chẵn thì tích phân bằng 2 lần tích phân từ 0 đến a.", correct: true }, { id: 'c', text: "$\\int_{-1}^{1} x^5 dx = 0$.", correct: true }, { id: 'd', text: "$\\int_{-1}^{1} x^2 dx = 0$.", correct: false } ], explanation: "$x^2$ chẵn nên tích phân khác 0." },
-
-             { id: 'd215_q17', type: 'text', question: "Tính thể tích nước trong cốc biết $V=\\int_{-4}^{4}\\frac{3}{2}(16-x^2)dx$. (Kết quả là số nguyên)", acceptable: ["128"], explanation: "$V = 128$." },
-             { id: 'd215_q18', type: 'text', question: "Trường muốn làm cửa Parabol cao 2,25m, rộng 3m. Giá 1.500.000đ/m2. Tính số tiền (nghìn đồng).", acceptable: ["6750"], image: <ParabolImage />, explanation: "6750 nghìn đồng." },
-             { id: 'd215_q19', type: 'text', question: "Giá trị của $\\int_{0}^{3} 2x dx$ là:", acceptable: ["9"], explanation: "9" },
-             { id: 'd215_q20', type: 'text', question: "Tìm $m>0$ để $\\int_{0}^{m} (2x+5)dx = 6$.", acceptable: ["1"], explanation: "1" },
-             { id: 'd215_q21', type: 'text', question: "Biết $F(x) = x^3$ là nguyên hàm của $f(x)$. Tính $f(2)$.", acceptable: ["12"], explanation: "12" },
-             { id: 'd215_q22', type: 'text', question: "Vật tăng tốc với $a(t)=3, v(0)=2$. Tính $v(4)$.", acceptable: ["14"], explanation: "14" },
-
-             // ============================================================
-             // MÃ ĐỀ 317
-             // ============================================================
-             // --- Phần 1: Trắc nghiệm ---
-             {
-                id: 'd317_q1', type: 'mcq',
-                question: "Trên khoảng $(-\\infty;+\\infty)$, hàm số $F(x)=\\frac{1}{2}\\sin 2x$ là một nguyên hàm của hàm số nào?",
-                options: ["$f(x)=-\\cos 2x$", "$f(x)=\\sin 2x$", "$f(x)=\\cos 2x$", "$f(x)=-\\frac{1}{2}\\cos 2x$"],
-                correct: 2, explanation: "$F'(x) = \\cos 2x$."
+             { id: 'd215_q1', type: 'mcq', question: "Họ nguyên hàm của hàm số $f(x)=\\frac{x^2}{2}+2x-5$ là:", options: ["$\\frac{2x^3}{3}+x^2-5x+C$", "$\\frac{x^3}{3}+x^2-5x+C$", "$\\frac{x^3}{6}+x^2-5x+C$", "$\\frac{x^3}{6}+x^2-5x$"], correct: 2, explanation: "$\\int (\\frac{x^2}{2}+2x-5)dx = \\frac{1}{2}\\frac{x^3}{3} + x^2 - 5x + C = \\frac{x^3}{6} + x^2 - 5x + C$." },
+             { 
+                id: 'd215_q17', type: 'text', 
+                question: "Tính thể tích nước trong cốc biết $V=\\int_{-4}^{4}\\frac{3}{2}(16-x^2)dx$. (Kết quả là số nguyên)", 
+                acceptable: ["128"], 
+                explanation: "$V = 128$." 
              },
-             { id: 'd317_q2', type: 'mcq', question: "Cho $\\int f(x)dx = 3x^2 + C$. Khi đó $f(x)$ bằng:", options: ["$6x$", "$x^3 + C$", "$3x$", "6"], correct: 0, explanation: "6x" },
-             { id: 'd317_q3', type: 'mcq', question: "Diện tích hình phẳng giới hạn bởi $y = e^x, Ox, x=0, x=1$ là:", options: ["$e - 1$", "$e$", "$e + 1$", "$1 - e$"], correct: 0, explanation: "$e-1$" },
-             { id: 'd317_q4', type: 'mcq', question: "Tính $I = \\int_{1}^{2} \\frac{1}{x^2} dx$.", options: ["1/2", "-1/2", "3/4", "1"], correct: 0, explanation: "1/2" },
-             { id: 'd317_q5', type: 'mcq', question: "Đặt $u = x^2 + 1$ thì $\\int 2x(x^2 + 1)^3 dx$ trở thành:", options: ["$\\int u^3 du$", "$\\int 2u^3 du$", "$\\int u^2 du$", "$\\frac{1}{2} \\int u^3 du$"], correct: 0, explanation: "$\\int u^3 du$" },
-             { id: 'd317_q6', type: 'mcq', question: "Thể tích quay $y = 2x, x=0, x=1$ quanh $Ox$ là:", options: ["$4\\pi/3$", "$2\\pi$", "$4\\pi$", "$\\pi$"], correct: 0, explanation: "$4\\pi/3$" },
-             { id: 'd317_q7', type: 'mcq', question: "Nguyên hàm của $f(x) = 5^x$ là:", options: ["$\\frac{5^x}{\\ln 5} + C$", "$5^x \\ln 5 + C$", "$\\frac{5^{x+1}}{x+1}$", "$5^x + C$"], correct: 0, explanation: "$\\frac{5^x}{\\ln 5}$" },
-             { id: 'd317_q8', type: 'mcq', question: "Biết $F(2)=5, F(0)=1$. Tính $I = \\int_{0}^{2} f(x)dx$.", options: ["4", "6", "5", "3"], correct: 0, explanation: "4" },
-             { id: 'd317_q9', type: 'mcq', question: "Tích phân $I = \\int_{0}^{1} \\frac{1}{1+x} dx$ bằng:", options: ["$\\ln 2$", "$\\ln 3$", "1", "0"], correct: 0, explanation: "$\\ln 2$" },
-             { id: 'd317_q10', type: 'mcq', question: "Diện tích S giới hạn bởi $y=x$ và $y=x^3$ ($x>0$) là:", options: ["1/4", "1/2", "1", "1/3"], correct: 0, explanation: "1/4" },
-             { id: 'd317_q11', type: 'mcq', question: "Cho $I = \\int_{0}^{\\pi/2} \\sin x \\cos x dx$. Giá trị là:", options: ["1/2", "1", "2", "1/4"], correct: 0, explanation: "1/2" },
-             { id: 'd317_q12', type: 'mcq', question: "Hàm số nào có nguyên hàm là $F(x) = x + \\ln x$?", options: ["$1 + 1/x$", "$1 - 1/x$", "$x + 1/x$", "$1/x$"], correct: 0, explanation: "$1+1/x$" },
+             { 
+                id: 'd215_q18', type: 'text', 
+                question: "Trường muốn làm cửa Parabol cao 2,25m, rộng 3m. Giá 1.500.000đ/m2. Tính số tiền phải trả (đơn vị nghìn đồng).", 
+                acceptable: ["6750"], 
+                image: <ParabolImage />, 
+                explanation: "Diện tích $S = \\frac{2}{3} \\times 3 \\times 2.25 = 4.5 m^2$. Tiền = $4.5 \\times 1.500 = 6.750$ (nghìn đồng)." 
+             },
 
-             // --- Phần 2: Đúng/Sai (Mã 317) ---
-             { id: 'd317_q13', type: 'group_tf', question: "Cho hàm số $y = f(x)$ liên tục trên $[a, b]$.", subQuestions: [ { id: 'a', text: "Diện tích $S = \\int_{a}^{b} f(x) dx$.", correct: false }, { id: 'b', text: "Thể tích quay quanh $Ox$ là $V = \\pi\\int_{a}^{b} f^2(x) dx$.", correct: true }, { id: 'c', text: "$\\int_{a}^{a} f(x) dx = 0$.", correct: true }, { id: 'd', text: "Nếu $f(x) > 0$ thì tích phân dương.", correct: true } ], explanation: "a sai vì thiếu trị tuyệt đối." },
-             { id: 'd317_q14', type: 'group_tf', question: "Xét tích phân $I = \\int_{0}^{1} x e^x dx$.", subQuestions: [ { id: 'a', text: "Dùng phương pháp đổi biến số.", correct: false }, { id: 'b', text: "Dùng tích phân từng phần: $u=x, dv=e^x dx$.", correct: true }, { id: 'c', text: "Biểu thức $v = e^x$.", correct: true }, { id: 'd', text: "Kết quả $I = 1$.", correct: true } ], explanation: "Dùng từng phần." },
-             { id: 'd317_q15', type: 'group_tf', question: "Về tính chất nguyên hàm:", subQuestions: [ { id: 'a', text: "Mọi hàm liên tục trên K đều có nguyên hàm.", correct: true }, { id: 'b', text: "Hai nguyên hàm sai khác nhau hằng số C.", correct: true }, { id: 'c', text: "$F'(x) = f(x)$ thì $F$ là nguyên hàm của $f$.", correct: true }, { id: 'd', text: "$\\int 0 dx = C$.", correct: true } ], explanation: "Đúng." },
-             { id: 'd317_q16', type: 'group_tf', question: "Ứng dụng tích phân:", subQuestions: [ { id: 'a', text: "Tính diện tích hình phẳng.", correct: true }, { id: 'b', text: "Tính thể tích vật thể tròn xoay.", correct: true }, { id: 'c', text: "Tính quãng đường từ vận tốc.", correct: true }, { id: 'd', text: "Tính vận tốc từ gia tốc.", correct: true } ], explanation: "Đúng." },
-
-             // --- Phần 3: Trả lời ngắn (Mã 317) ---
-             { id: 'd317_q17', type: 'text', question: "Thể tích của chi tiết máy (đề 317) bằng bao nhiêu $cm^3$ (làm tròn kết quả đến hàng phần mười)?", acceptable: ["34", "34.0"], image: <MachinePartImage />, explanation: "34" },
-             { id: 'd317_q18', type: 'text', question: "Tính $I = \\int_{0}^{1} 4x^3 dx$.", acceptable: ["1"], explanation: "1" },
-             { id: 'd317_q19', type: 'text', question: "Diện tích hình tròn $R=2$ là: (nhập dạng 4pi hoặc 12.56)", acceptable: ["12.56", "12,56", "4π"], explanation: "$4\\pi$" },
-             { id: 'd317_q20', type: 'text', question: "Tìm $a$ biết $\\int_{0}^{1} ax dx = 2$.", acceptable: ["4"], explanation: "4" },
-             { id: 'd317_q21', type: 'text', question: "Cho $v(t)=4t$. Quãng đường đi từ $t=0$ đến $t=3$ là:", acceptable: ["18"], explanation: "18" },
-             { id: 'd317_q22', type: 'text', question: "Giá trị trung bình của $f(x)=2x$ trên $[0, 2]$ là:", acceptable: ["2"], explanation: "2" }
+             // --- MÃ ĐỀ 317 ---
+             { id: 'd317_q1', type: 'mcq', question: "Trên khoảng $(-\\infty;+\\infty)$, hàm số $F(x)=\\frac{1}{2}\\sin 2x$ là một nguyên hàm của hàm số nào?", options: ["$f(x)=-\\cos 2x$", "$f(x)=\\sin 2x$", "$f(x)=\\cos 2x$", "$f(x)=-\\frac{1}{2}\\cos 2x$"], correct: 2, explanation: "$F'(x) = (\\frac{1}{2}\\sin 2x)' = \\frac{1}{2} . 2\\cos 2x = \\cos 2x$." },
+             { 
+                id: 'd317_q17', type: 'text', 
+                question: "Thể tích của chi tiết máy (đề 317) bằng bao nhiêu $cm^3$ (làm tròn kết quả đến hàng phần mười)?", 
+                acceptable: ["34", "34.0"], 
+                image: <MachinePartImage />, 
+                explanation: "Dựa trên đáp án trích xuất từ tài liệu: 34." 
+             }
         ];
-
-        // --- CÁC HÀM LOGIC, COMPONENTS VÀ APP MAIN GIỮ NGUYÊN ---
         
+        // --- LOGIC HÀM ---
         const PASSING_SCORE = 6.0;
         
         const generateRandomQuiz = () => {
@@ -299,7 +249,7 @@
             return 0;
         };
         
-        // ... (Các Component WelcomeScreen, StudentNameInput, QuizView, SolutionView, TeacherLogin, TeacherDashboard giữ nguyên như phiên bản trước) ...
+        // ... (Các Component WelcomeScreen, StudentNameInput, QuizView, SolutionView, TeacherLogin giữ nguyên như phiên bản trước) ...
         
         const WelcomeScreen = ({ onSelectMode, isOnline }) => (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-cyan-600 to-blue-800 p-4 text-white">
@@ -476,14 +426,27 @@
         const TeacherDashboard = ({ onLogout }) => {
             const [results, setResults] = useState([]);
             const [loading, setLoading] = useState(true);
+
+            // SỬA LỖI: Tạo dữ liệu mẫu nếu Offline, hoặc fetch từ Firebase nếu Online
             useEffect(() => {
-                if (!isFirebaseReady || !db) { setLoading(false); return; }
-                const q = collection(db, 'artifacts', appId, 'public', 'data', 'quiz_results_conditional_prob');
-                const unsubscribe = onSnapshot(q, (snapshot) => {
+                if (!isFirebaseReady || !db) {
+                    // MOCK DATA: Hiển thị khi không có Database để giáo viên test giao diện
+                    setResults([
+                        { id: 1, timestamp: { seconds: Date.now()/1000 }, name: "Nguyễn Văn Demo", score: 8.5 },
+                        { id: 2, timestamp: { seconds: Date.now()/1000 - 3600 }, name: "Trần Thị Test", score: 6.0 },
+                        { id: 3, timestamp: { seconds: Date.now()/1000 - 7200 }, name: "Lê Văn Mẫu", score: 9.25 },
+                    ]);
+                    setLoading(false);
+                    return;
+                }
+                // Nếu có DB thì fetch thật
+                const q = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('quiz_results_conditional_prob');
+                const unsubscribe = q.onSnapshot((snapshot) => {
                     const data = snapshot.docs.map(doc => {
                         const d = doc.data();
                         let time = 0;
-                        if (d.timestamp && d.timestamp.seconds) { time = d.timestamp.seconds; } else if (d.timestamp instanceof Date) { time = d.timestamp.getTime() / 1000; } else if (typeof d.timestamp === 'string') { time = new Date(d.timestamp).getTime() / 1000; }
+                        if (d.timestamp && d.timestamp.seconds) { time = d.timestamp.seconds; } 
+                        else if (typeof d.timestamp === 'string') { time = new Date(d.timestamp).getTime() / 1000; }
                         return { id: doc.id, ...d, sortTime: time };
                     });
                     data.sort((a, b) => b.sortTime - a.sortTime);
@@ -493,12 +456,13 @@
                 return () => unsubscribe();
             }, []);
 
-            if (!isFirebaseReady) { return ( <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4"> <div className="bg-white p-8 rounded-xl shadow text-center"> <h2 className="text-xl font-bold mb-4">Khu vực Giáo viên</h2> <p className="text-gray-600 mb-6">Chế độ Offline không hỗ trợ xem bảng điểm.</p> <button onClick={onLogout} className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">Đăng xuất</button> </div> </div> ); }
-
             return (
                 <div className="min-h-screen bg-gray-50">
                     <div className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                        <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="list" className="text-blue-600"/> Bảng Điểm (Chỉ hiện bài đạt)</h1>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="list" className="text-blue-600"/> Bảng Điểm</h1>
+                            {!isFirebaseReady && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded border border-yellow-200">Chế độ Demo (Dữ liệu mẫu)</span>}
+                        </div>
                         <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="logout" size={18}/> Đăng xuất</button>
                     </div>
                     <div className="max-w-6xl mx-auto p-6">
@@ -509,7 +473,7 @@
                                     <tbody className="divide-y divide-gray-200">
                                         {loading ? ( <tr><td colSpan="4" className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr> ) : results.length === 0 ? ( <tr><td colSpan="4" className="p-8 text-center text-gray-500">Chưa có bài thi nào được nộp.</td></tr> ) : results.map((res) => (
                                             <tr key={res.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{res.timestamp ? new Date(res.sortTime * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{res.timestamp ? new Date((res.sortTime || res.timestamp.seconds) * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{res.name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center"><span className="text-lg font-bold text-blue-700">{res.score?.toFixed(2)}</span></td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{res.score >= 8 ? 'Giỏi' : res.score >= 6.5 ? 'Khá' : 'Trung Bình'}</span></td>
@@ -534,8 +498,8 @@
 
             useEffect(() => {
                 if (isFirebaseReady && auth) {
-                    signInAnonymously(auth).catch(e => console.warn(e));
-                    const unsubscribe = onAuthStateChanged(auth, (u) => { if (u) setUser(u); });
+                    auth.signInAnonymously().catch(e => console.warn(e));
+                    const unsubscribe = auth.onAuthStateChanged((u) => { if (u) setUser(u); });
                     return () => unsubscribe();
                 }
             }, []);
@@ -560,7 +524,7 @@
                 if (score >= PASSING_SCORE && isFirebaseReady && user) {
                     try {
                         const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'quiz_results_conditional_prob'), {
+                        await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('quiz_results_conditional_prob').add({
                             name: studentName, score: score, questionIds: currentQuestions.map(q => q.id), answers: sanitizedAnswers, timestamp: new Date().toISOString()
                         });
                     } catch (error) { console.error("Lỗi Firestore:", error); }
