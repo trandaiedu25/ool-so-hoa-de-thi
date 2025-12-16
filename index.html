@@ -34,6 +34,7 @@
         /* Animation utilities */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); }
     </style>
 </head>
 <body>
@@ -62,8 +63,10 @@
                     if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                         const config = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
                         firebase.initializeApp(config);
-                        console.log("Firebase initialized.");
+                        console.log("Firebase initialized via config string.");
                     } else {
+                        // Fallback: Kiểm tra xem đã có config toàn cục chưa
+                        console.warn("Chưa tìm thấy config Firebase.");
                         return false;
                     }
                 }
@@ -545,24 +548,35 @@
         const QuizView = ({ studentName, questions, onSubmit }) => {
             const [answers, setAnswers] = useState({});
             const [isSubmitting, setIsSubmitting] = useState(false);
+            const [showConfirmModal, setShowConfirmModal] = useState(false);
+
             useEffect(() => { window.scrollTo(0, 0); }, []);
+            
             const handleMcqChange = (qId, optIdx) => setAnswers(prev => ({ ...prev, [qId]: optIdx }));
             const handleTfChange = (qId, subId, val) => setAnswers(prev => ({ ...prev, [qId]: { ...(prev[qId] || {}), [subId]: val } }));
             const handleTextChange = (qId, val) => setAnswers(prev => ({ ...prev, [qId]: val }));
+            
+            const handleTriggerSubmit = () => {
+                setShowConfirmModal(true);
+            };
+
             const handleConfirmSubmit = async () => {
-                if(confirm("Bạn có chắc chắn muốn nộp bài?")) {
-                    setIsSubmitting(true);
-                    try { await onSubmit(answers); } catch (error) { setIsSubmitting(false); alert("Lỗi nộp bài: " + error.message); }
-                }
+                setShowConfirmModal(false);
+                setIsSubmitting(true);
+                // Gọi hàm submit từ cha (đã được bọc try-catch và timeout)
+                onSubmit(answers);
             };
 
             return (
                 <div className="min-h-screen bg-gray-100 pb-20 relative animate-fade-in">
+                    {/* Header */}
                     <div className="bg-white shadow-md p-4 sticky top-0 z-10 border-b border-gray-200">
                         <div className="max-w-3xl mx-auto flex justify-between items-center">
                             <div className="font-bold text-blue-700 flex items-center gap-2"><Icon name="user" size={18}/> {studentName}</div>
                         </div>
                     </div>
+
+                    {/* Questions */}
                     <div className="max-w-3xl mx-auto p-4 space-y-8 mt-4">
                         {questions.map((q, idx) => (
                             <div key={q.id} className="bg-white rounded-xl shadow-sm p-6 transition-all hover:shadow-md">
@@ -610,11 +624,28 @@
                             </div>
                         ))}
                         <div className="flex justify-center pt-6">
-                            <button onClick={handleConfirmSubmit} disabled={isSubmitting} className={`px-8 py-4 text-white text-lg font-bold rounded-xl shadow-lg flex items-center gap-2 transition-all ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 transform hover:scale-105'}`}>
+                            <button onClick={handleTriggerSubmit} disabled={isSubmitting} className={`px-8 py-4 text-white text-lg font-bold rounded-xl shadow-lg flex items-center gap-2 transition-all ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 transform hover:scale-105'}`}>
                                 {isSubmitting ? <><Icon name="loader" className="animate-spin"/> ĐANG GỬI...</> : <><Icon name="save"/> NỘP BÀI</>}
                             </button>
                         </div>
                     </div>
+
+                    {/* Custom Confirmation Modal */}
+                    {showConfirmModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay p-4 animate-fade-in">
+                            <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center">
+                                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                                    <Icon name="help-circle" size={24} className="text-blue-600"/>
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận nộp bài</h3>
+                                <p className="text-sm text-gray-500 mb-6">Bạn có chắc chắn muốn nộp bài thi? Hành động này không thể hoàn tác.</p>
+                                <div className="flex gap-3 justify-center">
+                                    <button onClick={() => setShowConfirmModal(false)} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors">Hủy bỏ</button>
+                                    <button onClick={handleConfirmSubmit} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-lg">Đồng ý nộp</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
@@ -761,6 +792,7 @@
             const [finalScore, setFinalScore] = useState(0);
             const [userAnswers, setUserAnswers] = useState({});
 
+            // Auth Logic chính xác
             useEffect(() => {
                 initializeFirebase();
                 if (auth) {
@@ -799,45 +831,54 @@
                 setFinalScore(score);
                 setUserAnswers(answers);
                 
-                // Force initialize if needed
-                if (!db || !auth) {
-                    initializeFirebase();
-                }
-
-                if (db && auth) {
-                    try {
-                        // Ensure we have a user
-                        let currentUser = auth.currentUser;
-                        if (!currentUser) {
-                            console.log("No user, signing in anonymously...");
-                            const cred = await auth.signInAnonymously();
-                            currentUser = cred.user;
-                        }
-
-                        if (currentUser) {
-                            const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-                            // Construct path carefully
-                            const collectionRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME);
-                            
-                            await collectionRef.add({
-                                name: studentName, 
-                                score: score, 
-                                questionIds: currentQuestions.map(q => q.id), 
-                                answers: sanitizedAnswers, 
-                                timestamp: new Date().toISOString(),
-                                uid: currentUser.uid // useful for debugging/rules
-                            });
-                            console.log("Score saved successfully to", appId);
-                        } else {
-                            console.error("Auth failed: Could not get a user.");
-                        }
-                    } catch (error) { 
-                        console.error("Error saving score:", error);
-                        // Optional: alert user differently or just log as requested to remove "offline" mode
+                // --- PHẦN QUAN TRỌNG: LƯU ĐIỂM ---
+                const savePromise = (async () => {
+                    // 1. Đảm bảo Firebase sẵn sàng
+                    if (!db || !auth) {
+                        initializeFirebase();
                     }
-                } else {
-                    console.error("Firebase not initialized. Cannot save.");
-                }
+
+                    if (db && auth) {
+                        try {
+                            // 2. Đảm bảo có User
+                            let currentUser = auth.currentUser;
+                            if (!currentUser) {
+                                console.log("Chưa đăng nhập, thử đăng nhập ẩn danh...");
+                                try {
+                                    const cred = await auth.signInAnonymously();
+                                    currentUser = cred.user;
+                                } catch(e) {
+                                    console.error("Lỗi đăng nhập ẩn danh:", e);
+                                    return; // Thoát nếu không đăng nhập được
+                                }
+                            }
+
+                            if (currentUser) {
+                                const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
+                                // 3. Ghi vào Firestore
+                                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME).add({
+                                    name: studentName, 
+                                    score: score, 
+                                    questionIds: currentQuestions.map(q => q.id), 
+                                    answers: sanitizedAnswers, 
+                                    timestamp: new Date().toISOString(),
+                                    uid: currentUser.uid
+                                });
+                                console.log("Đã lưu điểm thành công.");
+                            }
+                        } catch (error) { 
+                            console.error("Lỗi khi lưu điểm:", error);
+                        }
+                    } else {
+                        console.warn("Firebase chưa sẵn sàng, không thể lưu.");
+                    }
+                })();
+
+                // 4. Timeout an toàn: Đợi lưu tối đa 3 giây, sau đó chuyển trang
+                // Điều này giúp nút Nộp bài không bao giờ bị treo
+                const timeoutPromise = new Promise(resolve => setTimeout(resolve, 3000));
+                
+                await Promise.race([savePromise, timeoutPromise]);
                 
                 setView('result'); 
             };
