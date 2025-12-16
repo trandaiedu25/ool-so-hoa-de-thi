@@ -47,38 +47,43 @@
         
         let db = null;
         let auth = null;
-        let isFirebaseReady = false;
         let appId = 'default-app-id';
 
-        // Khởi tạo Firebase mạnh mẽ hơn
-        try {
-            // 1. Lấy appId từ môi trường
-            if (typeof __app_id !== 'undefined') {
-                appId = __app_id;
-            }
+        // Hàm khởi tạo Firebase an toàn, có thể gọi lại nhiều lần
+        const initializeFirebase = () => {
+            try {
+                if (!window.firebase) return false;
 
-            // 2. Kiểm tra xem Firebase đã được khởi tạo sẵn chưa (Trường hợp môi trường đã init)
-            if (firebase.apps.length > 0) {
-                auth = firebase.auth();
-                db = firebase.firestore();
-                isFirebaseReady = true;
-                console.log("Firebase đã kết nối (Pre-initialized).");
-            } 
-            // 3. Nếu chưa, thử init bằng config từ biến môi trường
-            else if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                const firebaseConfig = JSON.parse(__firebase_config);
-                firebase.initializeApp(firebaseConfig);
-                auth = firebase.auth();
-                db = firebase.firestore();
-                isFirebaseReady = true;
-                console.log("Firebase đã kết nối (Config Init).");
-            } 
-            else {
-                console.warn("Không tìm thấy cấu hình Firebase. Ứng dụng chạy ở chế độ Offline.");
+                // 1. Lấy App ID
+                if (typeof __app_id !== 'undefined') appId = __app_id;
+
+                // 2. Nếu chưa có App nào, thử init từ biến môi trường
+                if (!firebase.apps.length) {
+                    if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                        const config = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+                        firebase.initializeApp(config);
+                        console.log("Firebase initialized via config string.");
+                    } else {
+                        // Fallback: Kiểm tra nếu config đã là object toàn cục (hiếm gặp nhưng có thể)
+                        console.warn("Chưa tìm thấy config Firebase. Đang chờ...");
+                        return false;
+                    }
+                }
+
+                // 3. Gán biến global nếu đã init thành công
+                if (firebase.apps.length > 0) {
+                    if (!auth) auth = firebase.auth();
+                    if (!db) db = firebase.firestore();
+                    return true;
+                }
+            } catch (e) {
+                console.error("Lỗi khởi tạo Firebase:", e);
             }
-        } catch (e) {
-            console.error("Lỗi khởi tạo Firebase:", e);
-        }
+            return false;
+        };
+
+        // Gọi khởi tạo lần đầu
+        let isGlobalFirebaseReady = initializeFirebase();
 
         const COLLECTION_NAME = "quiz_results_math12_hk1";
 
@@ -637,7 +642,7 @@
                         <p className="text-gray-600 mt-3 text-sm max-w-md mx-auto">
                             {isPassed 
                                 ? "Kết quả đã được lưu. Hãy xem lại lời giải chi tiết bên dưới." 
-                                : `Bạn cần đạt tối thiểu ${PASSING_SCORE} điểm. Kết quả đã được lưu vào hệ thống. Vui lòng làm lại đề thi để xem lời giải chi tiết.`}
+                                : `Bạn cần đạt tối thiểu ${PASSING_SCORE} điểm. Kết quả đã được lưu vào hệ thống nhưng bạn cần làm lại để xem đáp án chi tiết.`}
                         </p>
                     </div>
 
@@ -691,8 +696,11 @@
             const [loading, setLoading] = useState(true);
 
             useEffect(() => {
-                // Nếu chưa có Firebase, trả về dữ liệu mẫu
-                if (!isFirebaseReady || !db) {
+                // Thử kết nối lại nếu cần
+                if (!db) initializeFirebase();
+
+                // Nếu vẫn chưa có Firebase, trả về dữ liệu mẫu
+                if (!db) {
                     setResults([
                         { id: 1, timestamp: { seconds: Date.now()/1000 }, name: "Nguyễn Văn Demo", score: 8.5 },
                         { id: 2, timestamp: { seconds: Date.now()/1000 - 3600 }, name: "Trần Thị Test", score: 6.0 },
@@ -725,7 +733,7 @@
                     <div className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
                         <div className="flex items-center gap-3">
                             <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="list" className="text-blue-600"/> Bảng Điểm</h1>
-                            {!isFirebaseReady && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded border border-yellow-200">Chế độ Demo (Dữ liệu mẫu)</span>}
+                            {!db && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded border border-yellow-200">Chế độ Demo (Dữ liệu mẫu)</span>}
                         </div>
                         <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="log-out" size={18}/> Đăng xuất</button>
                     </div>
@@ -759,10 +767,17 @@
             const [currentQuestions, setCurrentQuestions] = useState([]);
             const [finalScore, setFinalScore] = useState(0);
             const [userAnswers, setUserAnswers] = useState({});
+            const [isOnline, setIsOnline] = useState(isGlobalFirebaseReady);
 
             // Auth Logic chính xác: Ưu tiên Custom Token trước, sau đó mới đến Anonymous
             useEffect(() => {
-                if (isFirebaseReady && auth) {
+                // Thử init lại nếu lần đầu chưa được
+                if (!isOnline) {
+                    const ready = initializeFirebase();
+                    if (ready) setIsOnline(true);
+                }
+
+                if (auth) {
                     const initAuth = async () => {
                         try {
                             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -798,8 +813,11 @@
                 setFinalScore(score);
                 setUserAnswers(answers);
                 
-                // Lưu kết quả kể cả khi KHÔNG đạt điểm (Miễn là có mạng)
-                if (isFirebaseReady) {
+                // Thử kết nối lại nếu mất mạng
+                if (!db) initializeFirebase();
+
+                // Lưu kết quả kể cả khi KHÔNG đạt điểm (Miễn là có kết nối DB)
+                if (db) {
                     let currentUser = user;
                     
                     // Nếu user chưa sẵn sàng, thử đăng nhập ẩn danh ngay lập tức
@@ -813,7 +831,8 @@
                          }
                     }
 
-                    if (currentUser) {
+                    // Chỉ cần có auth (ẩn danh hoặc token) là lưu được
+                    if (currentUser || auth.currentUser) {
                         try {
                             const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
                             // Sử dụng đúng đường dẫn: /artifacts/{appId}/public/data/{COLLECTION_NAME}
@@ -837,9 +856,9 @@
 
             return (
                 <div>
-                    {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'login')} isOnline={isFirebaseReady} />}
+                    {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'login')} isOnline={isOnline} />}
                     {view === 'name' && <StudentNameInput onStart={startNewQuiz} />}
-                    {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} isConnected={isFirebaseReady} />}
+                    {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} isConnected={isOnline} />}
                     {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={handleRetry} />}
                     {view === 'login' && <TeacherLogin onLogin={() => setView('teacher')} onBack={() => setView('welcome')} />}
                     {view === 'teacher' && <TeacherDashboard onLogout={() => setView('welcome')} />}
