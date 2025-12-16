@@ -3,67 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Số Hóa Đề Thi (Final Version)</title>
+    <title>Tool Số Hóa Đề Thi (Auto-Fix Model)</title>
     <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
+      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
     </script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f0f2f5; display: flex; gap: 20px; }
-        .col { flex: 1; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); height: 90vh; overflow-y: auto; display: flex; flex-direction: column; }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; color: #333; }
-        input, button, textarea { width: 100%; padding: 10px; margin-bottom: 15px; box-sizing: border-box; border-radius: 5px; border: 1px solid #ccc; }
-        button { background: #007bff; color: white; font-weight: bold; cursor: pointer; border: none; }
+        body { font-family: sans-serif; padding: 20px; background: #f4f6f8; max-width: 1200px; margin: 0 auto; }
+        .container { display: flex; gap: 20px; }
+        .box { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        input, textarea, button { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
         button:hover { background: #0056b3; }
         button:disabled { background: #ccc; }
-        textarea { flex-grow: 1; font-family: monospace; }
-        .status { font-weight: bold; color: #d9534f; margin-bottom: 10px; }
-        .success { color: #28a745; }
-        #preview img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+        .error { color: red; background: #fff0f0; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 0.9em; }
+        .success { color: green; background: #f0fff4; padding: 10px; }
     </style>
 </head>
 <body>
 
-<div class="col">
-    <h2>1. Cấu hình & Upload</h2>
-    
-    <label>Gemini API Key:</label>
-    <input type="password" id="geminiKey" placeholder="Dán key AI Studio vào đây...">
-    
-    <label>ImgBB API Key:</label>
-    <input type="text" id="imgbbKey" placeholder="Dán key ImgBB vào đây...">
+<h1>Tool Số Hóa Đề Thi (Phiên bản Tự Dò Lỗi)</h1>
 
-    <label>Chọn Đề Thi (Ảnh hoặc PDF):</label>
-    <input type="file" id="fileInput" accept="image/*, application/pdf">
-    
-    <div id="preview"></div>
-    <div id="status" class="status">Sẵn sàng.</div>
-    
-    <button id="btnRun" onclick="runProcess()">🚀 BẮT ĐẦU XỬ LÝ</button>
-</div>
+<div class="container">
+    <div class="box">
+        <h3>1. Cấu hình</h3>
+        <label>Gemini API Key (Bắt buộc):</label>
+        <input type="password" id="geminiKey" placeholder="Dán Key AI Studio vào đây...">
+        
+        <label>ImgBB API Key (Tùy chọn):</label>
+        <input type="text" id="imgbbKey" placeholder="Dán Key ImgBB (nếu có)...">
+        
+        <label>Chọn Đề Thi (Ảnh hoặc PDF):</label>
+        <input type="file" id="fileInput" accept="image/*, application/pdf">
+        
+        <button id="btnRun" onclick="startProcess()">🚀 CHẠY NGAY</button>
+        
+        <div id="statusLog" style="margin-top: 15px;"></div>
+    </div>
 
-<div class="col">
-    <h2>2. Kết quả JSON</h2>
-    <textarea id="output" placeholder="Kết quả sẽ hiện ở đây..."></textarea>
+    <div class="box">
+        <h3>2. Kết quả JSON</h3>
+        <textarea id="output" rows="20" placeholder="Kết quả sẽ hiện ở đây..."></textarea>
+    </div>
 </div>
 
 <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    // Hàm Upload ảnh lên ImgBB
-    async function uploadImgBB(file, key) {
-        const formData = new FormData();
-        formData.append("image", file);
-        const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, { method: "POST", body: formData });
-        const data = await res.json();
-        if(!data.success) throw new Error("Lỗi ImgBB: " + data.error.message);
-        return data.data.url;
-    }
+    // Danh sách các tên Model để thử lần lượt (Nếu cái 1 lỗi -> thử cái 2 -> thử cái 3)
+    const MODEL_NAMES = [
+        "gemini-1.5-flash",       // Ưu tiên 1: Bản Flash chuẩn
+        "gemini-1.5-flash-001",   // Ưu tiên 2: Bản Flash định danh cụ thể
+        "gemini-1.5-pro",         // Ưu tiên 3: Bản Pro chuẩn
+        "gemini-pro"              // Ưu tiên 4: Bản Legacy (Cũ nhưng trâu bò)
+    ];
 
-    // Hàm đọc file cho Gemini
     async function fileToBase64(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -72,107 +65,79 @@
         });
     }
 
-    // HÀM CHÍNH
-    window.runProcess = async () => {
-       // const geminiKey = document.getElementById('geminiKey').value.trim(); // Dòng cũ bỏ đi
-const geminiKey = "AIzaSyBcXKTm0w611xLyfuVi2LCK_klPSIPA1Ek"; // Dòng mới
-        const imgbbKey = document.getElementById('imgbbKey').value.trim();
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
-        const status = document.getElementById('status');
-        const btn = document.getElementById('btnRun');
-        const output = document.getElementById('output');
+    // Hàm thử gọi API với một tên model cụ thể
+    async function tryGenerate(apiKey, modelName, prompt, filePart) {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: modelName });
+        
+        // Thử gửi request
+        const result = await model.generateContent([prompt, filePart]);
+        return result.response.text();
+    }
 
-        if (!geminiKey || !file) { alert("Thiếu Gemini Key hoặc chưa chọn file!"); return; }
+    window.startProcess = async () => {
+        const key = document.getElementById('geminiKey').value.trim();
+        const fileInput = document.getElementById('fileInput');
+        const log = document.getElementById('statusLog');
+        const out = document.getElementById('output');
+        const btn = document.getElementById('btnRun');
+
+        if (!key || !fileInput.files.length) {
+            alert("Thiếu Key hoặc File!"); return;
+        }
 
         btn.disabled = true;
-        status.innerText = "⏳ Đang khởi động AI...";
-        status.className = "status";
-        output.value = "";
+        out.value = "";
+        log.innerHTML = "⏳ Đang khởi động...";
 
         try {
-            // 1. Cấu hình Gemini
-            const genAI = new GoogleGenerativeAI(geminiKey);
-            // Dùng model Pro để ổn định hơn Flash (tránh lỗi 404)
-            // Đổi sang model 1.5 Pro bản ổn định nhất
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
-            // 2. Chuẩn bị dữ liệu gửi đi
-            const base64Data = await fileToBase64(file);
-            const mimeType = file.type;
+            const file = fileInput.files[0];
+            const filePart = {
+                inlineData: {
+                    data: await fileToBase64(file),
+                    mimeType: file.type
+                }
+            };
 
-            // 3. Viết Prompt (Lệnh)
-            const prompt = `
-                Bạn là trợ lý soạn đề thi. Hãy trích xuất nội dung từ file đính kèm thành JSON.
-                
-                QUY TẮC:
-                1. Đọc toàn bộ câu hỏi và đáp án. Dùng LaTeX ($...$) cho công thức toán.
-                2. Xử lý hình ảnh:
-                   - Nếu là hình học/đồ thị vẽ được bằng code: Tạo "media": { "type": "svg_code", "src": "<svg>...</svg>" }
-                   - Nếu là ảnh phức tạp/thực tế: Tạo "media": { "type": "image_url", "src": "NEED_UPLOAD" }
-                3. Trả về mảng JSON (Array) các câu hỏi. KHÔNG dùng markdown.
-            `;
+            const prompt = `Trích xuất câu hỏi từ đề thi này thành JSON. Với công thức toán dùng LaTeX. Nếu có hình vẽ, hãy mô tả hoặc vẽ SVG (type: svg_code). Trả về JSON thuần.`;
 
-            status.innerText = "🤖 AI đang đọc đề (Việc này mất khoảng 10-20s)...";
+            // VÒNG LẶP DÒ TÌM MODEL
+            let successContent = null;
             
-            const result = await model.generateContent([
-                prompt,
-                { inlineData: { data: base64Data, mimeType: mimeType } }
-            ]);
-            
-            let text = result.response.text();
-            // Làm sạch JSON
-            text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-            let jsonData = JSON.parse(text);
-
-            // 4. Xử lý Upload ảnh ImgBB (Nếu AI yêu cầu)
-            // Lưu ý: Logic này chỉ chạy tốt nhất với file ẢNH đơn lẻ. 
-            // Với PDF nhiều trang, ta tạm thời bỏ qua bước upload tự động để tránh phức tạp, 
-            // hoặc chỉ upload nếu đầu vào là file ảnh.
-            
-            if (file.type.startsWith('image/') && imgbbKey) {
-                // Kiểm tra xem trong JSON có chỗ nào cần upload không
-                let needUpload = false;
-                // Duyệt qua các câu hỏi, nếu thấy type là image_url thì upload ảnh gốc lên
-                // (Đây là cách đơn giản: Upload ảnh gốc cho tất cả câu cần ảnh)
-                const imgUrl = await uploadImgBB(file, imgbbKey);
-                
-                jsonData.forEach(q => {
-                    if (q.media && q.media.type === 'image_url' && q.media.src === 'NEED_UPLOAD') {
-                        q.media.src = imgUrl; // Điền link ảnh vừa upload vào
-                        status.innerText = "☁️ Đã upload ảnh lên ImgBB...";
+            for (const name of MODEL_NAMES) {
+                log.innerHTML += `<div style="color:blue">🔄 Đang thử model: <b>${name}</b>...</div>`;
+                try {
+                    successContent = await tryGenerate(key, name, prompt, filePart);
+                    log.innerHTML += `<div class="success">✅ Thành công với model: ${name}!</div>`;
+                    break; // Thoát vòng lặp ngay khi thành công
+                } catch (e) {
+                    console.error(e);
+                    let msg = e.message;
+                    if (msg.includes("404")) msg = "Không tìm thấy (404)";
+                    if (msg.includes("400")) msg = "Key không hợp lệ (400)";
+                    log.innerHTML += `<div class="error">❌ ${name} thất bại: ${msg}</div>`;
+                    
+                    // Nếu lỗi là do KEY sai (400), thì không cần thử các model khác làm gì
+                    if (msg.includes("400")) {
+                        throw new Error("API Key của bạn bị sai. Hãy kiểm tra lại Key!");
                     }
-                });
+                }
             }
 
-            // 5. Hoàn tất
-            output.value = JSON.stringify(jsonData, null, 2);
-            status.innerText = "✅ Thành công!";
-            status.className = "status success";
+            if (successContent) {
+                // Làm sạch JSON
+                const cleanJson = successContent.replace(/```json/g, "").replace(/```/g, "").trim();
+                out.value = cleanJson;
+            } else {
+                throw new Error("Đã thử tất cả các model nhưng đều thất bại! Vui lòng kiểm tra lại tài khoản Google AI Studio.");
+            }
 
         } catch (err) {
-            console.error(err);
-            status.innerText = "❌ Lỗi: " + err.message;
-            if (err.message.includes("404")) {
-                status.innerText += " (Khả năng tên Model sai hoặc Key chưa kích hoạt)";
-            }
+            log.innerHTML += `<div class="error">⛔ LỖI NGHIÊM TRỌNG: ${err.message}</div>`;
         } finally {
             btn.disabled = false;
         }
     };
-    
-    // Preview ảnh
-    document.getElementById('fileInput').addEventListener('change', function() {
-        const f = this.files[0];
-        if (f && f.type.startsWith('image/')) {
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(f);
-            document.getElementById('preview').innerHTML = "";
-            document.getElementById('preview').appendChild(img);
-        } else if (f) {
-            document.getElementById('preview').innerText = "Đã chọn file: " + f.name;
-        }
-    });
 </script>
-
 </body>
 </html>
