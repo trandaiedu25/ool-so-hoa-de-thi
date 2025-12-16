@@ -298,7 +298,7 @@
                 question: "Giá trị cực đại của hàm số $y = x^3 - 3x + 2$ là:", 
                 options: ["$4$", "$0$", "$2$", "$-2$"], 
                 correct: 0, 
-                explanation: "1. Tập xác định: $D = \\mathbb{R}$.<br/>2. Đạo hàm: $y' = 3x^2 - 3$.<br/>3. Cho $y' = 0 \\Leftrightarrow 3x^2 - 3 = 0 \\Leftrightarrow x = 1$ hoặc $x = -1$.<br/>4. Tại $x = -1$, hàm số đạt cực đại. $y_{CĐ} = (-1)^3 - 3(-1) + 2 = -1 + 3 + 2 = 4$.<br/>Tại $x = 1$, hàm số đạt cực tiểu. $y_{CT} = 1^3 - 3(1) + 2 = 0$.<br/>Giá trị cực đại là $4$." 
+                explanation: "1. Tập xác định: $D = \\mathbb{R}$.<br/>2. Đạo hàm: $y' = 3x^2 - 3$.<br/>3. Cho $y' = 0 \\Leftrightarrow 3x^2 - 3 = 0 \\Leftrightarrow x = 1$ hoặc $x = -1$.<br/>4. Bảng biến thiên (hoặc xét dấu): $y'$ dương ngoài khoảng nghiệm, âm trong khoảng nghiệm.<br/>- Tại $x = -1$, hàm số đạt cực đại. $y_{CĐ} = (-1)^3 - 3(-1) + 2 = -1 + 3 + 2 = 4$.<br/>- Tại $x = 1$, hàm số đạt cực tiểu. $y_{CT} = 1^3 - 3(1) + 2 = 0$.<br/>Giá trị cực đại là $4$." 
             },
             { 
                 id: 'p1_q3', 
@@ -323,7 +323,7 @@
                 image: <BoxVector/>, 
                 options: ["$\\vec{DC}$", "$\\vec{BA}$", "$\\vec{A'C'}$", "$\\vec{AD}$"], 
                 correct: 0, 
-                explanation: "Trong hình hộp chữ nhật, các cạnh song song và bằng nhau tạo thành các vectơ bằng nhau.<br/>Ta có $AB \\parallel DC$ và $AB = DC$, hướng từ trái sang phải.<br/>Do đó $\\vec{AB} = \\vec{DC}$." 
+                explanation: "Trong hình hộp chữ nhật, các cạnh song song và bằng nhau tạo thành các vectơ bằng nhau.<br/>Ta có $AB \\parallel DC$ và $AB = DC$, hướng từ trái sang phải.<br/>Do đó $\\vec{AB} = \\vec{DC}$. (Lưu ý: $\\vec{AB}$ cũng bằng $\\vec{A'B'}$ và $\\vec{D'C'}$)." 
             },
             { 
                 id: 'p1_q6', 
@@ -434,7 +434,7 @@
                     { id: 'c', text: "Diện tích $S$ của toàn bộ khung cửa được tính bằng công thức $S = 4R - R^2(4 + \\frac{\\pi}{2})$.", correct: false },
                     { id: 'd', text: "Bán kính $R$ để diện tích lớn nhất xấp xỉ 0,56 mét.", correct: true }
                 ],
-                explanation: "a) $AB$ là đường kính nên $AB = 2R$. -> **Đúng**.<br/>b) Chu vi khung cửa: $L = \\pi R + 2h + 2R = 4 \\Rightarrow h = 2 - R(1 + \\frac{\\pi}{2})$. -> **Sai** (Công thức trong đề sai hệ số).<br/>c) Diện tích: $S = 2Rh + \\frac{1}{2}\\pi R^2 = 4R - R^2(2 + \\frac{\\pi}{2})$. -> **Sai** (Hệ số sai).<br/>d) $S'(R) = 4 - 2R(2 + \\frac{\\pi}{2}) = 0 \\Rightarrow R \\approx 0.56$. -> **Đúng**." 
+                explanation: "a) $AB$ là đường kính nên $AB = 2R$. -> **Đúng**.<br/>b) Chu vi khung cửa (gồm cung tròn $AB$, các đoạn $AD, DC, CB$):<br/>$L = \\text{cung } AB + AD + DC + CB = \\pi R + h + 2R + h = 4$.<br/>$\\Rightarrow 2h + (\\pi + 2)R = 4 \\Rightarrow h = \\frac{4 - (\\pi + 2)R}{2} = 2 - R(1 + \\frac{\\pi}{2})$. -> **Sai** (Công thức trong đề sai hệ số).<br/>*Chữa lại:* $h = 2 - R - \\frac{\\pi R}{2}$.<br/>c) $S = S_{hcn} + S_{bn} = 2R \\cdot h + \\frac{1}{2}\\pi R^2 = 2R(2 - R - \\frac{\\pi R}{2}) + \\frac{1}{2}\\pi R^2$<br/>$S = 4R - 2R^2 - \\pi R^2 + 0.5\\pi R^2 = 4R - R^2(2 + \\frac{\\pi}{2})$. -> **Sai** (Do hệ số trong câu hỏi khác).<br/>d) $S'(R) = 4 - 2R(2 + \\frac{\\pi}{2})$. Cho $S'=0 \\Rightarrow R = \\frac{4}{2(2 + \\pi/2)} = \\frac{2}{2 + 1.57} \\approx 0.56$. -> **Đúng**." 
             },
 
             // PHẦN 3: TRẢ LỜI NGẮN (6 câu)
@@ -443,14 +443,14 @@
                 type: 'text', 
                 question: "Tìm giá trị nhỏ nhất của hàm số $f(x) = x^3 - 3x + 1$ trên đoạn $[0; 2]$.", 
                 acceptable: ["-1", "-1.0"], 
-                explanation: "1. $f'(x) = 3x^2 - 3$.<br/>2. $f'(x) = 0 \\Leftrightarrow x = 1$ (thuộc $[0; 2]$) hoặc $x = -1$ (loại).<br/>3. Tính giá trị: $f(0) = 1$; $f(1) = 1^3 - 3(1) + 1 = -1$; $f(2) = 8 - 6 + 1 = 3$.<br/>4. So sánh: Giá trị nhỏ nhất là $-1$." 
+                explanation: "1. $f'(x) = 3x^2 - 3$.<br/>2. $f'(x) = 0 \\Leftrightarrow x = 1$ (thuộc $[0; 2]$) hoặc $x = -1$ (loại).<br/>3. Tính giá trị:<br/>   - $f(0) = 1$.<br/>   - $f(1) = 1^3 - 3(1) + 1 = -1$.<br/>   - $f(2) = 8 - 6 + 1 = 3$.<br/>4. So sánh: Giá trị nhỏ nhất là $-1$." 
             },
             { 
                 id: 'p3_q2', 
                 type: 'text', 
                 question: "Một chất điểm chuyển động theo phương trình $S(t) = t^3 - 3t^2 + 2t + 1$ ($t$ tính bằng giây, $S$ tính bằng mét). Tính vận tốc của chất điểm tại thời điểm gia tốc bằng 0.", 
                 acceptable: ["-1", "-1.0"], 
-                explanation: "1. Vận tốc $v(t) = S'(t) = 3t^2 - 6t + 2$.<br/>2. Gia tốc $a(t) = v'(t) = 6t - 6$.<br/>3. Gia tốc bằng 0 $\\Leftrightarrow 6t - 6 = 0 \\Leftrightarrow t = 1$ (s).<br/>4. Tại $t = 1$, vận tốc $v(1) = 3(1)^2 - 6(1) + 2 = -1$ (m/s)." 
+                explanation: "1. Vận tốc $v(t) = S'(t) = 3t^2 - 6t + 2$.<br/>2. Gia tốc $a(t) = v'(t) = 6t - 6$.<br/>3. Gia tốc bằng 0 $\\Leftrightarrow 6t - 6 = 0 \\Leftrightarrow t = 1$ (s).<br/>4. Tại $t = 1$, vận tốc $v(1) = 3(1)^2 - 6(1) + 2 = 3 - 6 + 2 = -1$ (m/s)." 
             },
             { 
                 id: 'p3_q3', 
@@ -458,7 +458,7 @@
                 question: "Trong không gian với hệ tọa độ $Oxyz$, cho hai vectơ $\\vec{a} = (1; 0; -1)$ và $\\vec{b} = (0; 1; 1)$. Tính cosin của góc giữa hai vectơ $\\vec{a}$ và $\\vec{b}$.", 
                 image: <AngleVector/>, 
                 acceptable: ["-0.5", "-0,5"], 
-                explanation: "1. Công thức: $\\cos(\\vec{a}, \\vec{b}) = \\frac{\\vec{a} \\cdot \\vec{b}}{|\\vec{a}| \\cdot |\\vec{b}|}$.<br/>2. Tích vô hướng: $\\vec{a} \\cdot \\vec{b} = 1\\cdot 0 + 0\\cdot 1 + (-1)\\cdot 1 = -1$.<br/>3. Độ dài: $|\\vec{a}| = \\sqrt{2}$; $|\\vec{b}| = \\sqrt{2}$.<br/>4. Cosin: $\\frac{-1}{\\sqrt{2} \\cdot \\sqrt{2}} = \\frac{-1}{2} = -0,5$." 
+                explanation: "1. Công thức: $\\cos(\\vec{a}, \\vec{b}) = \\frac{\\vec{a} \\cdot \\vec{b}}{|\\vec{a}| \\cdot |\\vec{b}|}$.<br/>2. Tích vô hướng: $\\vec{a} \\cdot \\vec{b} = 1\\cdot 0 + 0\\cdot 1 + (-1)\\cdot 1 = -1$.<br/>3. Độ dài: $|\\vec{a}| = \\sqrt{1^2 + 0 + (-1)^2} = \\sqrt{2}$.<br/>   $|\\vec{b}| = \\sqrt{0 + 1^2 + 1^2} = \\sqrt{2}$.<br/>4. Cosin: $\\frac{-1}{\\sqrt{2} \\cdot \\sqrt{2}} = \\frac{-1}{2} = -0,5$." 
             },
             { 
                 id: 'p3_q4', 
@@ -466,14 +466,14 @@
                 question: "(Vận dụng cao) Một chiếc xe ô tô tiêu thụ xăng với chi phí $C(v)$ (ngàn đồng/km) phụ thuộc vào vận tốc $v$ (km/h) theo công thức $C(v) = \\frac{1600}{v} + \\frac{v}{4}$ (với $v > 0$). Để chi phí nhiên liệu trên mỗi km là thấp nhất thì tài xế nên lái xe với vận tốc bằng bao nhiêu km/h?", 
                 image: <CostGraph/>, 
                 acceptable: ["80", "80.0"], 
-                explanation: "Áp dụng BĐT Cauchy: $C(v) \\ge 2\\sqrt{\\frac{1600}{v} \\cdot \\frac{v}{4}} = 2\\sqrt{400} = 40$.<br/>Dấu bằng xảy ra khi $\\frac{1600}{v} = \\frac{v}{4} \\Rightarrow v^2 = 6400 \\Rightarrow v = 80$." 
+                explanation: "1. Xét hàm số $C(v) = \\frac{1600}{v} + \\frac{v}{4}$ trên $(0; +\\infty)$.<br/>2. Cách 1 (Đạo hàm): $C'(v) = -\\frac{1600}{v^2} + \\frac{1}{4}$.<br/>   $C'(v) = 0 \\Leftrightarrow \\frac{1600}{v^2} = \\frac{1}{4} \\Leftrightarrow v^2 = 6400 \\Leftrightarrow v = 80$ (vì $v>0$).<br/>3. Cách 2 (BĐT Cauchy): $C(v) \\ge 2\\sqrt{\\frac{1600}{v} \\cdot \\frac{v}{4}} = 2\\sqrt{400} = 40$.<br/>   Dấu bằng xảy ra khi $\\frac{1600}{v} = \\frac{v}{4} \\Rightarrow v^2 = 6400 \\Rightarrow v = 80$." 
             },
             { 
                 id: 'p3_q5', 
                 type: 'text', 
                 question: "(Vận dụng cao) Trong không gian $Oxyz$, cho hình bình hành $ABCD$ có đỉnh $A(1; 1; 1)$, $B(2; 3; 4)$, $C(6; 5; 2)$. Tìm cao độ của đỉnh $D$.", 
                 acceptable: ["-1", "-1.0"], 
-                explanation: "1. Gọi $D(x; y; z)$. Tính chất hình bình hành: $\\vec{AD} = \\vec{BC}$.<br/>2. $\\vec{BC} = (4; 2; -2)$. $\\vec{AD} = (x-1; y-1; z-1)$.<br/>3. $\\vec{AD} = \\vec{BC} \\Rightarrow z - 1 = -2 \\Rightarrow z = -1$." 
+                explanation: "1. Gọi $D(x; y; z)$.<br/>2. Tính chất hình bình hành: $\\vec{AD} = \\vec{BC}$ (hoặc $\\vec{AB} = \\vec{DC}$).<br/>3. $\\vec{BC} = (6-2; 5-3; 2-4) = (4; 2; -2)$.<br/>4. $\\vec{AD} = (x-1; y-1; z-1)$.<br/>5. Cho $\\vec{AD} = \\vec{BC} \\Rightarrow z - 1 = -2 \\Rightarrow z = -1$." 
             },
             { 
                 id: 'p3_q6', 
@@ -481,7 +481,7 @@
                 question: "(Vận dụng cao) Cho hình lăng trụ tam giác đều $ABC.A'B'C'$ có cạnh đáy bằng 2 và cạnh bên bằng 4. Gọi $M$ là trung điểm của $BC$. Tính độ dài đoạn thẳng $A'M$ (làm tròn đến chữ số thập phân thứ nhất).", 
                 image: <PrismShape/>, 
                 acceptable: ["4.4", "4,4", "4.36", "4,36"], 
-                explanation: "1. $AM = \\frac{2\\sqrt{3}}{2} = \\sqrt{3}$ (đường cao tam giác đều).<br/>2. Tam giác $A'AM$ vuông tại $A$: $A'M^2 = A'A^2 + AM^2 = 4^2 + 3 = 19$.<br/>3. $A'M = \\sqrt{19} \\approx 4,358$. Làm tròn 4.4." 
+                explanation: "1. $ABC$ là tam giác đều cạnh $a=2$. $M$ là trung điểm $BC \\Rightarrow AM \\perp BC$.<br/>2. Độ dài đường cao tam giác đều: $AM = \\frac{a\\sqrt{3}}{2} = \\frac{2\\sqrt{3}}{2} = \\sqrt{3}$.<br/>3. Xét tam giác vuông $A'AM$ (vuông tại $A$):<br/>   $A'A = 4$ (cạnh bên lăng trụ đứng).<br/>   $AM = \\sqrt{3}$.<br/>4. Áp dụng định lý Pythagoras:<br/>   $A'M^2 = A'A^2 + AM^2 = 4^2 + (\\sqrt{3})^2 = 16 + 3 = 19$.<br/>5. $A'M = \\sqrt{19} \\approx 4,358$.<br/>   Làm tròn 1 chữ số thập phân: 4.4." 
             }
         ];
         
