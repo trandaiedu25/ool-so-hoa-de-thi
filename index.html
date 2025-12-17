@@ -57,7 +57,7 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
-        const { createRoot } = ReactDOM;
+        const { createRoot, createPortal } = ReactDOM;
 
         // --- CẤU HÌNH FIREBASE ---
         const USER_CONFIG = {
@@ -718,14 +718,15 @@
             return ( <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 animate-fade-in"> <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"> <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">Giáo Viên Đăng Nhập</h2> <form onSubmit={handleLogin} className="space-y-4"> <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nhập mật khẩu..." autoFocus/> <button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800">Truy cập</button> <button type="button" onClick={onBack} className="w-full py-2 text-gray-500 hover:text-gray-800 text-sm">Quay lại</button> </form> </div> </div> );
         };
 
-        // Component Modal Chi Tiết Học Sinh
+        // Component Modal Chi Tiết Học Sinh - SỬ DỤNG PORTAL
         const StudentDetailModal = ({ result, onClose }) => {
             if (!result) return null;
             const answers = result.answers || {};
 
-            return (
+            // Sử dụng Portal để render modal ra ngoài root, tránh bị ảnh hưởng bởi CSS của cha
+            return createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col animate-fade-in">
                         <div className="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
                             <div>
                                 <h3 className="text-lg font-bold text-gray-800">{result.name}</h3>
@@ -784,7 +785,8 @@
                             <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Đóng</button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body // Render trực tiếp vào body
             );
         };
 
@@ -845,99 +847,96 @@
             }, [results]);
 
             return (
-                <div className="min-h-screen bg-gray-50">
-                    {/* Main Content Wrapper */}
-                    <div className="animate-fade-in pb-10">
-                        {/* Header */}
-                        <div className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                            <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="layout-dashboard" className="text-blue-600"/> Bảng Điều Khiển Giáo Viên</h1>
-                            <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="log-out" size={18}/> Đăng xuất</button>
+                <div className="min-h-screen bg-gray-50 animate-fade-in pb-10">
+                    {/* Header */}
+                    <div className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+                        <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="layout-dashboard" className="text-blue-600"/> Bảng Điều Khiển Giáo Viên</h1>
+                        <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="log-out" size={18}/> Đăng xuất</button>
+                    </div>
+
+                    <div className="max-w-7xl mx-auto p-6 space-y-6">
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100">
+                                <div className="text-gray-500 text-sm font-medium">Tổng bài thi</div>
+                                <div className="text-2xl font-bold text-blue-700">{results.length}</div>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100">
+                                <div className="text-gray-500 text-sm font-medium">Điểm trung bình</div>
+                                <div className="text-2xl font-bold text-green-700">{stats.avg}</div>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-yellow-100">
+                                <div className="text-gray-500 text-sm font-medium">Tỷ lệ đạt (>=5)</div>
+                                <div className="text-2xl font-bold text-yellow-600">{stats.pass}%</div>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-100">
+                                <div className="text-gray-500 text-sm font-medium">Tỷ lệ giỏi (>=8)</div>
+                                <div className="text-2xl font-bold text-purple-600">{stats.excellent}%</div>
+                            </div>
                         </div>
 
-                        <div className="max-w-7xl mx-auto p-6 space-y-6">
-                            {/* Stats Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100">
-                                    <div className="text-gray-500 text-sm font-medium">Tổng bài thi</div>
-                                    <div className="text-2xl font-bold text-blue-700">{results.length}</div>
-                                </div>
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100">
-                                    <div className="text-gray-500 text-sm font-medium">Điểm trung bình</div>
-                                    <div className="text-2xl font-bold text-green-700">{stats.avg}</div>
-                                </div>
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-yellow-100">
-                                    <div className="text-gray-500 text-sm font-medium">Tỷ lệ đạt (>=5)</div>
-                                    <div className="text-2xl font-bold text-yellow-600">{stats.pass}%</div>
-                                </div>
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-100">
-                                    <div className="text-gray-500 text-sm font-medium">Tỷ lệ giỏi (>=8)</div>
-                                    <div className="text-2xl font-bold text-purple-600">{stats.excellent}%</div>
-                                </div>
+                        {/* Toolbar */}
+                        <div className="flex flex-col md:flex-row justify-between gap-4">
+                            <div className="relative flex-1 max-w-md">
+                                <Icon name="search" className="absolute left-3 top-3 text-gray-400" size={20}/>
+                                <input 
+                                    type="text" 
+                                    placeholder="Tìm kiếm theo tên học sinh..." 
+                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
                             </div>
+                            <button onClick={handleExport} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 font-medium shadow-sm">
+                                <Icon name="download" size={18}/> Xuất Excel
+                            </button>
+                        </div>
 
-                            {/* Toolbar */}
-                            <div className="flex flex-col md:flex-row justify-between gap-4">
-                                <div className="relative flex-1 max-w-md">
-                                    <Icon name="search" className="absolute left-3 top-3 text-gray-400" size={20}/>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Tìm kiếm theo tên học sinh..." 
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                </div>
-                                <button onClick={handleExport} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 font-medium shadow-sm">
-                                    <Icon name="download" size={18}/> Xuất Excel
-                                </button>
-                            </div>
-
-                            {/* Table */}
-                            <div className="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full whitespace-nowrap">
-                                        <thead className="bg-gray-50 border-b">
-                                            <tr>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thời gian</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Họ và Tên</th>
-                                                <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Điểm Số</th>
-                                                <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                                                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Hành động</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200">
-                                            {loading ? (
-                                                <tr><td colSpan="5" className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
-                                            ) : filteredResults.length === 0 ? (
-                                                <tr><td colSpan="5" className="p-8 text-center text-gray-500">Không tìm thấy kết quả nào.</td></tr>
-                                            ) : (
-                                                filteredResults.map((res) => (
-                                                    <tr key={res.id} className="hover:bg-gray-50 transition-colors">
-                                                        <td className="px-6 py-4 text-sm text-gray-500">{new Date(res.timestamp).toLocaleString('vi-VN')}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{res.name}</td>
-                                                        <td className="px-6 py-4 text-center">
-                                                            <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : res.score >= 5 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
-                                                                {res.score?.toFixed(2)}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-6 py-4 text-center text-sm">
-                                                            {res.score >= 5 ? <span className="text-green-600 flex items-center justify-center gap-1"><Icon name="check" size={14}/> Đạt</span> : <span className="text-red-500 flex items-center justify-center gap-1"><Icon name="x" size={14}/> Trượt</span>}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-right space-x-2">
-                                                            <button onClick={() => setSelectedResult(res)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg" title="Xem chi tiết"><Icon name="eye" size={18}/></button>
-                                                            <button onClick={() => handleDelete(res.id)} className="text-red-600 hover:bg-red-50 p-2 rounded-lg" title="Xóa"><Icon name="trash-2" size={18}/></button>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                        {/* Table */}
+                        <div className="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
+                            <div className="overflow-x-auto">
+                                <table className="w-full whitespace-nowrap">
+                                    <thead className="bg-gray-50 border-b">
+                                        <tr>
+                                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thời gian</th>
+                                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Họ và Tên</th>
+                                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Điểm Số</th>
+                                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                                            <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {loading ? (
+                                            <tr><td colSpan="5" className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
+                                        ) : filteredResults.length === 0 ? (
+                                            <tr><td colSpan="5" className="p-8 text-center text-gray-500">Không tìm thấy kết quả nào.</td></tr>
+                                        ) : (
+                                            filteredResults.map((res) => (
+                                                <tr key={res.id} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="px-6 py-4 text-sm text-gray-500">{new Date(res.timestamp).toLocaleString('vi-VN')}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{res.name}</td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : res.score >= 5 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                                                            {res.score?.toFixed(2)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center text-sm">
+                                                        {res.score >= 5 ? <span className="text-green-600 flex items-center justify-center gap-1"><Icon name="check" size={14}/> Đạt</span> : <span className="text-red-500 flex items-center justify-center gap-1"><Icon name="x" size={14}/> Trượt</span>}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right space-x-2">
+                                                        <button onClick={() => setSelectedResult(res)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg" title="Xem chi tiết"><Icon name="eye" size={18}/></button>
+                                                        <button onClick={() => handleDelete(res.id)} className="text-red-600 hover:bg-red-50 p-2 rounded-lg" title="Xóa"><Icon name="trash-2" size={18}/></button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
 
-                    {/* Modal Chi Tiết - Rendered OUTSIDE the animated container */}
+                    {/* Modal Chi Tiết */}
                     {selectedResult && <StudentDetailModal result={selectedResult} onClose={() => setSelectedResult(null)} />}
                 </div>
             );
