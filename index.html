@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đề Thi Thử Tốt Nghiệp THPT 2025 - Môn Toán - Đề Số 02</title>
+    <title>Đề Thi Thử Tốt Nghiệp THPT 2025 - Môn Toán - Đề Số 01</title>
     
     <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -33,31 +33,31 @@
         .katex { font-size: 1.1em; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        /* Custom scrollbar for tables */
         .overflow-x-auto::-webkit-scrollbar { height: 8px; }
         .overflow-x-auto::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
         
+        /* Animation cho cảnh báo */
         @keyframes pulse-red {
             0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
             50% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
         }
         .animate-pulse-red { animation: pulse-red 2s infinite; }
 
+        /* Animation cho đồng hồ sắp hết giờ */
         @keyframes blink-text {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
         .animate-blink { animation: blink-text 1s infinite; }
         
-        /* Đảm bảo modal luôn nằm trên cùng */
-        .z-modal { z-index: 9999 !important; }
-        
-        /* Toggle Switch */
+        /* Toggle Switch CSS */
         .toggle-checkbox:checked {
             right: 0;
-            border-color: #68D391;
+            border-color: #2563eb;
         }
         .toggle-checkbox:checked + .toggle-label {
-            background-color: #68D391;
+            background-color: #2563eb;
         }
     </style>
 </head>
@@ -66,7 +66,7 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
-        const { createRoot } = ReactDOM;
+        const { createRoot, createPortal } = ReactDOM;
 
         // --- CẤU HÌNH FIREBASE ---
         const USER_CONFIG = {
@@ -81,18 +81,6 @@
         let db = null;
         let auth = null;
         const COLLECTION_NAME = "quiz_results_math12_thpt2025_de01_full";
-        const SETTINGS_COLLECTION = "quiz_config_math12"; // Collection riêng cho cài đặt
-        const SETTINGS_DOC_ID = "exam_01_settings";
-
-        // Cài đặt mặc định
-        const DEFAULT_SETTINGS = {
-            antiCheat: true,
-            maxViolations: 3, // Số lần vi phạm tối đa mặc định
-            timerEnabled: true,
-            timerDuration: 90, // phút
-            requirePassToViewSolution: true,
-            passScore: 7.0
-        };
 
         const initializeFirebase = () => {
             try {
@@ -116,19 +104,6 @@
             }, [name, size, className]);
             return <span ref={iconRef} className={className} style={{display: 'inline-flex', alignItems: 'center'}}></span>;
         };
-
-        const Toggle = ({ label, checked, onChange }) => (
-            <div className="flex items-center justify-between mb-4">
-                <span className="text-gray-700 font-medium">{label}</span>
-                <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                    <input type="checkbox" name="toggle" id={label} className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" 
-                        style={{ right: checked ? '0' : 'auto', left: checked ? 'auto' : '0', borderColor: checked ? '#48bb78' : '#e2e8f0' }}
-                        checked={checked} onChange={(e) => onChange(e.target.checked)}
-                    />
-                    <label htmlFor={label} className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300 ${checked ? 'bg-green-400' : 'bg-gray-300'}`}></label>
-                </div>
-            </div>
-        );
 
         const MathText = ({ text, className = "" }) => {
             const containerRef = useRef(null);
@@ -476,7 +451,7 @@
         };
 
         // --- LÀM BÀI THI ---
-        const QuizView = ({ studentName, questions, onSubmit, settings }) => {
+        const QuizView = ({ studentName, questions, onSubmit, config }) => {
             const [answers, setAnswers] = useState({});
             const [isSubmitting, setIsSubmitting] = useState(false);
             const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -484,12 +459,11 @@
             // State cho chức năng chống gian lận
             const [violationCount, setViolationCount] = useState(0);
             const [showWarning, setShowWarning] = useState(false);
-            const maxV = settings.maxViolations || 3;
             
             // State cho đồng hồ
-            const [timeLeft, setTimeLeft] = useState((settings.timerDuration || 90) * 60);
+            const [timeLeft, setTimeLeft] = useState(config.timerDuration * 60);
 
-            const answersRef = useRef(answers); // Dùng ref để lưu answers mới nhất cho event listener
+            const answersRef = useRef(answers); 
 
             useEffect(() => { window.scrollTo(0, 0); }, []);
             
@@ -497,9 +471,9 @@
                 answersRef.current = answers;
             }, [answers]);
 
-            // Logic Đồng hồ đếm ngược
+            // Logic Đồng hồ đếm ngược (Chỉ chạy nếu enableTimer = true)
             useEffect(() => {
-                if (!settings.timerEnabled) return;
+                if (!config.enableTimer) return;
 
                 const timer = setInterval(() => {
                     setTimeLeft(prev => {
@@ -514,18 +488,18 @@
                     });
                 }, 1000);
                 return () => clearInterval(timer);
-            }, [onSubmit, settings.timerEnabled]);
+            }, [onSubmit, config.enableTimer]);
 
-            // Logic phát hiện chuyển tab
+            // Logic phát hiện chuyển tab (Chỉ chạy nếu enableAntiCheat = true)
             useEffect(() => {
-                if (!settings.antiCheat) return;
+                if (!config.enableAntiCheat) return;
 
                 const handleVisibilityChange = () => {
                     if (document.hidden) {
                         setViolationCount(prev => {
                             const newCount = prev + 1;
-                            if (newCount >= maxV) {
-                                alert(`BẠN ĐÃ VI PHẠM QUY CHẾ THI (RỜI MÀN HÌNH) QUÁ ${maxV} LẦN. BÀI THI SẼ TỰ ĐỘNG NỘP.`);
+                            if (newCount >= config.maxViolations) {
+                                alert("BẠN ĐÃ VI PHẠM QUY CHẾ THI (RỜI MÀN HÌNH) QUÁ " + config.maxViolations + " LẦN. BÀI THI SẼ TỰ ĐỘNG NỘP.");
                                 setIsSubmitting(true);
                                 onSubmit(answersRef.current); 
                             }
@@ -533,7 +507,7 @@
                         });
                     } else {
                         setViolationCount(prev => {
-                            if (prev < maxV && prev > 0) {
+                            if (prev < config.maxViolations && prev > 0) {
                                 setShowWarning(true);
                             }
                             return prev;
@@ -543,7 +517,7 @@
 
                 document.addEventListener("visibilitychange", handleVisibilityChange);
                 return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-            }, [onSubmit, settings.antiCheat, maxV]);
+            }, [onSubmit, config.enableAntiCheat, config.maxViolations]);
 
             const handleMcqChange = (qId, optIdx) => setAnswers(prev => ({ ...prev, [qId]: optIdx }));
             const handleTfChange = (qId, subId, val) => setAnswers(prev => ({ ...prev, [qId]: { ...(prev[qId] || {}), [subId]: val } }));
@@ -565,16 +539,18 @@
                                 <Icon name="user" size={18}/> <span className="truncate">{studentName}</span>
                             </div>
                             
-                            {settings.timerEnabled && (
+                            {/* Đồng hồ (Chỉ hiện nếu bật) */}
+                            {config.enableTimer && (
                                 <div className={`flex items-center gap-2 font-mono text-xl font-bold px-4 py-1 rounded-lg border ${isLowTime ? 'bg-red-50 text-red-600 border-red-200 animate-blink' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
                                     <Icon name="clock" size={20} />
                                     {formatTime(timeLeft)}
                                 </div>
                             )}
 
-                            {settings.antiCheat && (
+                            {/* Cảnh báo vi phạm (Chỉ hiện nếu bật) */}
+                            {config.enableAntiCheat && (
                                 <div className="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-full border border-red-200 w-full md:w-auto text-center">
-                                    Vi phạm: {violationCount}/{maxV}
+                                    Vi phạm: {violationCount}/{config.maxViolations}
                                 </div>
                             )}
                         </div>
@@ -634,7 +610,7 @@
                     </div>
 
                     {showConfirmModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 z-modal">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                             <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in">
                                 <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận nộp bài</h3>
                                 <p className="text-sm text-gray-500 mb-6">Bạn có chắc chắn muốn nộp bài thi?</p>
@@ -647,18 +623,22 @@
                     )}
 
                     {showWarning && (
-                        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-red-900/80 p-4 backdrop-blur-sm z-modal">
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-red-900/80 p-4 backdrop-blur-sm">
                             <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-center animate-pulse-red border-4 border-red-600">
                                 <div className="flex justify-center mb-4 text-red-600">
                                     <Icon name="alert-triangle" size={64} />
                                 </div>
                                 <h3 className="text-2xl font-bold text-red-700 mb-2 uppercase">Cảnh báo gian lận!</h3>
-                                <p className="text-gray-700 mb-4 font-medium">Hệ thống phát hiện bạn đã rời khỏi màn hình làm bài.</p>
+                                <p className="text-gray-700 mb-4 font-medium">
+                                    Hệ thống phát hiện bạn đã rời khỏi màn hình làm bài.
+                                </p>
                                 <div className="bg-red-50 p-4 rounded-lg border border-red-200 mb-6">
-                                    <p className="text-red-800 font-bold text-lg">Số lần vi phạm: {violationCount}/{maxV}</p>
-                                    <p className="text-xs text-red-600 mt-1">Nếu vi phạm {maxV} lần, bài thi sẽ tự động bị thu.</p>
+                                    <p className="text-red-800 font-bold text-lg">Số lần vi phạm: {violationCount}/{config.maxViolations}</p>
+                                    <p className="text-xs text-red-600 mt-1">Nếu vi phạm {config.maxViolations} lần, bài thi sẽ tự động bị thu.</p>
                                 </div>
-                                <button onClick={() => setShowWarning(false)} className="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors shadow-lg">Tôi đã hiểu và tiếp tục làm bài</button>
+                                <button onClick={() => setShowWarning(false)} className="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors shadow-lg">
+                                    Tôi đã hiểu và tiếp tục làm bài
+                                </button>
                             </div>
                         </div>
                     )}
@@ -667,42 +647,44 @@
         };
 
         // --- KẾT QUẢ & LỜI GIẢI ---
-        const SolutionView = ({ questions, answers, score, onRetry, settings }) => {
+        const SolutionView = ({ questions, answers, score, onRetry, config }) => {
             const [openExplain, setOpenExplain] = useState({});
             const toggleExplain = (id) => setOpenExplain(prev => ({ ...prev, [id]: !prev[id] }));
             
-            // Logic kiểm tra điều kiện xem lời giải
-            const isPass = !settings.requirePassToViewSolution || (score >= settings.passScore);
+            // Kiểm tra điều kiện điểm số dựa trên config
+            const isPass = !config.requirePassToViewSolution || score >= config.passScoreThreshold;
 
             return (
                 <div className="min-h-screen pb-20 animate-fade-in bg-gray-50">
                     <div className="bg-white shadow p-6 text-center mb-6">
                         <div className="flex justify-center mb-2">
-                            {score >= settings.passScore ? <Icon name="trophy" size={56} className="text-yellow-500"/> : <Icon name="frown" size={56} className="text-gray-400"/>}
+                            {isPass ? <Icon name="trophy" size={56} className="text-yellow-500"/> : <Icon name="frown" size={56} className="text-gray-400"/>}
                         </div>
                         <h2 className="text-2xl font-bold text-gray-800">Kết Quả Bài Thi</h2>
-                        <div className={`mt-4 inline-block px-6 py-3 rounded-xl border ${score >= settings.passScore ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'}`}>
+                        <div className={`mt-4 inline-block px-6 py-3 rounded-xl border ${isPass ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'}`}>
                             <span className="text-gray-600 uppercase text-xs font-bold block">Tổng Điểm</span>
-                            <span className={`text-4xl font-bold ${score >= settings.passScore ? 'text-blue-700' : 'text-red-600'}`}>{score.toFixed(2)}<span className="text-xl text-gray-500">/10</span></span>
+                            <span className={`text-4xl font-bold ${isPass ? 'text-blue-700' : 'text-red-600'}`}>{score.toFixed(2)}<span className="text-xl text-gray-500">/10</span></span>
                         </div>
-                        {score >= settings.passScore ? (
-                            <p className="mt-4 text-green-600 font-bold">Chúc mừng! Bạn đã đạt yêu cầu.</p>
+                        {isPass ? (
+                            <p className="mt-4 text-green-600 font-bold">Chúc mừng! Bạn đã hoàn thành bài thi.</p>
                         ) : (
-                            <p className="mt-4 text-red-600 font-bold">Bạn chưa đạt yêu cầu ({settings.passScore} điểm).</p>
+                            <p className="mt-4 text-red-600 font-bold">Bạn chưa đạt điểm yêu cầu để xem lời giải.</p>
                         )}
                     </div>
 
+                    {/* Nếu không đạt điểm, hiển thị thông báo chặn xem lời giải */}
                     {!isPass && (
                         <div className="max-w-2xl mx-auto p-6 mb-8 bg-red-50 border border-red-200 rounded-xl text-center shadow-sm">
                             <div className="flex justify-center mb-3 text-red-500"><Icon name="lock" size={40}/></div>
                             <h3 className="text-xl font-bold text-red-700 mb-2">Chưa Đạt Yêu Cầu Xem Lời Giải</h3>
                             <p className="text-gray-700">
-                                Bạn cần đạt tối thiểu <span className="font-bold text-red-700">{settings.passScore} điểm</span> để xem lời giải chi tiết.
+                                Bạn cần đạt tối thiểu <span className="font-bold text-red-700">{config.passScoreThreshold} điểm</span> để xem lời giải chi tiết.
                             </p>
                             <p className="text-gray-500 text-sm mt-2">Hãy ôn tập kỹ kiến thức và thử lại nhé!</p>
                         </div>
                     )}
 
+                    {/* Chỉ hiển thị lời giải nếu đạt điểm */}
                     {isPass && (
                         <div className="max-w-3xl mx-auto p-4 space-y-6">
                             <h3 className="font-bold text-green-700 flex items-center gap-2 mb-4"><Icon name="check-circle" size={20}/> Chi Tiết Lời Giải</h3>
@@ -745,13 +727,13 @@
             return ( <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 animate-fade-in"> <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"> <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">Giáo Viên Đăng Nhập</h2> <form onSubmit={handleLogin} className="space-y-4"> <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nhập mật khẩu..." autoFocus/> <button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800">Truy cập</button> <button type="button" onClick={onBack} className="w-full py-2 text-gray-500 hover:text-gray-800 text-sm">Quay lại</button> </form> </div> </div> );
         };
 
-        // Component Modal Chi Tiết Học Sinh
+        // Component Modal Chi Tiết Học Sinh - SỬ DỤNG PORTAL
         const StudentDetailModal = ({ result, onClose }) => {
             if (!result) return null;
             const answers = result.answers || {};
 
-            return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm z-modal">
+            return createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
                     <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col animate-fade-in">
                         <div className="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
                             <div>
@@ -777,28 +759,14 @@
                                     correctAnsDisplay = q.acceptable.join(" hoặc ");
                                     isCorrect = q.acceptable.includes(userVal);
                                 } else if (q.type === 'group_tf') {
-                                    return (
-                                        <div key={q.id} className="p-4 rounded-lg border bg-gray-50 border-gray-200">
-                                            <div className="font-bold text-gray-700 mb-2">Câu {idx + 1}: <MathText text={q.question} /></div>
-                                            <div className="ml-4 space-y-1">
-                                                {q.subQuestions.map(sub => {
-                                                    const userVal = (answers[q.id] || {})[sub.id];
-                                                    const isSubCorrect = userVal === sub.correct;
-                                                    return (
-                                                        <div key={sub.id} className="flex justify-between text-sm border-b border-gray-100 last:border-0 py-1">
-                                                            <span className="flex-1"><MathText text={sub.text} /></span>
-                                                            <div className="flex gap-4">
-                                                                <span className={isSubCorrect ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-                                                                    {userVal === true ? 'Đúng' : userVal === false ? 'Sai' : 'Chưa chọn'}
-                                                                </span>
-                                                                {!isSubCorrect && (<span className="text-gray-500">(Đ.án: {sub.correct ? 'Đúng' : 'Sai'})</span>)}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    );
+                                    const userGroup = answers[q.id] || {};
+                                    let correctCount = 0;
+                                    q.subQuestions.forEach(sub => {
+                                        if (userGroup[sub.id] === sub.correct) correctCount++;
+                                    });
+                                    userAnsDisplay = `${correctCount}/4 ý đúng`;
+                                    correctAnsDisplay = "4/4 ý đúng";
+                                    isCorrect = correctCount === 4; 
                                 }
 
                                 return (
@@ -808,8 +776,14 @@
                                             <div className="flex-1"><MathText text={q.question} /></div>
                                         </div>
                                         <div className="flex flex-col sm:flex-row gap-4 text-sm mt-2">
-                                            <div className={`${isCorrect ? 'text-green-700' : 'text-red-700'} font-medium`}>Trả lời: {userAnsDisplay}</div>
-                                            {!isCorrect && (<div className="text-gray-600">Đáp án đúng: <span className="font-bold">{correctAnsDisplay}</span></div>)}
+                                            <div className={`${isCorrect ? 'text-green-700' : 'text-red-700'} font-medium`}>
+                                                Trả lời: {userAnsDisplay}
+                                            </div>
+                                            {!isCorrect && (
+                                                <div className="text-gray-600">
+                                                    Đáp án đúng: <span className="font-bold">{correctAnsDisplay}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -819,21 +793,19 @@
                             <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Đóng</button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body 
             );
         };
 
-        const TeacherDashboard = ({ onLogout, currentSettings, onUpdateSettings }) => {
+        const TeacherDashboard = ({ onLogout, config, setConfig }) => {
             const [results, setResults] = useState([]);
             const [loading, setLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState("");
             const [selectedResult, setSelectedResult] = useState(null);
-            const [deleteId, setDeleteId] = useState(null);
-            const [activeTab, setActiveTab] = useState('stats'); // 'stats' | 'settings'
             
-            // Settings State
-            const [settings, setSettings] = useState(currentSettings);
-            const [savingSettings, setSavingSettings] = useState(false);
+            // Local state for config form
+            const [tempConfig, setTempConfig] = useState(config);
 
             useEffect(() => {
                 if (!db) { setLoading(false); return; }
@@ -845,12 +817,23 @@
                 return () => unsubscribe();
             }, []);
 
-            const handleDeleteClick = (id) => setDeleteId(id);
-            const confirmDelete = async () => {
-                if (deleteId) {
-                    try { await db.collection(COLLECTION_NAME).doc(deleteId).delete(); setDeleteId(null); } catch (e) { alert("Lỗi: " + e.message); }
+            // Sync local state when prop changes
+            useEffect(() => {
+                setTempConfig(config);
+            }, [config]);
+
+            const handleSaveConfig = () => {
+                setConfig(tempConfig);
+                alert("Đã lưu cấu hình thành công!");
+            };
+
+            const handleDelete = async (id) => {
+                if(confirm("Bạn có chắc chắn muốn xóa kết quả này?")) {
+                    try {
+                        await db.collection(COLLECTION_NAME).doc(id).delete();
+                    } catch (e) { alert("Lỗi khi xóa: " + e.message); }
                 }
-            }
+            };
 
             const handleExport = () => {
                 const header = "Thoi Gian,Ho Ten,Diem So\n";
@@ -865,198 +848,183 @@
                 document.body.removeChild(link);
             };
 
-            const handleSaveSettings = async () => {
-                setSavingSettings(true);
-                try {
-                    await onUpdateSettings(settings);
-                    alert("Đã lưu cấu hình thành công!");
-                } catch (e) {
-                    alert("Lỗi lưu cấu hình: " + e.message);
-                }
-                setSavingSettings(false);
-            };
-
             const filteredResults = results.filter(r => r.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
             const stats = useMemo(() => {
                 const total = results.length;
                 if (total === 0) return { avg: 0, pass: 0, excellent: 0 };
                 const sum = results.reduce((acc, curr) => acc + (curr.score || 0), 0);
-                const passCount = results.filter(r => r.score >= settings.passScore).length;
+                const passCount = results.filter(r => r.score >= 5).length;
                 const excCount = results.filter(r => r.score >= 8).length;
                 return {
                     avg: (sum / total).toFixed(2),
                     pass: ((passCount / total) * 100).toFixed(1),
                     excellent: ((excCount / total) * 100).toFixed(1)
                 };
-            }, [results, settings.passScore]);
+            }, [results]);
 
             return (
                 <div className="min-h-screen bg-gray-50 animate-fade-in pb-10">
+                    {/* Header */}
                     <div className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                        <div className="flex items-center gap-4">
-                            <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="layout-dashboard" className="text-blue-600"/> Bảng Điều Khiển</h1>
-                            <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg">
-                                <button onClick={() => setActiveTab('stats')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === 'stats' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Thống kê</button>
-                                <button onClick={() => setActiveTab('settings')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === 'settings' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Cấu hình bài thi</button>
-                            </div>
-                        </div>
+                        <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="layout-dashboard" className="text-blue-600"/> Bảng Điều Khiển Giáo Viên</h1>
                         <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="log-out" size={18}/> Đăng xuất</button>
                     </div>
 
                     <div className="max-w-7xl mx-auto p-6 space-y-6">
-                        {activeTab === 'stats' && (
-                            <>
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                    <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100">
-                                        <div className="text-gray-500 text-sm font-medium">Tổng bài thi</div>
-                                        <div className="text-2xl font-bold text-blue-700">{results.length}</div>
-                                    </div>
-                                    <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100">
-                                        <div className="text-gray-500 text-sm font-medium">Điểm trung bình</div>
-                                        <div className="text-2xl font-bold text-green-700">{stats.avg}</div>
-                                    </div>
-                                    <div className="bg-white p-4 rounded-xl shadow-sm border border-yellow-100">
-                                        <div className="text-gray-500 text-sm font-medium">Tỷ lệ đạt (&ge;{settings.passScore})</div>
-                                        <div className="text-2xl font-bold text-yellow-600">{stats.pass}%</div>
-                                    </div>
-                                    <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-100">
-                                        <div className="text-gray-500 text-sm font-medium">Tỷ lệ giỏi (>=8)</div>
-                                        <div className="text-2xl font-bold text-purple-600">{stats.excellent}%</div>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col md:flex-row justify-between gap-4">
-                                    <div className="relative flex-1 max-w-md">
-                                        <Icon name="search" className="absolute left-3 top-3 text-gray-400" size={20}/>
-                                        <input type="text" placeholder="Tìm kiếm theo tên học sinh..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                                    </div>
-                                    <button onClick={handleExport} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 font-medium shadow-sm"><Icon name="download" size={18}/> Xuất Excel</button>
-                                </div>
-
-                                <div className="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full whitespace-nowrap">
-                                            <thead className="bg-gray-50 border-b">
-                                                <tr>
-                                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Thời gian</th>
-                                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Họ và Tên</th>
-                                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Điểm Số</th>
-                                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Trạng thái</th>
-                                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase">Hành động</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-200">
-                                                {loading ? (<tr><td colSpan="5" className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>) : filteredResults.length === 0 ? (<tr><td colSpan="5" className="p-8 text-center text-gray-500">Không tìm thấy kết quả nào.</td></tr>) : (filteredResults.map((res) => (
-                                                    <tr key={res.id} className="hover:bg-gray-50 transition-colors">
-                                                        <td className="px-6 py-4 text-sm text-gray-500">{new Date(res.timestamp).toLocaleString('vi-VN')}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{res.name}</td>
-                                                        <td className="px-6 py-4 text-center"><span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : res.score >= 5 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>{res.score?.toFixed(2)}</span></td>
-                                                        <td className="px-6 py-4 text-center text-sm">{res.score >= 5 ? <span className="text-green-600 flex items-center justify-center gap-1"><Icon name="check" size={14}/> Đạt</span> : <span className="text-red-500 flex items-center justify-center gap-1"><Icon name="x" size={14}/> Trượt</span>}</td>
-                                                        <td className="px-6 py-4 text-right space-x-2">
-                                                            <button onClick={() => setSelectedResult(res)} className="inline-flex items-center justify-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors gap-1" title="Xem chi tiết"><Icon name="eye" size={16}/> Xem</button>
-                                                            <button onClick={() => handleDeleteClick(res.id)} className="inline-flex items-center justify-center px-3 py-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors gap-1" title="Xóa"><Icon name="trash-2" size={16}/> Xóa</button>
-                                                        </td>
-                                                    </tr>
-                                                )))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
-                        {activeTab === 'settings' && (
-                            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 max-w-2xl mx-auto">
-                                <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-2">Cấu Hình Bài Thi</h3>
-                                
-                                <div className="space-y-6">
-                                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                        <Toggle 
-                                            label="Chế độ chống gian lận (Phát hiện chuyển tab)" 
-                                            checked={settings.antiCheat} 
-                                            onChange={(val) => setSettings({...settings, antiCheat: val})}
-                                        />
-                                        {settings.antiCheat && (
-                                            <div className="mt-3">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Số lần vi phạm tối đa (Tự động nộp khi vượt quá)</label>
-                                                <input 
-                                                    type="number" 
-                                                    min="1"
-                                                    value={settings.maxViolations || 3}
-                                                    onChange={(e) => setSettings({...settings, maxViolations: parseInt(e.target.value) || 3})}
-                                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                        )}
-                                        <p className="text-xs text-gray-500 mt-1">Hệ thống sẽ cảnh báo và tự động nộp bài nếu học sinh rời khỏi màn hình quá số lần quy định.</p>
-                                    </div>
-
-                                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                        <Toggle 
-                                            label="Bật đồng hồ đếm ngược" 
-                                            checked={settings.timerEnabled} 
-                                            onChange={(val) => setSettings({...settings, timerEnabled: val})}
-                                        />
-                                        {settings.timerEnabled && (
-                                            <div className="mt-3">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian làm bài (phút)</label>
-                                                <input 
-                                                    type="number" 
-                                                    value={settings.timerDuration}
-                                                    onChange={(e) => setSettings({...settings, timerDuration: parseInt(e.target.value) || 0})}
-                                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                        <Toggle 
-                                            label="Yêu cầu đạt điểm sàn để xem lời giải" 
-                                            checked={settings.requirePassToViewSolution} 
-                                            onChange={(val) => setSettings({...settings, requirePassToViewSolution: val})}
-                                        />
-                                        {settings.requirePassToViewSolution && (
-                                            <div className="mt-3">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Điểm điều kiện (>=)</label>
-                                                <input 
-                                                    type="number" 
-                                                    step="0.1"
-                                                    value={settings.passScore}
-                                                    onChange={(e) => setSettings({...settings, passScore: parseFloat(e.target.value) || 0})}
-                                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                                                />
-                                                <p className="text-xs text-gray-500 mt-1">Học sinh phải đạt điểm này trở lên mới được xem lời giải chi tiết.</p>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <button 
-                                        onClick={handleSaveSettings}
-                                        disabled={savingSettings}
-                                        className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-all flex justify-center items-center gap-2 shadow-lg"
-                                    >
-                                        {savingSettings ? <Icon name="loader" className="animate-spin"/> : <Icon name="save"/>} Lưu Cấu Hình
-                                    </button>
-                                </div>
+                        
+                        {/* CONFIG PANEL */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2"><Icon name="settings" size={20}/> Cấu hình Bài Thi</h3>
+                                <button onClick={handleSaveConfig} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-md flex items-center gap-2 transition-transform active:scale-95">
+                                    <Icon name="save" size={18}/> Lưu Cấu Hình
+                                </button>
                             </div>
-                        )}
-                    </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Anti-cheat */}
+                                <div className="p-4 bg-gray-50 rounded-lg border">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div>
+                                            <div className="font-medium text-gray-900">Chống gian lận</div>
+                                            <div className="text-xs text-gray-500">Cảnh báo khi rời tab</div>
+                                        </div>
+                                        <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                            <input type="checkbox" name="toggle" id="toggle-anticheat" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked={tempConfig.enableAntiCheat} onChange={(e) => setTempConfig({...tempConfig, enableAntiCheat: e.target.checked})}/>
+                                            <label htmlFor="toggle-anticheat" className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${tempConfig.enableAntiCheat ? 'bg-blue-600' : 'bg-gray-300'}`}></label>
+                                        </div>
+                                    </div>
+                                    {tempConfig.enableAntiCheat && (
+                                        <div className="flex items-center gap-2 mt-2 border-t pt-2">
+                                            <span className="text-sm text-gray-600">Giới hạn:</span>
+                                            <input type="number" min="1" className="w-16 p-1 border rounded text-center" value={tempConfig.maxViolations} onChange={(e) => setTempConfig({...tempConfig, maxViolations: parseInt(e.target.value) || 1})} />
+                                            <span className="text-sm text-gray-600">lần</span>
+                                        </div>
+                                    )}
+                                </div>
 
-                    {selectedResult && <StudentDetailModal result={selectedResult} onClose={() => setSelectedResult(null)} />}
-                    {deleteId && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm z-modal">
-                            <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in">
-                                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4 text-red-600"><Icon name="trash-2" size={24}/></div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận xóa</h3>
-                                <p className="text-sm text-gray-500 mb-6">Bạn có chắc chắn muốn xóa kết quả này?</p>
-                                <div className="flex gap-3 justify-center">
-                                    <button onClick={() => setDeleteId(null)} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg">Hủy</button>
-                                    <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg font-bold">Xóa vĩnh viễn</button>
+                                {/* Timer */}
+                                <div className="p-4 bg-gray-50 rounded-lg border">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="font-medium text-gray-900">Đồng hồ đếm ngược</div>
+                                        <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                            <input type="checkbox" name="toggle" id="toggle-timer" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked={tempConfig.enableTimer} onChange={(e) => setTempConfig({...tempConfig, enableTimer: e.target.checked})}/>
+                                            <label htmlFor="toggle-timer" className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${tempConfig.enableTimer ? 'bg-blue-600' : 'bg-gray-300'}`}></label>
+                                        </div>
+                                    </div>
+                                    {tempConfig.enableTimer && (
+                                        <div className="flex items-center gap-2 mt-2 border-t pt-2">
+                                            <span className="text-sm text-gray-600">Thời gian:</span>
+                                            <input type="number" className="w-20 p-1 border rounded text-center" value={tempConfig.timerDuration} onChange={(e) => setTempConfig({...tempConfig, timerDuration: parseInt(e.target.value) || 0})} />
+                                            <span className="text-sm text-gray-600">phút</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Pass Condition */}
+                                <div className="p-4 bg-gray-50 rounded-lg border">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="font-medium text-gray-900">Điều kiện xem giải</div>
+                                        <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                            <input type="checkbox" name="toggle" id="toggle-pass" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked={tempConfig.requirePassToViewSolution} onChange={(e) => setTempConfig({...tempConfig, requirePassToViewSolution: e.target.checked})}/>
+                                            <label htmlFor="toggle-pass" className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${tempConfig.requirePassToViewSolution ? 'bg-blue-600' : 'bg-gray-300'}`}></label>
+                                        </div>
+                                    </div>
+                                    {tempConfig.requirePassToViewSolution && (
+                                        <div className="flex items-center gap-2 mt-2 border-t pt-2">
+                                            <span className="text-sm text-gray-600">Điểm tối thiểu:</span>
+                                            <input type="number" step="0.1" className="w-20 p-1 border rounded text-center" value={tempConfig.passScoreThreshold} onChange={(e) => setTempConfig({...tempConfig, passScoreThreshold: parseFloat(e.target.value) || 0})} />
+                                            <span className="text-sm text-gray-600">điểm</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    )}
+
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100">
+                                <div className="text-gray-500 text-sm font-medium">Tổng bài thi</div>
+                                <div className="text-2xl font-bold text-blue-700">{results.length}</div>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100">
+                                <div className="text-gray-500 text-sm font-medium">Điểm trung bình</div>
+                                <div className="text-2xl font-bold text-green-700">{stats.avg}</div>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-yellow-100">
+                                <div className="text-gray-500 text-sm font-medium">Tỷ lệ đạt (>=5)</div>
+                                <div className="text-2xl font-bold text-yellow-600">{stats.pass}%</div>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-100">
+                                <div className="text-gray-500 text-sm font-medium">Tỷ lệ giỏi (>=8)</div>
+                                <div className="text-2xl font-bold text-purple-600">{stats.excellent}%</div>
+                            </div>
+                        </div>
+
+                        {/* Toolbar */}
+                        <div className="flex flex-col md:flex-row justify-between gap-4">
+                            <div className="relative flex-1 max-w-md">
+                                <Icon name="search" className="absolute left-3 top-3 text-gray-400" size={20}/>
+                                <input 
+                                    type="text" 
+                                    placeholder="Tìm kiếm theo tên học sinh..." 
+                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <button onClick={handleExport} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 font-medium shadow-sm">
+                                <Icon name="download" size={18}/> Xuất Excel
+                            </button>
+                        </div>
+
+                        {/* Table */}
+                        <div className="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
+                            <div className="overflow-x-auto">
+                                <table className="w-full whitespace-nowrap">
+                                    <thead className="bg-gray-50 border-b">
+                                        <tr>
+                                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thời gian</th>
+                                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Họ và Tên</th>
+                                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Điểm Số</th>
+                                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                                            <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {loading ? (
+                                            <tr><td colSpan="5" className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
+                                        ) : filteredResults.length === 0 ? (
+                                            <tr><td colSpan="5" className="p-8 text-center text-gray-500">Không tìm thấy kết quả nào.</td></tr>
+                                        ) : (
+                                            filteredResults.map((res) => (
+                                                <tr key={res.id} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="px-6 py-4 text-sm text-gray-500">{new Date(res.timestamp).toLocaleString('vi-VN')}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{res.name}</td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : res.score >= 5 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                                                            {res.score?.toFixed(2)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center text-sm">
+                                                        {res.score >= 5 ? <span className="text-green-600 flex items-center justify-center gap-1"><Icon name="check" size={14}/> Đạt</span> : <span className="text-red-500 flex items-center justify-center gap-1"><Icon name="x" size={14}/> Trượt</span>}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right space-x-2">
+                                                        <button onClick={() => setSelectedResult(res)} className="bg-blue-600 text-white hover:bg-blue-700 p-2 rounded-lg shadow-sm transition-colors" title="Xem chi tiết"><Icon name="eye" size={18}/></button>
+                                                        <button onClick={() => handleDelete(res.id)} className="bg-red-600 text-white hover:bg-red-700 p-2 rounded-lg shadow-sm transition-colors" title="Xóa"><Icon name="trash-2" size={18}/></button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Chi Tiết */}
+                    {selectedResult && <StudentDetailModal result={selectedResult} onClose={() => setSelectedResult(null)} />}
                 </div>
             );
         };
@@ -1068,27 +1036,20 @@
             const [currentQuestions, setCurrentQuestions] = useState([]);
             const [finalScore, setFinalScore] = useState(0);
             const [userAnswers, setUserAnswers] = useState({});
-            const [appSettings, setAppSettings] = useState(DEFAULT_SETTINGS);
 
-            // Tải cấu hình từ Firebase khi App start
+            // GLOBAL CONFIG STATE
+            const [quizConfig, setQuizConfig] = useState({
+                enableAntiCheat: true,
+                maxViolations: 3,
+                enableTimer: true,
+                timerDuration: 90, // minutes
+                requirePassToViewSolution: true,
+                passScoreThreshold: 7.0
+            });
+
             useEffect(() => {
                 if (auth) auth.signInAnonymously().catch(console.error);
-                if (db) {
-                    const unsubscribe = db.collection(SETTINGS_COLLECTION).doc(SETTINGS_DOC_ID).onSnapshot(doc => {
-                        if (doc.exists) {
-                            setAppSettings({ ...DEFAULT_SETTINGS, ...doc.data() });
-                        }
-                    });
-                    return () => unsubscribe();
-                }
             }, []);
-
-            // Hàm cập nhật settings từ TeacherDashboard
-            const updateSettings = async (newSettings) => {
-                if (db) {
-                    await db.collection(SETTINGS_COLLECTION).doc(SETTINGS_DOC_ID).set(newSettings);
-                }
-            };
 
             const startNewQuiz = (name) => {
                 setStudentName(name);
@@ -1116,10 +1077,10 @@
                 <div>
                     {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'login')} />}
                     {view === 'name' && <StudentNameInput onStart={startNewQuiz} />}
-                    {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} settings={appSettings} />}
-                    {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={() => startNewQuiz(studentName)} settings={appSettings} />}
+                    {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} config={quizConfig} />}
+                    {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={() => startNewQuiz(studentName)} config={quizConfig} />}
                     {view === 'login' && <TeacherLogin onLogin={() => setView('teacher')} onBack={() => setView('welcome')} />}
-                    {view === 'teacher' && <TeacherDashboard onLogout={() => setView('welcome')} currentSettings={appSettings} onUpdateSettings={updateSettings} />}
+                    {view === 'teacher' && <TeacherDashboard onLogout={() => setView('welcome')} config={quizConfig} setConfig={setQuizConfig} />}
                 </div>
             );
         };
