@@ -498,8 +498,8 @@
                     if (document.hidden) {
                         setViolationCount(prev => {
                             const newCount = prev + 1;
-                            if (newCount >= 3) {
-                                alert("BẠN ĐÃ VI PHẠM QUY CHẾ THI (RỜI MÀN HÌNH) QUÁ 3 LẦN. BÀI THI SẼ TỰ ĐỘNG NỘP.");
+                            if (newCount >= config.maxViolations) {
+                                alert("BẠN ĐÃ VI PHẠM QUY CHẾ THI (RỜI MÀN HÌNH) QUÁ " + config.maxViolations + " LẦN. BÀI THI SẼ TỰ ĐỘNG NỘP.");
                                 setIsSubmitting(true);
                                 onSubmit(answersRef.current); 
                             }
@@ -507,7 +507,7 @@
                         });
                     } else {
                         setViolationCount(prev => {
-                            if (prev < 3 && prev > 0) {
+                            if (prev < config.maxViolations && prev > 0) {
                                 setShowWarning(true);
                             }
                             return prev;
@@ -517,7 +517,7 @@
 
                 document.addEventListener("visibilitychange", handleVisibilityChange);
                 return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-            }, [onSubmit, config.enableAntiCheat]);
+            }, [onSubmit, config.enableAntiCheat, config.maxViolations]);
 
             const handleMcqChange = (qId, optIdx) => setAnswers(prev => ({ ...prev, [qId]: optIdx }));
             const handleTfChange = (qId, subId, val) => setAnswers(prev => ({ ...prev, [qId]: { ...(prev[qId] || {}), [subId]: val } }));
@@ -550,7 +550,7 @@
                             {/* Cảnh báo vi phạm (Chỉ hiện nếu bật) */}
                             {config.enableAntiCheat && (
                                 <div className="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-full border border-red-200 w-full md:w-auto text-center">
-                                    Vi phạm: {violationCount}/3
+                                    Vi phạm: {violationCount}/{config.maxViolations}
                                 </div>
                             )}
                         </div>
@@ -633,8 +633,8 @@
                                     Hệ thống phát hiện bạn đã rời khỏi màn hình làm bài.
                                 </p>
                                 <div className="bg-red-50 p-4 rounded-lg border border-red-200 mb-6">
-                                    <p className="text-red-800 font-bold text-lg">Số lần vi phạm: {violationCount}/3</p>
-                                    <p className="text-xs text-red-600 mt-1">Nếu vi phạm 3 lần, bài thi sẽ tự động bị thu.</p>
+                                    <p className="text-red-800 font-bold text-lg">Số lần vi phạm: {violationCount}/{config.maxViolations}</p>
+                                    <p className="text-xs text-red-600 mt-1">Nếu vi phạm {config.maxViolations} lần, bài thi sẽ tự động bị thu.</p>
                                 </div>
                                 <button onClick={() => setShowWarning(false)} className="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors shadow-lg">
                                     Tôi đã hiểu và tiếp tục làm bài
@@ -865,15 +865,24 @@
                             <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><Icon name="settings" size={20}/> Cấu hình Bài Thi</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {/* Anti-cheat */}
-                                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
-                                    <div>
-                                        <div className="font-medium text-gray-900">Chống gian lận</div>
-                                        <div className="text-xs text-gray-500">Cảnh báo khi rời tab</div>
+                                <div className="p-4 bg-gray-50 rounded-lg border">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div>
+                                            <div className="font-medium text-gray-900">Chống gian lận</div>
+                                            <div className="text-xs text-gray-500">Cảnh báo khi rời tab</div>
+                                        </div>
+                                        <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                            <input type="checkbox" name="toggle" id="toggle-anticheat" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked={config.enableAntiCheat} onChange={(e) => setConfig({...config, enableAntiCheat: e.target.checked})}/>
+                                            <label htmlFor="toggle-anticheat" className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${config.enableAntiCheat ? 'bg-blue-600' : 'bg-gray-300'}`}></label>
+                                        </div>
                                     </div>
-                                    <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                                        <input type="checkbox" name="toggle" id="toggle-anticheat" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked={config.enableAntiCheat} onChange={(e) => setConfig({...config, enableAntiCheat: e.target.checked})}/>
-                                        <label htmlFor="toggle-anticheat" className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${config.enableAntiCheat ? 'bg-blue-600' : 'bg-gray-300'}`}></label>
-                                    </div>
+                                    {config.enableAntiCheat && (
+                                        <div className="flex items-center gap-2 mt-2 border-t pt-2">
+                                            <span className="text-sm text-gray-600">Giới hạn:</span>
+                                            <input type="number" min="1" className="w-16 p-1 border rounded text-center" value={config.maxViolations} onChange={(e) => setConfig({...config, maxViolations: parseInt(e.target.value) || 1})} />
+                                            <span className="text-sm text-gray-600">lần</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Timer */}
@@ -886,7 +895,7 @@
                                         </div>
                                     </div>
                                     {config.enableTimer && (
-                                        <div className="flex items-center gap-2 mt-2">
+                                        <div className="flex items-center gap-2 mt-2 border-t pt-2">
                                             <span className="text-sm text-gray-600">Thời gian:</span>
                                             <input type="number" className="w-20 p-1 border rounded text-center" value={config.timerDuration} onChange={(e) => setConfig({...config, timerDuration: parseInt(e.target.value) || 0})} />
                                             <span className="text-sm text-gray-600">phút</span>
@@ -904,7 +913,7 @@
                                         </div>
                                     </div>
                                     {config.requirePassToViewSolution && (
-                                        <div className="flex items-center gap-2 mt-2">
+                                        <div className="flex items-center gap-2 mt-2 border-t pt-2">
                                             <span className="text-sm text-gray-600">Điểm tối thiểu:</span>
                                             <input type="number" step="0.1" className="w-20 p-1 border rounded text-center" value={config.passScoreThreshold} onChange={(e) => setConfig({...config, passScoreThreshold: parseFloat(e.target.value) || 0})} />
                                             <span className="text-sm text-gray-600">điểm</span>
@@ -1012,6 +1021,7 @@
             // GLOBAL CONFIG STATE
             const [quizConfig, setQuizConfig] = useState({
                 enableAntiCheat: true,
+                maxViolations: 3,
                 enableTimer: true,
                 timerDuration: 90, // minutes
                 requirePassToViewSolution: true,
