@@ -43,6 +43,13 @@
             50% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
         }
         .animate-pulse-red { animation: pulse-red 2s infinite; }
+
+        /* Animation cho đồng hồ sắp hết giờ */
+        @keyframes blink-text {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-blink { animation: blink-text 1s infinite; }
     </style>
 </head>
 <body>
@@ -65,6 +72,7 @@
         let db = null;
         let auth = null;
         const COLLECTION_NAME = "quiz_results_math12_thpt2025_de01_full";
+        const QUIZ_DURATION_MINUTES = 90; // Thời gian làm bài 90 phút
 
         const initializeFirebase = () => {
             try {
@@ -427,6 +435,13 @@
             );
         };
 
+        // --- HELPER: FORMAT TIME ---
+        const formatTime = (seconds) => {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        };
+
         // --- LÀM BÀI THI ---
         const QuizView = ({ studentName, questions, onSubmit }) => {
             const [answers, setAnswers] = useState({});
@@ -436,6 +451,10 @@
             // State cho chức năng chống gian lận
             const [violationCount, setViolationCount] = useState(0);
             const [showWarning, setShowWarning] = useState(false);
+            
+            // State cho đồng hồ
+            const [timeLeft, setTimeLeft] = useState(QUIZ_DURATION_MINUTES * 60);
+
             const answersRef = useRef(answers); // Dùng ref để lưu answers mới nhất cho event listener
 
             useEffect(() => { window.scrollTo(0, 0); }, []);
@@ -444,6 +463,24 @@
             useEffect(() => {
                 answersRef.current = answers;
             }, [answers]);
+
+            // Logic Đồng hồ đếm ngược
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            // Hết giờ -> Tự động nộp
+                            alert("HẾT GIỜ LÀM BÀI! HỆ THỐNG SẼ TỰ ĐỘNG NỘP BÀI.");
+                            setIsSubmitting(true);
+                            onSubmit(answersRef.current);
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [onSubmit]);
 
             // Logic phát hiện chuyển tab
             useEffect(() => {
@@ -473,7 +510,7 @@
 
                 document.addEventListener("visibilitychange", handleVisibilityChange);
                 return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-            }, [onSubmit]); // Dependency onSubmit để đảm bảo hàm không bị stale
+            }, [onSubmit]);
 
             const handleMcqChange = (qId, optIdx) => setAnswers(prev => ({ ...prev, [qId]: optIdx }));
             const handleTfChange = (qId, subId, val) => setAnswers(prev => ({ ...prev, [qId]: { ...(prev[qId] || {}), [subId]: val } }));
@@ -485,12 +522,26 @@
                 onSubmit(answers);
             };
 
+            // Style cho đồng hồ khi sắp hết giờ (< 5 phút)
+            const isLowTime = timeLeft < 300; 
+
             return (
                 <div className="min-h-screen bg-gray-100 pb-20 relative">
-                    <div className="bg-white shadow-md p-4 sticky top-0 z-10 border-b border-gray-200 flex justify-between items-center">
-                        <div className="font-bold text-blue-700 flex items-center gap-2"><Icon name="user" size={18}/> {studentName}</div>
-                        <div className="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-full border border-red-200">
-                            Vi phạm: {violationCount}/3
+                    <div className="bg-white shadow-md p-4 sticky top-0 z-10 border-b border-gray-200">
+                        <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+                            <div className="font-bold text-blue-700 flex items-center gap-2 w-full md:w-auto">
+                                <Icon name="user" size={18}/> <span className="truncate">{studentName}</span>
+                            </div>
+                            
+                            {/* Đồng hồ */}
+                            <div className={`flex items-center gap-2 font-mono text-xl font-bold px-4 py-1 rounded-lg border ${isLowTime ? 'bg-red-50 text-red-600 border-red-200 animate-blink' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                <Icon name="clock" size={20} />
+                                {formatTime(timeLeft)}
+                            </div>
+
+                            <div className="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-full border border-red-200 w-full md:w-auto text-center">
+                                Vi phạm: {violationCount}/3
+                            </div>
                         </div>
                     </div>
 
