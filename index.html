@@ -50,6 +50,15 @@
             50% { opacity: 0.5; }
         }
         .animate-blink { animation: blink-text 1s infinite; }
+        
+        /* Toggle Switch CSS */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #2563eb;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #2563eb;
+        }
     </style>
 </head>
 <body>
@@ -72,7 +81,6 @@
         let db = null;
         let auth = null;
         const COLLECTION_NAME = "quiz_results_math12_thpt2025_de01_full";
-        const QUIZ_DURATION_MINUTES = 90; 
 
         const initializeFirebase = () => {
             try {
@@ -443,7 +451,7 @@
         };
 
         // --- LÀM BÀI THI ---
-        const QuizView = ({ studentName, questions, onSubmit }) => {
+        const QuizView = ({ studentName, questions, onSubmit, config }) => {
             const [answers, setAnswers] = useState({});
             const [isSubmitting, setIsSubmitting] = useState(false);
             const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -453,24 +461,24 @@
             const [showWarning, setShowWarning] = useState(false);
             
             // State cho đồng hồ
-            const [timeLeft, setTimeLeft] = useState(QUIZ_DURATION_MINUTES * 60);
+            const [timeLeft, setTimeLeft] = useState(config.timerDuration * 60);
 
-            const answersRef = useRef(answers); // Dùng ref để lưu answers mới nhất cho event listener
+            const answersRef = useRef(answers); 
 
             useEffect(() => { window.scrollTo(0, 0); }, []);
             
-            // Cập nhật ref mỗi khi answers thay đổi
             useEffect(() => {
                 answersRef.current = answers;
             }, [answers]);
 
-            // Logic Đồng hồ đếm ngược
+            // Logic Đồng hồ đếm ngược (Chỉ chạy nếu enableTimer = true)
             useEffect(() => {
+                if (!config.enableTimer) return;
+
                 const timer = setInterval(() => {
                     setTimeLeft(prev => {
                         if (prev <= 1) {
                             clearInterval(timer);
-                            // Hết giờ -> Tự động nộp
                             alert("HẾT GIỜ LÀM BÀI! HỆ THỐNG SẼ TỰ ĐỘNG NỘP BÀI.");
                             setIsSubmitting(true);
                             onSubmit(answersRef.current);
@@ -480,25 +488,24 @@
                     });
                 }, 1000);
                 return () => clearInterval(timer);
-            }, [onSubmit]);
+            }, [onSubmit, config.enableTimer]);
 
-            // Logic phát hiện chuyển tab
+            // Logic phát hiện chuyển tab (Chỉ chạy nếu enableAntiCheat = true)
             useEffect(() => {
+                if (!config.enableAntiCheat) return;
+
                 const handleVisibilityChange = () => {
                     if (document.hidden) {
-                        // Người dùng rời tab
                         setViolationCount(prev => {
                             const newCount = prev + 1;
                             if (newCount >= 3) {
-                                // Vi phạm quá 3 lần -> Tự động nộp
                                 alert("BẠN ĐÃ VI PHẠM QUY CHẾ THI (RỜI MÀN HÌNH) QUÁ 3 LẦN. BÀI THI SẼ TỰ ĐỘNG NỘP.");
                                 setIsSubmitting(true);
-                                onSubmit(answersRef.current); // Nộp với đáp án hiện tại
+                                onSubmit(answersRef.current); 
                             }
                             return newCount;
                         });
                     } else {
-                        // Người dùng quay lại
                         setViolationCount(prev => {
                             if (prev < 3 && prev > 0) {
                                 setShowWarning(true);
@@ -510,7 +517,7 @@
 
                 document.addEventListener("visibilitychange", handleVisibilityChange);
                 return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-            }, [onSubmit]);
+            }, [onSubmit, config.enableAntiCheat]);
 
             const handleMcqChange = (qId, optIdx) => setAnswers(prev => ({ ...prev, [qId]: optIdx }));
             const handleTfChange = (qId, subId, val) => setAnswers(prev => ({ ...prev, [qId]: { ...(prev[qId] || {}), [subId]: val } }));
@@ -522,7 +529,6 @@
                 onSubmit(answers);
             };
 
-            // Style cho đồng hồ khi sắp hết giờ (< 5 phút)
             const isLowTime = timeLeft < 300; 
 
             return (
@@ -533,15 +539,20 @@
                                 <Icon name="user" size={18}/> <span className="truncate">{studentName}</span>
                             </div>
                             
-                            {/* Đồng hồ */}
-                            <div className={`flex items-center gap-2 font-mono text-xl font-bold px-4 py-1 rounded-lg border ${isLowTime ? 'bg-red-50 text-red-600 border-red-200 animate-blink' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                                <Icon name="clock" size={20} />
-                                {formatTime(timeLeft)}
-                            </div>
+                            {/* Đồng hồ (Chỉ hiện nếu bật) */}
+                            {config.enableTimer && (
+                                <div className={`flex items-center gap-2 font-mono text-xl font-bold px-4 py-1 rounded-lg border ${isLowTime ? 'bg-red-50 text-red-600 border-red-200 animate-blink' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                    <Icon name="clock" size={20} />
+                                    {formatTime(timeLeft)}
+                                </div>
+                            )}
 
-                            <div className="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-full border border-red-200 w-full md:w-auto text-center">
-                                Vi phạm: {violationCount}/3
-                            </div>
+                            {/* Cảnh báo vi phạm (Chỉ hiện nếu bật) */}
+                            {config.enableAntiCheat && (
+                                <div className="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-full border border-red-200 w-full md:w-auto text-center">
+                                    Vi phạm: {violationCount}/3
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -598,7 +609,6 @@
                         </div>
                     </div>
 
-                    {/* Modal Xác nhận nộp bài */}
                     {showConfirmModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                             <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in">
@@ -612,7 +622,6 @@
                         </div>
                     )}
 
-                    {/* Modal Cảnh báo gian lận */}
                     {showWarning && (
                         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-red-900/80 p-4 backdrop-blur-sm">
                             <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-center animate-pulse-red border-4 border-red-600">
@@ -638,12 +647,12 @@
         };
 
         // --- KẾT QUẢ & LỜI GIẢI ---
-        const SolutionView = ({ questions, answers, score, onRetry }) => {
+        const SolutionView = ({ questions, answers, score, onRetry, config }) => {
             const [openExplain, setOpenExplain] = useState({});
             const toggleExplain = (id) => setOpenExplain(prev => ({ ...prev, [id]: !prev[id] }));
             
-            // Kiểm tra điều kiện điểm số
-            const isPass = score >= 7.0;
+            // Kiểm tra điều kiện điểm số dựa trên config
+            const isPass = !config.requirePassToViewSolution || score >= config.passScoreThreshold;
 
             return (
                 <div className="min-h-screen pb-20 animate-fade-in bg-gray-50">
@@ -657,9 +666,9 @@
                             <span className={`text-4xl font-bold ${isPass ? 'text-blue-700' : 'text-red-600'}`}>{score.toFixed(2)}<span className="text-xl text-gray-500">/10</span></span>
                         </div>
                         {isPass ? (
-                            <p className="mt-4 text-green-600 font-bold">Chúc mừng! Bạn đã đạt yêu cầu.</p>
+                            <p className="mt-4 text-green-600 font-bold">Chúc mừng! Bạn đã hoàn thành bài thi.</p>
                         ) : (
-                            <p className="mt-4 text-red-600 font-bold">Bạn chưa đạt yêu cầu.</p>
+                            <p className="mt-4 text-red-600 font-bold">Bạn chưa đạt điểm yêu cầu để xem lời giải.</p>
                         )}
                     </div>
 
@@ -669,7 +678,7 @@
                             <div className="flex justify-center mb-3 text-red-500"><Icon name="lock" size={40}/></div>
                             <h3 className="text-xl font-bold text-red-700 mb-2">Chưa Đạt Yêu Cầu Xem Lời Giải</h3>
                             <p className="text-gray-700">
-                                Bạn cần đạt tối thiểu <span className="font-bold text-red-700">7.0 điểm</span> để xem lời giải chi tiết.
+                                Bạn cần đạt tối thiểu <span className="font-bold text-red-700">{config.passScoreThreshold} điểm</span> để xem lời giải chi tiết.
                             </p>
                             <p className="text-gray-500 text-sm mt-2">Hãy ôn tập kỹ kiến thức và thử lại nhé!</p>
                         </div>
@@ -723,7 +732,6 @@
             if (!result) return null;
             const answers = result.answers || {};
 
-            // Sử dụng Portal để render modal ra ngoài root, tránh bị ảnh hưởng bởi CSS của cha
             return createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
                     <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col animate-fade-in">
@@ -786,11 +794,11 @@
                         </div>
                     </div>
                 </div>,
-                document.body // Render trực tiếp vào body
+                document.body 
             );
         };
 
-        const TeacherDashboard = ({ onLogout }) => {
+        const TeacherDashboard = ({ onLogout, config, setConfig }) => {
             const [results, setResults] = useState([]);
             const [loading, setLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState("");
@@ -806,7 +814,6 @@
                 return () => unsubscribe();
             }, []);
 
-            // Xử lý xóa
             const handleDelete = async (id) => {
                 if(confirm("Bạn có chắc chắn muốn xóa kết quả này?")) {
                     try {
@@ -815,7 +822,6 @@
                 }
             };
 
-            // Xử lý xuất Excel (CSV đơn giản)
             const handleExport = () => {
                 const header = "Thoi Gian,Ho Ten,Diem So\n";
                 const rows = results.map(r => `${new Date(r.timestamp).toLocaleString('vi-VN').replace(/,/g, '')},${r.name},${r.score}`).join("\n");
@@ -829,10 +835,8 @@
                 document.body.removeChild(link);
             };
 
-            // Filter
             const filteredResults = results.filter(r => r.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-            // Stats
             const stats = useMemo(() => {
                 const total = results.length;
                 if (total === 0) return { avg: 0, pass: 0, excellent: 0 };
@@ -855,6 +859,61 @@
                     </div>
 
                     <div className="max-w-7xl mx-auto p-6 space-y-6">
+                        
+                        {/* CONFIG PANEL */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                            <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><Icon name="settings" size={20}/> Cấu hình Bài Thi</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Anti-cheat */}
+                                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                                    <div>
+                                        <div className="font-medium text-gray-900">Chống gian lận</div>
+                                        <div className="text-xs text-gray-500">Cảnh báo khi rời tab</div>
+                                    </div>
+                                    <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                        <input type="checkbox" name="toggle" id="toggle-anticheat" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked={config.enableAntiCheat} onChange={(e) => setConfig({...config, enableAntiCheat: e.target.checked})}/>
+                                        <label htmlFor="toggle-anticheat" className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${config.enableAntiCheat ? 'bg-blue-600' : 'bg-gray-300'}`}></label>
+                                    </div>
+                                </div>
+
+                                {/* Timer */}
+                                <div className="p-4 bg-gray-50 rounded-lg border">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="font-medium text-gray-900">Đồng hồ đếm ngược</div>
+                                        <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                            <input type="checkbox" name="toggle" id="toggle-timer" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked={config.enableTimer} onChange={(e) => setConfig({...config, enableTimer: e.target.checked})}/>
+                                            <label htmlFor="toggle-timer" className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${config.enableTimer ? 'bg-blue-600' : 'bg-gray-300'}`}></label>
+                                        </div>
+                                    </div>
+                                    {config.enableTimer && (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <span className="text-sm text-gray-600">Thời gian:</span>
+                                            <input type="number" className="w-20 p-1 border rounded text-center" value={config.timerDuration} onChange={(e) => setConfig({...config, timerDuration: parseInt(e.target.value) || 0})} />
+                                            <span className="text-sm text-gray-600">phút</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Pass Condition */}
+                                <div className="p-4 bg-gray-50 rounded-lg border">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="font-medium text-gray-900">Điều kiện xem giải</div>
+                                        <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                            <input type="checkbox" name="toggle" id="toggle-pass" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked={config.requirePassToViewSolution} onChange={(e) => setConfig({...config, requirePassToViewSolution: e.target.checked})}/>
+                                            <label htmlFor="toggle-pass" className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${config.requirePassToViewSolution ? 'bg-blue-600' : 'bg-gray-300'}`}></label>
+                                        </div>
+                                    </div>
+                                    {config.requirePassToViewSolution && (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <span className="text-sm text-gray-600">Điểm tối thiểu:</span>
+                                            <input type="number" step="0.1" className="w-20 p-1 border rounded text-center" value={config.passScoreThreshold} onChange={(e) => setConfig({...config, passScoreThreshold: parseFloat(e.target.value) || 0})} />
+                                            <span className="text-sm text-gray-600">điểm</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Stats Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100">
@@ -950,6 +1009,15 @@
             const [finalScore, setFinalScore] = useState(0);
             const [userAnswers, setUserAnswers] = useState({});
 
+            // GLOBAL CONFIG STATE
+            const [quizConfig, setQuizConfig] = useState({
+                enableAntiCheat: true,
+                enableTimer: true,
+                timerDuration: 90, // minutes
+                requirePassToViewSolution: true,
+                passScoreThreshold: 7.0
+            });
+
             useEffect(() => {
                 if (auth) auth.signInAnonymously().catch(console.error);
             }, []);
@@ -980,10 +1048,10 @@
                 <div>
                     {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'login')} />}
                     {view === 'name' && <StudentNameInput onStart={startNewQuiz} />}
-                    {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} />}
-                    {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={() => startNewQuiz(studentName)} />}
+                    {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} config={quizConfig} />}
+                    {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={() => startNewQuiz(studentName)} config={quizConfig} />}
                     {view === 'login' && <TeacherLogin onLogin={() => setView('teacher')} onBack={() => setView('welcome')} />}
-                    {view === 'teacher' && <TeacherDashboard onLogout={() => setView('welcome')} />}
+                    {view === 'teacher' && <TeacherDashboard onLogout={() => setView('welcome')} config={quizConfig} setConfig={setQuizConfig} />}
                 </div>
             );
         };
