@@ -750,7 +750,6 @@
                                     correctAnsDisplay = q.acceptable.join(" hoặc ");
                                     isCorrect = q.acceptable.includes(userVal);
                                 } else if (q.type === 'group_tf') {
-                                    // Logic hiển thị cho đúng sai phức tạp hơn, ta hiển thị tóm tắt
                                     const userGroup = answers[q.id] || {};
                                     let correctCount = 0;
                                     q.subQuestions.forEach(sub => {
@@ -758,7 +757,7 @@
                                     });
                                     userAnsDisplay = `${correctCount}/4 ý đúng`;
                                     correctAnsDisplay = "4/4 ý đúng";
-                                    isCorrect = correctCount === 4; // Hoặc logic khác tùy ý
+                                    isCorrect = correctCount === 4; 
                                 }
 
                                 return (
