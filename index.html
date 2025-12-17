@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đề Thi Thử Tốt Nghiệp THPT 2025 - Môn Toán</title>
+    <title>Đề Thi Thử Tốt Nghiệp THPT 2025 - Môn Toán - Đề Số 01</title>
     
-    <!-- React & ReactDOM (UMD) -->
+    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     
@@ -15,7 +15,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- KaTeX -->
+    <!-- KaTeX for Math -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
@@ -23,7 +23,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Firebase (Compat version for HTML usage) -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -31,10 +31,8 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
         .katex { font-size: 1.1em; }
-        /* Animation utilities */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); }
     </style>
 </head>
 <body>
@@ -44,80 +42,43 @@
         const { useState, useEffect, useRef } = React;
         const { createRoot } = ReactDOM;
 
-        // ==================================================================================
-        // CẤU HÌNH FIREBASE
-        // ==================================================================================
-        
+        // --- CẤU HÌNH FIREBASE ---
         const USER_CONFIG = {
             apiKey: "AIzaSyCEgOrAaEHjZbhYTSkVHGRkGa8WfjjnWvg",
             authDomain: "trandaiedu-39df1.firebaseapp.com",
             projectId: "trandaiedu-39df1",
             storageBucket: "trandaiedu-39df1.firebasestorage.app",
             messagingSenderId: "286264195114",
-            appId: "1:286264195114:web:c6ca2fe8e1b3e7e25ceb53",
-            measurementId: "G-JB82DY2KHT"
+            appId: "1:286264195114:web:c6ca2fe8e1b3e7e25ceb53"
         };
 
-        // --- HỆ THỐNG FIREBASE & UTILS ---
-        
         let db = null;
         let auth = null;
-        let isUsingCustomConfig = false;
-        let appId = 'default-app-id';
+        const COLLECTION_NAME = "quiz_results_math12_thpt2025_de01_full";
 
         const initializeFirebase = () => {
             try {
-                if (!window.firebase) {
-                    console.error("Thư viện Firebase chưa tải xong.");
-                    return false;
-                }
-                if (firebase.apps.length > 0) {
-                    if (!auth) auth = firebase.auth();
-                    if (!db) db = firebase.firestore();
-                    return true;
-                }
-                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                    const config = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
-                    firebase.initializeApp(config);
-                    if (typeof __app_id !== 'undefined') appId = __app_id;
-                    console.log("Firebase: Đã kết nối qua Environment (Canvas).");
-                } 
-                else if (USER_CONFIG.apiKey && USER_CONFIG.apiKey.length > 0) {
-                    firebase.initializeApp(USER_CONFIG);
-                    isUsingCustomConfig = true;
-                    console.log("Firebase: Đã kết nối qua USER_CONFIG.");
-                } else {
-                    console.warn("Firebase: Chưa có cấu hình.");
-                    return false;
-                }
+                if (!window.firebase) return false;
+                if (firebase.apps.length === 0) firebase.initializeApp(USER_CONFIG);
                 auth = firebase.auth();
                 db = firebase.firestore();
                 return true;
-            } catch (e) {
-                console.error("Lỗi khởi tạo Firebase:", e);
-                return false;
-            }
+            } catch (e) { console.error(e); return false; }
         };
-
         initializeFirebase();
 
-        const COLLECTION_NAME = "quiz_results_math12_thpt2025_test1";
-
-        // --- ICONS ---
+        // --- COMPONENTS HỖ TRỢ ---
         const Icon = ({ name, size=24, className="" }) => {
             const iconRef = useRef(null);
             useEffect(() => {
                 if (window.lucide && iconRef.current) {
                    const iconElement = window.lucide.icons[name];
-                   if(iconElement) {
-                       iconRef.current.innerHTML = iconElement.toSvg({ class: className, width: size, height: size });
-                   }
+                   if(iconElement) iconRef.current.innerHTML = iconElement.toSvg({ class: className, width: size, height: size });
                 }
             }, [name, size, className]);
             return <span ref={iconRef} className={className} style={{display: 'inline-flex', alignItems: 'center'}}></span>;
         };
 
-        // --- MATH RENDERER ---
         const MathText = ({ text, className = "" }) => {
             const containerRef = useRef(null);
             useEffect(() => {
@@ -136,16 +97,9 @@
             return <span ref={containerRef} className={className} dangerouslySetInnerHTML={{__html: text}} />;
         };
 
-        // --- SVG IMAGES & COMPONENTS ---
+        // --- HÌNH ẢNH & BẢNG BIỂU (Chuyển từ HTML gốc sang React Component) ---
         
-        const ArrowDefs = () => (
-            <defs>
-                <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-                    <path d="M0,0 L0,6 L9,3 z" fill="#000" />
-                </marker>
-            </defs>
-        );
-
+        // Câu 1 Phần I: Bảng biến thiên
         const TablePart1Q1 = () => (
             <div className="flex justify-center my-4 overflow-x-auto">
                 <svg width="400" height="150" viewBox="0 0 400 150" className="bg-white rounded shadow-sm border border-gray-200">
@@ -185,6 +139,7 @@
             </div>
         );
 
+        // Câu 3 Phần I: Bảng số liệu
         const TablePart1Q3 = () => (
             <div className="my-4 overflow-x-auto">
                 <table className="min-w-full border border-collapse border-gray-300 text-sm text-center">
@@ -210,6 +165,7 @@
             </div>
         );
 
+        // Câu 2 Phần III: Cổng Parabol
         const ParabolPart3Q2 = () => (
             <div className="flex justify-center my-4">
                 <svg width="200" height="200" viewBox="-3 -5 6 6" className="bg-white rounded shadow-sm border border-gray-200">
@@ -223,97 +179,97 @@
             </div>
         );
 
-        // --- QUESTION BANK ---
+        // --- NGÂN HÀNG CÂU HỎI (Dữ liệu gốc) ---
         const QUESTION_BANK = [
-            // --- PHẦN I: TRẮC NGHIỆM (12 Câu) ---
+            // --- PHẦN I ---
             { 
                 id: 'p1_q1', type: 'mcq', 
                 question: "Cho hàm số $y = f(x)$ có bảng biến thiên như sau. Hàm số đã cho đồng biến trên khoảng nào dưới đây?", 
                 image: <TablePart1Q1 />,
                 options: ["$(-1; 1)$", "$(1; +\\infty)$", "$(-\\infty; 1)$", "$(-1; 2)$"], 
-                correct: 1, 
-                explanation: "Nhìn vào bảng biến thiên, dấu của $y'$ dương (+) trên khoảng $(1; +\\infty)$ và $(-\\infty; -1)$. Hàm số đồng biến khi $y' > 0$. Do đó hàm số đồng biến trên $(1; +\\infty)$." 
+                correct: 1, // B
+                explanation: "Nhìn vào bảng biến thiên, dấu của $y'$ dương (+) trên khoảng $(1; +\\infty)$ và $(-\\infty; -1)$.<br>Hàm số đồng biến khi $y' > 0$. Do đó hàm số đồng biến trên $(1; +\\infty)$." 
             },
             { 
                 id: 'p1_q2', type: 'mcq', 
                 question: "Trong không gian $Oxyz$, cho vectơ $\\vec{a} = 2\\vec{i} - 3\\vec{j} + \\vec{k}$. Tọa độ của vectơ $\\vec{a}$ là", 
                 options: ["$(2; -3; 1)$", "$(2; 3; 1)$", "$(2; -3; 0)$", "$(1; -3; 2)$"], 
-                correct: 0, 
-                explanation: "Vectơ $\\vec{a} = x\\vec{i} + y\\vec{j} + z\\vec{k}$ có tọa độ là $(x; y; z)$. Với $\\vec{a} = 2\\vec{i} - 3\\vec{j} + \\vec{k}$, ta có tọa độ là $(2; -3; 1)$." 
+                correct: 0, // A
+                explanation: "Vectơ $\\vec{a} = x\\vec{i} + y\\vec{j} + z\\vec{k}$ có tọa độ là $(x; y; z)$.<br>Với $\\vec{a} = 2\\vec{i} - 3\\vec{j} + \\vec{k}$, ta có tọa độ là $(2; -3; 1)$." 
             },
             { 
                 id: 'p1_q3', type: 'mcq', 
                 question: "Cho mẫu số liệu ghép nhóm về thời gian tập thể dục mỗi ngày (phút) của một nhóm học sinh. Nhóm chứa mốt của mẫu số liệu trên là", 
                 image: <TablePart1Q3 />,
                 options: ["$[0; 20)$", "$[20; 40)$", "$[40; 60)$", "$[60; 80)$"], 
-                correct: 2, 
-                explanation: "Nhóm chứa mốt là nhóm có tần số lớn nhất. Tần số các nhóm lần lượt là 5, 12, 18, 5. Tần số lớn nhất là 18, tương ứng với nhóm $[40; 60)$." 
+                correct: 2, // C
+                explanation: "Nhóm chứa mốt là nhóm có tần số lớn nhất.<br>Tần số các nhóm lần lượt là 5, 12, 18, 5.<br>Tần số lớn nhất là 18, tương ứng với nhóm $[40; 60)$." 
             },
             { 
                 id: 'p1_q4', type: 'mcq', 
                 question: "Cho cấp số nhân $(u_n)$ với $u_1 = 3$ và công bội $q = 2$. Giá trị của $u_3$ bằng", 
                 options: ["6", "8", "12", "24"], 
-                correct: 2, 
-                explanation: "Công thức cấp số nhân: $u_n = u_1 \\cdot q^{n-1}$. $u_3 = 3 \\cdot 2^{3-1} = 3 \\cdot 2^2 = 3 \\cdot 4 = 12$." 
+                correct: 2, // C
+                explanation: "Công thức cấp số nhân: $u_n = u_1 \\cdot q^{n-1}$.<br>$u_3 = 3 \\cdot 2^{3-1} = 3 \\cdot 2^2 = 3 \\cdot 4 = 12$." 
             },
             { 
                 id: 'p1_q5', type: 'mcq', 
                 question: "Tập nghiệm của bất phương trình $\\log_2(x - 1) < 3$ là", 
                 options: ["$(-\\infty; 9)$", "$(1; 9)$", "$(1; 7)$", "$(-\\infty; 7)$"], 
-                correct: 1, 
-                explanation: "Điều kiện: $x - 1 > 0 \\Leftrightarrow x > 1$. Bất phương trình: $\\log_2(x - 1) < 3 \\Leftrightarrow x - 1 < 2^3 \\Leftrightarrow x - 1 < 8 \\Leftrightarrow x < 9$. Kết hợp điều kiện, tập nghiệm là $(1; 9)$." 
+                correct: 1, // B
+                explanation: "Điều kiện: $x - 1 > 0 \\Leftrightarrow x > 1$.<br>Bất phương trình: $\\log_2(x - 1) < 3 \\Leftrightarrow x - 1 < 2^3 \\Leftrightarrow x - 1 < 8 \\Leftrightarrow x < 9$.<br>Kết hợp điều kiện, tập nghiệm là $(1; 9)$." 
             },
             { 
                 id: 'p1_q6', type: 'mcq', 
                 question: "Trong không gian với hệ tọa độ $Oxyz$, phương trình nào dưới đây là phương trình của mặt phẳng đi qua điểm $M(1; -2; 3)$ và có vectơ pháp tuyến $\\vec{n} = (2; 1; -1)$?", 
                 options: ["$2x + y - z + 3 = 0$", "$x - 2y + 3z + 3 = 0$", "$2x + y - z - 3 = 0$", "$2x + y - z + 5 = 0$"], 
-                correct: 0, 
-                explanation: "Phương trình mặt phẳng: $2(x - 1) + 1(y + 2) - 1(z - 3) = 0 \\Leftrightarrow 2x - 2 + y + 2 - z + 3 = 0 \\Leftrightarrow 2x + y - z + 3 = 0$." 
+                correct: 0, // A
+                explanation: "Phương trình mặt phẳng qua $M(x_0; y_0; z_0)$ với VTPT $\\vec{n}(a; b; c)$ là: $a(x - x_0) + b(y - y_0) + c(z - z_0) = 0$.<br>Thay số: $2(x - 1) + 1(y + 2) - 1(z - 3) = 0$<br>$\\Leftrightarrow 2x - 2 + y + 2 - z + 3 = 0 \\Leftrightarrow 2x + y - z + 3 = 0$." 
             },
             { 
                 id: 'p1_q7', type: 'mcq', 
                 question: "Cho hai biến cố A và B độc lập với nhau. Biết $P(A) = 0,3$ và $P(B) = 0,4$. Xác suất của biến cố $A \\cup B$ là", 
                 options: ["0,12", "0,7", "0,58", "0,82"], 
-                correct: 2, 
-                explanation: "$P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$. Vì A, B độc lập nên $P(A \\cap B) = P(A) \\cdot P(B) = 0,3 \\cdot 0,4 = 0,12$. Vậy $P(A \\cup B) = 0,3 + 0,4 - 0,12 = 0,58$." 
+                correct: 2, // C
+                explanation: "Công thức: $P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$.<br>Vì A, B độc lập nên $P(A \\cap B) = P(A) \\cdot P(B) = 0,3 \\cdot 0,4 = 0,12$.<br>$P(A \\cup B) = 0,3 + 0,4 - 0,12 = 0,58$." 
             },
             { 
                 id: 'p1_q8', type: 'mcq', 
                 question: "Hàm số $F(x) = x^2 + \\sin x$ là một nguyên hàm của hàm số nào dưới đây?", 
                 options: ["$f(x) = 2x + \\cos x$", "$f(x) = 2x - \\cos x$", "$f(x) = \\frac{x^3}{3} - \\cos x$", "$f(x) = x^2 + \\cos x$"], 
-                correct: 0, 
+                correct: 0, // A
                 explanation: "$f(x) = F'(x) = (x^2 + \\sin x)' = 2x + \\cos x$." 
             },
             { 
                 id: 'p1_q9', type: 'mcq', 
                 question: "Đồ thị hàm số $y = \\frac{2x - 1}{x + 1}$ có tiệm cận đứng là đường thẳng", 
                 options: ["$x = 2$", "$y = 2$", "$x = -1$", "$y = -1$"], 
-                correct: 2, 
-                explanation: "Tiệm cận đứng là nghiệm của mẫu số: $x + 1 = 0 \\Leftrightarrow x = -1$." 
+                correct: 2, // C
+                explanation: "Tiệm cận đứng của hàm phân thức hữu tỉ là nghiệm của mẫu số (nếu không bị triệt tiêu bởi tử).<br>$x + 1 = 0 \\Leftrightarrow x = -1$." 
             },
             { 
                 id: 'p1_q10', type: 'mcq', 
                 question: "Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh $a$, $SA \\perp (ABCD)$ và $SA = a\\sqrt{2}$. Góc giữa đường thẳng SC và mặt phẳng (ABCD) bằng", 
                 options: ["$30^\\circ$", "$45^\\circ$", "$60^\\circ$", "$90^\\circ$"], 
-                correct: 1, 
-                explanation: "Hình chiếu của SC lên (ABCD) là AC. Góc cần tìm là $\\widehat{SCA}$. $AC = a\\sqrt{2}$. Tam giác SAC vuông cân tại A ($SA=AC=a\\sqrt{2}$) nên $\\widehat{SCA} = 45^\\circ$." 
+                correct: 1, // B
+                explanation: "Hình chiếu của SC lên (ABCD) là AC (vì $SA \\perp (ABCD)$).<br>Góc giữa SC và (ABCD) là góc $\\widehat{SCA}$.<br>AC là đường chéo hình vuông cạnh $a$ nên $AC = a\\sqrt{2}$.<br>Tam giác SAC vuông tại A có $SA = a\\sqrt{2}$, $AC = a\\sqrt{2}$ $\\Rightarrow$ Tam giác SAC vuông cân tại A.<br>Vậy $\\widehat{SCA} = 45^\\circ$." 
             },
             { 
                 id: 'p1_q11', type: 'mcq', 
                 question: "Phương trình đường tiệm cận xiên của đồ thị hàm số $y = 2x + 1 + \\frac{3}{x-1}$ là", 
                 options: ["$y = 2x$", "$y = 2x + 1$", "$y = x - 1$", "$x = 1$"], 
-                correct: 1, 
-                explanation: "Vì $\\lim_{x \\to \\infty} \\frac{3}{x-1} = 0$ nên tiệm cận xiên là $y = 2x + 1$." 
+                correct: 1, // B
+                explanation: "Hàm số $y = ax + b + g(x)$ với $\\lim_{x \\to \\infty} g(x) = 0$ thì $y = ax + b$ là tiệm cận xiên.<br>Ở đây $y = 2x + 1 + \\frac{3}{x-1}$. Vì $\\lim_{x \\to \\infty} \\frac{3}{x-1} = 0$ nên tiệm cận xiên là $y = 2x + 1$." 
             },
             { 
                 id: 'p1_q12', type: 'mcq', 
                 question: "Cho hàm số $y=f(x)$ liên tục trên $\\mathbb{R}$ và $\\int_0^2 f(x)dx = 5$, $\\int_2^5 f(x)dx = 3$. Tính $I = \\int_0^5 f(x)dx$.", 
                 options: ["$I = 8$", "$I = 2$", "$I = 15$", "$I = -2$"], 
-                correct: 0, 
-                explanation: "$I = \\int_0^5 f(x)dx = \\int_0^2 f(x)dx + \\int_2^5 f(x)dx = 5 + 3 = 8$." 
+                correct: 0, // A
+                explanation: "Tính chất cộng của tích phân: $\\int_0^5 f(x)dx = \\int_0^2 f(x)dx + \\int_2^5 f(x)dx$.<br>$I = 5 + 3 = 8$." 
             },
 
-            // --- PHẦN II: ĐÚNG/SAI (4 Câu) ---
+            // --- PHẦN II ---
             {
                 id: 'p2_q1', type: 'group_tf',
                 question: "Cho hàm số $y = \\frac{x^2 - 3x + 3}{x - 1}$ có đồ thị $(C)$.",
@@ -323,7 +279,7 @@
                     { id: 'c', text: "Hàm số đạt cực đại tại $x = 2$.", correct: false },
                     { id: 'd', text: "Đường thẳng $y = -2x + m$ cắt đồ thị $(C)$ tại hai điểm phân biệt với mọi giá trị của $m$.", correct: false }
                 ],
-                explanation: "a) Đúng. b) Đúng ($y = x-2 + 1/(x-1)$). c) Sai (Tại $x=2$ là cực tiểu). d) Sai (Phương trình hoành độ giao điểm có $\\Delta = m^2 - 2m - 11$, không dương với mọi m)."
+                explanation: "Ta có: $y = \\frac{x^2 - 3x + 3}{x - 1} = x - 2 + \\frac{1}{x-1}$.<br>$y' = \\frac{x^2 - 2x}{(x-1)^2}$. $y' = 0 \\Leftrightarrow x = 0$ hoặc $x = 2$.<br><strong>a) Đúng.</strong> Điều kiện $x \\ne 1$.<br><strong>b) Đúng.</strong> TCX là $y = x - 2$.<br><strong>c) Sai.</strong> Tại $x=2$, $y'=0$ và đổi dấu từ (-) sang (+), nên $x=2$ là điểm cực tiểu.<br><strong>d) Sai.</strong> Phương trình hoành độ giao điểm có $\\Delta = m^2 - 2m - 11$. Để cắt tại 2 điểm phân biệt thì $\\Delta > 0$. Nếu $m=1$ thì $\\Delta < 0$, vô nghiệm."
             },
             {
                 id: 'p2_q2', type: 'group_tf',
@@ -334,7 +290,7 @@
                     { id: 'c', text: "Điểm $D$ nằm trên mặt phẳng $(ABC)$.", correct: false },
                     { id: 'd', text: "Thể tích khối tứ diện $OBCD$ bằng 2 (với O là gốc tọa độ).", correct: false }
                 ],
-                explanation: "a) Đúng. b) Đúng. c) Sai (Thay D vào pt mp không thỏa). d) Sai (Thể tích tính ra là 1)."
+                explanation: "<strong>a) Đúng.</strong> $\\vec{AB} = (-1; 2; 0)$.<br><strong>b) Đúng.</strong> Phương trình mặt phẳng chắn.<br><strong>c) Sai.</strong> Thay $D(1;2;3)$ vào: $1/1 + 2/2 + 3/3 = 3 \\ne 1$.<br><strong>d) Sai.</strong> Thể tích $V = \\frac{1}{3} \\cdot S_{OBC} \\cdot h = \\frac{1}{3} \\cdot 3 \\cdot 1 = 1$."
             },
             {
                 id: 'p2_q3', type: 'group_tf',
@@ -345,7 +301,7 @@
                     { id: 'c', text: "Tốc độ tăng trưởng lợi nhuận lớn nhất tại tháng thứ 4.", correct: true },
                     { id: 'd', text: "Lợi nhuận cao nhất trong 8 tháng đầu đạt 50 tỷ đồng.", correct: true }
                 ],
-                explanation: "a) Sai (Hàm tăng trên (2;6)). b) Sai (t=6 là cực đại). c) Đúng (Max của P'(t) tại t=4). d) Đúng (Max P(t) = 50)."
+                explanation: "$P'(t) = -3t^2 + 24t - 36$. Nghiệm $t=2, t=6$.<br><strong>a) Sai.</strong> Trên (2; 6), $P'(t) > 0$, lợi nhuận tăng.<br><strong>b) Sai.</strong> Tại $t=6$ là cực đại.<br><strong>c) Đúng.</strong> Max của $P'(t)$ tại đỉnh parabol $t = 4$.<br><strong>d) Đúng.</strong> Max $P(t) = 50$ tại $t=0$ và $t=6$."
             },
             {
                 id: 'p2_q4', type: 'group_tf',
@@ -356,60 +312,50 @@
                     { id: 'c', text: "Điểm thi của học sinh lớp 12B đồng đều hơn lớp 12A.", correct: false },
                     { id: 'd', text: "Nếu gộp chung hai lớp (giả sử sĩ số bằng nhau), điểm trung bình chung là 7,75.", correct: true }
                 ],
-                explanation: "a) Đúng. b) Đúng ($\\sqrt{1.25} \\approx 1.118$). c) Sai (Phương sai B lớn hơn nên phân tán hơn). d) Đúng."
+                explanation: "<strong>a) Đúng.</strong> $8.0 > 7.5$.<br><strong>b) Đúng.</strong> $S_A = \\sqrt{1.25} \\approx 1.118$.<br><strong>c) Sai.</strong> Phương sai $S_B^2 > S_A^2$ nên lớp B phân tán hơn (kém đồng đều hơn).<br><strong>d) Đúng.</strong> $\\bar{x}_{chung} = (8 + 7.5)/2 = 7.75$."
             },
 
-            // --- PHẦN III: TRẢ LỜI NGẮN (6 Câu) ---
+            // --- PHẦN III ---
             { 
                 id: 'p3_q1', type: 'text', 
                 question: "Một chất điểm chuyển động theo phương trình $s(t) = t^3 - 3t^2 + 4t + 1$. Tính vận tốc của chất điểm tại thời điểm gia tốc bằng $0$ $m/s^2$.", 
                 acceptable: ["1"], 
-                explanation: "$v(t) = 3t^2 - 6t + 4$, $a(t) = 6t - 6$. $a(t)=0 \\Leftrightarrow t=1$. $v(1) = 3 - 6 + 4 = 1$." 
+                explanation: "Vận tốc $v(t) = s'(t) = 3t^2 - 6t + 4$.<br>Gia tốc $a(t) = v'(t) = 6t - 6$.<br>Gia tốc bằng 0 $\\Leftrightarrow 6t - 6 = 0 \\Leftrightarrow t = 1$.<br>Thay $t=1$ vào $v(t)$: $v(1) = 3(1)^2 - 6(1) + 4 = 1$ m/s." 
             },
             { 
                 id: 'p3_q2', type: 'text', 
                 question: "Người ta muốn thiết kế một chiếc cổng hình parabol có chiều rộng chân cổng là 4m và chiều cao cổng là 4m. Bóng đèn treo tại tiêu điểm cách đỉnh cổng bao nhiêu mét?", 
                 image: <ParabolPart3Q2 />,
                 acceptable: ["0.25"], 
-                explanation: "Phương trình $x^2 = -4py$ (gốc tại đỉnh). Qua $(2; -4)$ (nếu trục y hướng xuống) hoặc $y = -x^2 + 4$. Dạng chính tắc $x^2 = -1(y-4) \\Rightarrow 4p=1 \\Rightarrow p=0.25$." 
+                explanation: "Phương trình parabol có đỉnh $I(0; 4)$: $y = a x^2 + 4$.<br>Qua điểm $(2; 0) \\Rightarrow 0 = a(2^2) + 4 \\Rightarrow a = -1$.<br>Vậy $y = -x^2 + 4 \\Rightarrow x^2 = -(y - 4)$.<br>Dạng $X^2 = 4pY$ (với hệ trục dời về đỉnh). Ở đây $4p = 1 \\Rightarrow p = 0.25$." 
             },
             { 
                 id: 'p3_q3', type: 'text', 
                 question: "Ông An gửi 100 triệu đồng vào ngân hàng lãi suất 6%/năm (lãi kép). Sau ít nhất bao nhiêu năm thì số tiền cả gốc và lãi vượt quá 150 triệu đồng?", 
                 acceptable: ["7"], 
-                explanation: "$100(1.06)^n > 150 \\Rightarrow n > \\log_{1.06}(1.5) \\approx 6.96$. Vậy $n=7$." 
+                explanation: "Công thức lãi kép: $A = P(1 + r)^n$.<br>$150 < 100(1 + 0.06)^n \\Leftrightarrow 1.5 < (1.06)^n$.<br>$n > \\log_{1.06}(1.5) \\approx 6.96$.<br>Vì n là số nguyên nên n = 7." 
             },
             { 
                 id: 'p3_q4', type: 'text', 
                 question: "Trong không gian $Oxyz$, cho hình hộp $ABCD.A'B'C'D'$ có $A(0;0;0)$, $B(3;0;0)$, $D(0;4;0)$, $A'(0;0;5)$. Tính khoảng cách từ điểm $A'$ đến mặt phẳng $(A B' D')$. (Làm tròn đến hàng phần mười).", 
                 acceptable: ["2.2"], 
-                explanation: "Khoảng cách tính được là $\\frac{60}{\\sqrt{769}} \\approx 2.16$. Làm tròn 2.2." 
+                explanation: "Mặt phẳng $(A B' D')$ đi qua $A(0;0;0)$ và có VTPT $\\vec{n} = [\\vec{AB'}, \\vec{AD'}] = (-20; -15; 12)$.<br>Phương trình mp: $-20x - 15y + 12z = 0$.<br>Khoảng cách từ $A'(0;0;5)$: $d = \\frac{|12(5)|}{\\sqrt{20^2 + 15^2 + 12^2}} = \\frac{60}{\\sqrt{769}} \\approx 2.16$.<br>Làm tròn hàng phần mười: 2.2." 
             },
             { 
                 id: 'p3_q5', type: 'text', 
                 question: "Số lượng vi khuẩn tuân theo quy luật $N(t) = 500 \\cdot e^{0.2t}$. Tính tốc độ tăng trưởng tức thời tại $t = 10$ giờ. (Làm tròn đến hàng đơn vị).", 
                 acceptable: ["739"], 
-                explanation: "$N'(t) = 100e^{0.2t}$. $N'(10) = 100e^2 \\approx 738.9$. Làm tròn 739." 
+                explanation: "$N'(t) = 500 \\cdot 0.2 \\cdot e^{0.2t} = 100 \\cdot e^{0.2t}$.<br>Tại $t = 10$: $N'(10) = 100 \\cdot e^{2} \\approx 738.9$.<br>Làm tròn hàng đơn vị: 739." 
             },
             { 
                 id: 'p3_q6', type: 'text', 
                 question: "Một hộp chứa 5 quả cầu đỏ và 4 quả cầu xanh. Lấy ngẫu nhiên 3 quả. Tính xác suất để lấy được ít nhất 1 quả cầu đỏ. (Nhập số thập phân, làm tròn đến hàng phần trăm).", 
                 acceptable: ["0.95"], 
-                explanation: "$P = 1 - \\frac{C_4^3}{C_9^3} = 1 - \\frac{4}{84} = \\frac{20}{21} \\approx 0.95$." 
+                explanation: "Tổng số cách chọn: $C_9^3 = 84$.<br>Biến cố đối: Lấy 3 quả xanh ($C_4^3 = 4$).<br>$P(\\text{ít nhất 1 đỏ}) = 1 - \\frac{4}{84} = \\frac{20}{21} \\approx 0.9523$.<br>Làm tròn hàng phần trăm: 0.95." 
             }
         ];
         
-        // --- LOGIC HÀM ---
-        const PASSING_SCORE = 0.0; 
-        
-        const generateRandomQuiz = () => {
-             const mcqPool = QUESTION_BANK.filter(q => q.type === 'mcq');
-             const tfPool = QUESTION_BANK.filter(q => q.type === 'group_tf');
-             const textPool = QUESTION_BANK.filter(q => q.type === 'text');
-             
-             return [...mcqPool, ...tfPool, ...textPool];
-        };
-
+        // --- LOGIC TÍNH ĐIỂM ---
         const calculateScore = (currentQuestions, answers) => {
             let score = 0;
             let totalMaxScore = 0; 
@@ -449,16 +395,13 @@
             return 0;
         };
         
+        // --- MÀN HÌNH CHÀO ---
         const WelcomeScreen = ({ onSelectMode }) => (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-cyan-600 to-blue-800 p-4 text-white animate-fade-in">
                 <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-white/20">
                     <h1 className="text-4xl font-bold mb-2">TRANDAIEDU</h1>
                     <h2 className="text-xl mb-8 text-cyan-100 font-medium">ĐỀ THI THỬ TỐT NGHIỆP THPT 2025</h2>
-                    {isUsingCustomConfig === false && !window.__firebase_config && (
-                        <div className="mb-4 bg-red-500/20 text-red-100 p-2 rounded text-sm border border-red-500/50">
-                            Cảnh báo: Chưa cấu hình Firebase. Điểm sẽ KHÔNG được lưu.
-                        </div>
-                    )}
+                    <h3 className="text-lg mb-4 text-white font-bold bg-blue-600/50 py-1 rounded">MÔN TOÁN - ĐỀ SỐ 01</h3>
                     <div className="space-y-4">
                         <button onClick={() => onSelectMode('student')} className="w-full py-4 bg-white text-blue-800 rounded-xl font-bold hover:bg-blue-50 transition-all shadow-lg flex items-center justify-center gap-2"><Icon name="user"/> Học Sinh Vào Thi</button>
                         <button onClick={() => onSelectMode('teacher')} className="w-full py-4 bg-blue-900/50 text-white rounded-xl font-bold hover:bg-blue-900 transition-all border border-blue-400/30 flex items-center justify-center gap-2"><Icon name="lock"/> Giáo Viên Xem Điểm</button>
@@ -467,6 +410,7 @@
             </div>
         );
 
+        // --- NHẬP TÊN ---
         const StudentNameInput = ({ onStart }) => {
             const [name, setName] = useState('');
             return (
@@ -475,7 +419,6 @@
                         <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">Nhập Thông Tin</h2>
                         <div className="mb-6">
                             <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500" placeholder="Họ và tên..." required />
-                            <p className="text-xs text-green-600 mt-2 flex items-center gap-1"><Icon name="check" size={12}/> Chế độ: Học sinh (Không cần đăng nhập)</p>
                         </div>
                         <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors">Bắt Đầu</button>
                     </form>
@@ -483,6 +426,7 @@
             );
         };
 
+        // --- LÀM BÀI THI ---
         const QuizView = ({ studentName, questions, onSubmit }) => {
             const [answers, setAnswers] = useState({});
             const [isSubmitting, setIsSubmitting] = useState(false);
@@ -494,10 +438,6 @@
             const handleTfChange = (qId, subId, val) => setAnswers(prev => ({ ...prev, [qId]: { ...(prev[qId] || {}), [subId]: val } }));
             const handleTextChange = (qId, val) => setAnswers(prev => ({ ...prev, [qId]: val }));
             
-            const handleTriggerSubmit = () => {
-                setShowConfirmModal(true);
-            };
-
             const handleConfirmSubmit = async () => {
                 setShowConfirmModal(false);
                 setIsSubmitting(true);
@@ -506,14 +446,12 @@
 
             return (
                 <div className="min-h-screen bg-gray-100 pb-20 relative">
-                    {/* Header */}
                     <div className="bg-white shadow-md p-4 sticky top-0 z-10 border-b border-gray-200">
                         <div className="max-w-3xl mx-auto flex justify-between items-center">
                             <div className="font-bold text-blue-700 flex items-center gap-2"><Icon name="user" size={18}/> {studentName}</div>
                         </div>
                     </div>
 
-                    {/* Questions */}
                     <div className="max-w-3xl mx-auto p-4 space-y-8 mt-4 animate-fade-in">
                         {questions.map((q, idx) => (
                             <div key={q.id} className="bg-white rounded-xl shadow-sm p-6 transition-all hover:shadow-md">
@@ -561,21 +499,17 @@
                             </div>
                         ))}
                         <div className="flex justify-center pt-6">
-                            <button onClick={handleTriggerSubmit} disabled={isSubmitting} className={`px-8 py-4 text-white text-lg font-bold rounded-xl shadow-lg flex items-center gap-2 transition-all ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 transform hover:scale-105'}`}>
+                            <button onClick={() => setShowConfirmModal(true)} disabled={isSubmitting} className={`px-8 py-4 text-white text-lg font-bold rounded-xl shadow-lg flex items-center gap-2 transition-all ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 transform hover:scale-105'}`}>
                                 {isSubmitting ? <><Icon name="loader" className="animate-spin"/> ĐANG GỬI...</> : <><Icon name="save"/> NỘP BÀI</>}
                             </button>
                         </div>
                     </div>
 
-                    {/* Custom Confirmation Modal */}
                     {showConfirmModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                             <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in">
-                                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
-                                    <Icon name="help-circle" size={24} className="text-blue-600"/>
-                                </div>
                                 <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận nộp bài</h3>
-                                <p className="text-sm text-gray-500 mb-6">Bạn có chắc chắn muốn nộp bài thi? Hành động này không thể hoàn tác.</p>
+                                <p className="text-sm text-gray-500 mb-6">Bạn có chắc chắn muốn nộp bài thi?</p>
                                 <div className="flex gap-3 justify-center">
                                     <button onClick={() => setShowConfirmModal(false)} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors">Hủy bỏ</button>
                                     <button onClick={handleConfirmSubmit} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-lg">Đồng ý nộp</button>
@@ -587,70 +521,57 @@
             );
         };
 
+        // --- KẾT QUẢ & LỜI GIẢI ---
         const SolutionView = ({ questions, answers, score, onRetry }) => {
             const [openExplain, setOpenExplain] = useState({});
             const toggleExplain = (id) => setOpenExplain(prev => ({ ...prev, [id]: !prev[id] }));
-            const isPassed = score >= PASSING_SCORE;
 
             return (
-                <div className={`min-h-screen pb-20 animate-fade-in ${isPassed ? 'bg-green-50' : 'bg-red-50'}`}>
-                    <div className={`shadow p-6 text-center mb-6 ${isPassed ? 'bg-white' : 'bg-white border-b-4 border-red-500'}`}>
-                        <div className="flex justify-center mb-2">{isPassed ? <Icon name="trophy" size={56} className="text-yellow-500"/> : <Icon name="alert-circle" size={56} className="text-red-500"/>}</div>
-                        <h2 className={`text-2xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{isPassed ? "Chúc Mừng! Bạn Đã Hoàn Thành" : "Chưa Đạt Yêu Cầu"}</h2>
-                        <div className={`mt-4 inline-block px-6 py-3 rounded-xl border ${isPassed ? 'bg-green-100 border-green-200' : 'bg-red-100 border-red-200'}`}>
+                <div className="min-h-screen pb-20 animate-fade-in bg-gray-50">
+                    <div className="bg-white shadow p-6 text-center mb-6">
+                        <div className="flex justify-center mb-2"><Icon name="trophy" size={56} className="text-yellow-500"/></div>
+                        <h2 className="text-2xl font-bold text-gray-800">Kết Quả Bài Thi</h2>
+                        <div className="mt-4 inline-block px-6 py-3 rounded-xl border bg-blue-50 border-blue-200">
                             <span className="text-gray-600 uppercase text-xs font-bold block">Tổng Điểm</span>
-                            <span className={`text-4xl font-bold ${isPassed ? 'text-green-700' : 'text-red-700'}`}>{score.toFixed(2)}<span className="text-xl text-gray-500">/10</span></span>
+                            <span className="text-4xl font-bold text-blue-700">{score.toFixed(2)}<span className="text-xl text-gray-500">/10</span></span>
                         </div>
-                        <p className="text-gray-600 mt-3 text-sm max-w-md mx-auto">
-                            {isPassed 
-                                ? "Kết quả đã được lưu. Hãy xem lại lời giải chi tiết bên dưới." 
-                                : `Bạn cần đạt tối thiểu ${PASSING_SCORE} điểm. Kết quả đã được lưu vào hệ thống nhưng bạn cần làm lại để xem đáp án chi tiết.`}
-                        </p>
                     </div>
 
-                    {isPassed ? (
-                        <div className="max-w-3xl mx-auto p-4 space-y-6">
-                            <h3 className="font-bold text-gray-700 flex items-center gap-2 mb-4"><Icon name="check-circle" size={20}/> Chi Tiết Bài Làm & Lời Giải</h3>
-                            {questions.map((q, idx) => {
-                                const isOpen = openExplain[q.id];
-                                return (
-                                    <div key={q.id} className="bg-white rounded-lg shadow-sm border-l-4 border-blue-400 overflow-hidden">
-                                        <div className="p-4 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleExplain(q.id)}>
-                                            <div className="flex justify-between items-start">
-                                                <div className="font-medium text-gray-800 flex-1 flex gap-2"><span className="font-bold whitespace-nowrap">Câu {idx + 1}:</span> <MathText text={q.question} /></div>
-                                            </div>
-                                            <div className="text-right text-xs text-blue-500 mt-2 font-medium flex items-center justify-end gap-1">{isOpen ? 'Thu gọn' : 'Xem chi tiết'} <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={14}/></div>
+                    <div className="max-w-3xl mx-auto p-4 space-y-6">
+                        <h3 className="font-bold text-gray-700 flex items-center gap-2 mb-4"><Icon name="check-circle" size={20}/> Chi Tiết Lời Giải</h3>
+                        {questions.map((q, idx) => {
+                            const isOpen = openExplain[q.id];
+                            return (
+                                <div key={q.id} className="bg-white rounded-lg shadow-sm border-l-4 border-blue-400 overflow-hidden">
+                                    <div className="p-4 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleExplain(q.id)}>
+                                        <div className="flex justify-between items-start">
+                                            <div className="font-medium text-gray-800 flex-1 flex gap-2"><span className="font-bold whitespace-nowrap">Câu {idx + 1}:</span> <MathText text={q.question} /></div>
                                         </div>
-                                        {isOpen && (
-                                            <div className="bg-blue-50 p-4 text-sm text-blue-900 border-t border-blue-100">
-                                                {q.image && <div className="mb-4 flex justify-center">{q.image}</div>}
-                                                <span className="font-bold block mb-1">💡 Lời giải chi tiết:</span>
-                                                <MathText text={q.explanation} />
-                                            </div>
-                                        )}
+                                        <div className="text-right text-xs text-blue-500 mt-2 font-medium flex items-center justify-end gap-1">{isOpen ? 'Thu gọn' : 'Xem chi tiết'} <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={14}/></div>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <div className="max-w-md mx-auto p-8 text-center text-gray-500">
-                            <div className="flex justify-center mb-4"><Icon name="eye-off" size={64} className="text-gray-300"/></div>
-                            <p className="text-lg font-medium text-gray-600 mb-2">Chưa đạt yêu cầu</p>
-                            <p className="text-sm">Hệ thống đã ẩn toàn bộ câu hỏi và lời giải để đảm bảo tính khách quan khi bạn làm lại đề.</p>
-                        </div>
-                    )}
+                                    {isOpen && (
+                                        <div className="bg-blue-50 p-4 text-sm text-blue-900 border-t border-blue-100">
+                                            {q.image && <div className="mb-4 flex justify-center">{q.image}</div>}
+                                            <span className="font-bold block mb-1">💡 Lời giải chi tiết:</span>
+                                            <MathText text={q.explanation} />
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                     <div className="flex justify-center pt-6 pb-10">
-                        {isPassed ? <button onClick={() => window.location.reload()} className="px-8 py-3 bg-gray-600 text-white rounded-lg font-bold hover:bg-gray-700 shadow-lg flex items-center gap-2"><Icon name="log-out"/> Về trang chủ</button> : <button onClick={onRetry} className="px-8 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 shadow-lg flex items-center gap-2 animate-bounce"><Icon name="refresh-ccw"/> Làm lại đề mới</button>}
+                        <button onClick={onRetry} className="px-8 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 shadow-lg flex items-center gap-2"><Icon name="refresh-ccw"/> Làm lại đề mới</button>
                     </div>
                 </div>
             );
         };
 
+        // --- GIÁO VIÊN ---
         const TeacherLogin = ({ onLogin, onBack }) => {
             const [pass, setPass] = useState('');
-            const [error, setError] = useState('');
-            const handleLogin = (e) => { e.preventDefault(); if (pass === '12345678T') { onLogin(); } else { setError('Mật khẩu không đúng!'); } };
-            return ( <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 animate-fade-in"> <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"> <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">Giáo Viên Đăng Nhập</h2> <form onSubmit={handleLogin} className="space-y-4"> <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nhập mật khẩu..." autoFocus/> {error && <p className="text-red-500 text-sm text-center">{error}</p>} <button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800">Truy cập</button> <button type="button" onClick={onBack} className="w-full py-2 text-gray-500 hover:text-gray-800 text-sm">Quay lại</button> </form> </div> </div> );
+            const handleLogin = (e) => { e.preventDefault(); if (pass === '12345678T') onLogin(); };
+            return ( <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 animate-fade-in"> <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"> <h2 className="text-xl font-bold mb-6 text-gray-800 text-center">Giáo Viên Đăng Nhập</h2> <form onSubmit={handleLogin} className="space-y-4"> <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nhập mật khẩu..." autoFocus/> <button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-lg font-bold hover:bg-blue-800">Truy cập</button> <button type="button" onClick={onBack} className="w-full py-2 text-gray-500 hover:text-gray-800 text-sm">Quay lại</button> </form> </div> </div> );
         };
 
         const TeacherDashboard = ({ onLogout }) => {
@@ -658,109 +579,56 @@
             const [loading, setLoading] = useState(true);
 
             useEffect(() => {
-                if (!db) initializeFirebase();
-
-                if (!db) {
-                    setResults([
-                        { id: 1, timestamp: { seconds: Date.now()/1000 }, name: "Nguyễn Văn Demo", score: 8.5 },
-                        { id: 2, timestamp: { seconds: Date.now()/1000 - 3600 }, name: "Trần Thị Test", score: 6.0 },
-                        { id: 3, timestamp: { seconds: Date.now()/1000 - 7200 }, name: "Lê Văn Mẫu", score: 9.25 },
-                    ]);
-                    setLoading(false);
-                    return;
-                }
-
-                let q;
-                if (isUsingCustomConfig) {
-                    q = db.collection(COLLECTION_NAME);
-                } else {
-                    q = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME);
-                }
-                
-                const unsubscribe = q.onSnapshot((snapshot) => {
-                    const data = snapshot.docs.map(doc => {
-                        const d = doc.data();
-                        let time = 0;
-                        if (d.timestamp && d.timestamp.seconds) { time = d.timestamp.seconds; } 
-                        else if (typeof d.timestamp === 'string') { time = new Date(d.timestamp).getTime() / 1000; }
-                        return { id: doc.id, ...d, sortTime: time };
-                    });
-                    data.sort((a, b) => b.sortTime - a.sortTime);
+                if (!db) { setLoading(false); return; }
+                const unsubscribe = db.collection(COLLECTION_NAME).orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     setResults(data);
                     setLoading(false);
-                }, (error) => { console.error("Lỗi tải dữ liệu:", error); setLoading(false); });
+                });
                 return () => unsubscribe();
             }, []);
 
             return (
                 <div className="min-h-screen bg-gray-50 animate-fade-in">
                     <div className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                        <div className="flex items-center gap-3">
-                            <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="list" className="text-blue-600"/> Bảng Điểm</h1>
-                        </div>
+                        <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Icon name="list" className="text-blue-600"/> Bảng Điểm</h1>
                         <button onClick={onLogout} className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 font-medium"><Icon name="log-out" size={18}/> Đăng xuất</button>
                     </div>
                     <div className="max-w-6xl mx-auto p-6">
                         <div className="bg-white rounded-xl shadow overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-gray-100 border-b"><tr><th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Thời gian</th><th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Họ và Tên</th><th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Điểm Số (10)</th><th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Xếp loại</th></tr></thead>
-                                    <tbody className="divide-y divide-gray-200">
-                                        {loading ? ( <tr><td colSpan="4" className="p-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr> ) : results.length === 0 ? ( <tr><td colSpan="4" className="p-8 text-center text-gray-500">Chưa có bài thi nào được nộp.</td></tr> ) : results.map((res) => (
-                                            <tr key={res.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{res.timestamp ? new Date((res.sortTime || res.timestamp.seconds) * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{res.name}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-center"><span className="text-lg font-bold text-blue-700">{res.score?.toFixed(2)}</span></td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${res.score >= 8 ? 'bg-green-100 text-green-800' : res.score >= 5 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>{res.score >= 8 ? 'Giỏi' : res.score >= 6.5 ? 'Khá' : res.score >= 5 ? 'Trung Bình' : 'Yếu'}</span></td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <table className="w-full">
+                                <thead className="bg-gray-100 border-b"><tr><th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Thời gian</th><th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Họ và Tên</th><th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Điểm Số</th></tr></thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {loading ? <tr><td colSpan="3" className="p-8 text-center">Đang tải...</td></tr> : results.map((res) => (
+                                        <tr key={res.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 text-sm text-gray-500">{new Date(res.timestamp).toLocaleString('vi-VN')}</td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">{res.name}</td>
+                                            <td className="px-6 py-4 text-center"><span className="text-lg font-bold text-blue-700">{res.score?.toFixed(2)}</span></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             );
         };
 
+        // --- APP CHÍNH ---
         const App = () => {
             const [view, setView] = useState('welcome');
-            const [user, setUser] = useState(null);
             const [studentName, setStudentName] = useState('');
             const [currentQuestions, setCurrentQuestions] = useState([]);
             const [finalScore, setFinalScore] = useState(0);
             const [userAnswers, setUserAnswers] = useState({});
 
             useEffect(() => {
-                initializeFirebase();
-                if (auth) {
-                    const initAuth = async () => {
-                        try {
-                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                await auth.signInWithCustomToken(__initial_auth_token);
-                            } else {
-                                await auth.signInAnonymously();
-                            }
-                        } catch (err) {
-                            console.error("Auth failed:", err);
-                        }
-                    };
-                    initAuth();
-                    const unsubscribe = auth.onAuthStateChanged((u) => { if (u) setUser(u); });
-                    return () => unsubscribe();
-                }
+                if (auth) auth.signInAnonymously().catch(console.error);
             }, []);
 
             const startNewQuiz = (name) => {
                 setStudentName(name);
-                const newQuestions = generateRandomQuiz();
-                setCurrentQuestions(newQuestions);
-                setView('quiz');
-            };
-
-            const handleRetry = () => {
-                const newQuestions = generateRandomQuiz();
-                setCurrentQuestions(newQuestions);
+                setCurrentQuestions(QUESTION_BANK); // Sử dụng toàn bộ câu hỏi theo thứ tự
                 setView('quiz');
             };
 
@@ -769,50 +637,14 @@
                 setFinalScore(score);
                 setUserAnswers(answers);
                 
-                const savePromise = (async () => {
-                    if (!db || !auth) {
-                        initializeFirebase();
-                    }
-
-                    if (db && auth) {
-                        try {
-                            let currentUser = auth.currentUser;
-                            if (!currentUser) {
-                                try {
-                                    const cred = await auth.signInAnonymously();
-                                    currentUser = cred.user;
-                                } catch(e) {
-                                    console.error("Lỗi đăng nhập ẩn danh:", e);
-                                    return;
-                                }
-                            }
-
-                            if (currentUser) {
-                                const sanitizedAnswers = JSON.parse(JSON.stringify(answers));
-                                let collectionRef;
-                                if (isUsingCustomConfig) {
-                                    collectionRef = db.collection(COLLECTION_NAME);
-                                } else {
-                                    collectionRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(COLLECTION_NAME);
-                                }
-
-                                await collectionRef.add({
-                                    name: studentName, 
-                                    score: score, 
-                                    questionIds: currentQuestions.map(q => q.id), 
-                                    answers: sanitizedAnswers, 
-                                    timestamp: new Date().toISOString(),
-                                    uid: currentUser.uid
-                                });
-                            }
-                        } catch (error) { 
-                            console.error("Lỗi khi lưu điểm:", error);
-                        }
-                    }
-                })();
-
-                const timeoutPromise = new Promise(resolve => setTimeout(resolve, 3000));
-                await Promise.race([savePromise, timeoutPromise]);
+                if (db && auth && auth.currentUser) {
+                    db.collection(COLLECTION_NAME).add({
+                        name: studentName, 
+                        score: score, 
+                        answers: answers, 
+                        timestamp: new Date().toISOString()
+                    });
+                }
                 setView('result'); 
             };
 
@@ -821,7 +653,7 @@
                     {view === 'welcome' && <WelcomeScreen onSelectMode={(mode) => setView(mode === 'student' ? 'name' : 'login')} />}
                     {view === 'name' && <StudentNameInput onStart={startNewQuiz} />}
                     {view === 'quiz' && <QuizView studentName={studentName} questions={currentQuestions} onSubmit={handleSubmitQuiz} />}
-                    {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={handleRetry} />}
+                    {view === 'result' && <SolutionView questions={currentQuestions} answers={userAnswers} score={finalScore} onRetry={() => startNewQuiz(studentName)} />}
                     {view === 'login' && <TeacherLogin onLogin={() => setView('teacher')} onBack={() => setView('welcome')} />}
                     {view === 'teacher' && <TeacherDashboard onLogout={() => setView('welcome')} />}
                 </div>
